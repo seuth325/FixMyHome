@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body auth-body">
+  <main class="auth-shell">
+    <section class="auth-hero">
+      <p class="eyebrow">FixMyHome</p>
+      <h1>Trusted local help for every to-do list.</h1>
+      <p>Homeowners post jobs, handymen compete with transparent bids, and both sides stay on-platform from first message to final review.</p>
+      <ul class="auth-highlights">
+        <li>Role-based onboarding for homeowners and handymen</li>
+        <li>Job posting, bidding, messaging, awarding, and reviews</li>
+        <li>Built for quick V1 iteration on Express + Prisma</li>
+      </ul>
+      <a href="/mockup" class="text-link">View product mockup</a>
+    </section>
+
+    <section class="auth-card app-card">
+      <div class="auth-card-head">
+        <p class="eyebrow">Welcome back</p>
+        <h2>Log in</h2>
+      </div>
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <form method="POST" action="/login" class="stack-form">
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" required />
+        </label>
+        <button type="submit" class="btn btn-primary">Log in</button>
+      </form>
+      <p class="auth-switch">Need an account? <a href="/signup">Create one</a>.</p>
+    </section>
+  </main>
+</body>
+</html>

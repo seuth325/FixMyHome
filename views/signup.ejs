@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body auth-body">
+  <main class="auth-shell auth-shell-wide">
+    <section class="auth-hero">
+      <p class="eyebrow">Two-sided marketplace</p>
+      <h1>Set your budget or win the work.</h1>
+      <p>Create a homeowner account to post a job, or join as a handyman to browse local work and submit bids.</p>
+      <div class="auth-role-grid">
+        <article class="mini-card">
+          <h3>Homeowner</h3>
+          <p>Post jobs, compare quotes, award one bid, mark work complete, and leave a review.</p>
+        </article>
+        <article class="mini-card">
+          <h3>Handyman</h3>
+          <p>Build a trust profile, browse matching work, bid once per job, and message before award.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="auth-card app-card">
+      <div class="auth-card-head">
+        <p class="eyebrow">Get started</p>
+        <h2>Create account</h2>
+      </div>
+      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <form method="POST" action="/signup" class="stack-form">
+        <label>
+          <span>Name</span>
+          <input type="text" name="name" required />
+        </label>
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" minlength="8" required />
+        </label>
+        <label>
+          <span>Location</span>
+          <input type="text" name="location" placeholder="City, state or ZIP" />
+        </label>
+        <fieldset class="role-picker">
+          <legend>Choose your role</legend>
+          <label class="role-option">
+            <input type="radio" name="role" value="HOMEOWNER" required />
+            <span>
+              <strong>Homeowner</strong>
+              <small>I need help with projects around the house.</small>
+            </span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="role" value="HANDYMAN" required />
+            <span>
+              <strong>Handyman</strong>
+              <small>I want to find jobs and submit bids.</small>
+            </span>
+          </label>
+        </fieldset>
+        <button type="submit" class="btn btn-primary">Create account</button>
+      </form>
+      <p class="auth-switch">Already registered? <a href="/login">Log in</a>.</p>
+    </section>
+  </main>
+</body>
+</html>

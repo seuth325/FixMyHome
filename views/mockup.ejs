@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FixMyHome Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/mockup.css" />
+</head>
+<body class="mockup-body">
+  <div class="market-shell">
+    <header class="market-nav">
+      <div>
+        <p class="brand-kicker">Home services marketplace</p>
+        <h1 class="brand-mark">FixMyHome</h1>
+      </div>
+      <nav class="market-nav-links">
+        <a href="#workflow">Workflow</a>
+        <a href="#screens">App Screens</a>
+        <a href="#trust">Trust Layer</a>
+        <a href="/login" class="nav-pill">Legacy App Login</a>
+      </nav>
+    </header>
+
+    <main class="market-main">
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <span class="eyebrow">Marketplace mockup</span>
+          <h2>Post your home task, set your budget, compare bids, hire confidently.</h2>
+          <p class="hero-text">
+            A two-sided product for homeowners who need trusted help fast and handymen who want local work without bloated lead fees.
+          </p>
+          <div class="hero-actions">
+            <a href="#screens" class="btn mockup-primary">Explore screens</a>
+            <a href="#roadmap" class="btn mockup-secondary">See rollout plan</a>
+          </div>
+          <ul class="hero-metrics">
+            <li>
+              <strong>4 core flows</strong>
+              <span>Post, bid, compare, complete</span>
+            </li>
+            <li>
+              <strong>2-sided onboarding</strong>
+              <span>Homeowner and handyman profiles</span>
+            </li>
+            <li>
+              <strong>Trust-first V1</strong>
+              <span>Messaging, ratings, verification states</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="hero-stage">
+          <article class="stage-card stage-job">
+            <div class="stage-card-head">
+              <span class="stage-badge">Open job</span>
+              <span class="stage-time">Posted 18 min ago</span>
+            </div>
+            <h3>Mount 65&quot; TV + hide cables</h3>
+            <p class="stage-location">Cleveland Heights, OH 44118</p>
+            <div class="stage-meta">
+              <span>$180 target budget</span>
+              <span>Preferred this Friday</span>
+              <span>Photos attached</span>
+            </div>
+            <div class="stage-photo-strip">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </article>
+
+          <article class="stage-card stage-bids">
+            <div class="stage-card-head">
+              <span class="stage-badge warm">Top bids</span>
+              <span class="stage-time">3 active</span>
+            </div>
+            <div class="bid-mini">
+              <div>
+                <strong>Alex Repairs Co.</strong>
+                <p>Licensed, can patch drywall after install.</p>
+              </div>
+              <span>$165</span>
+            </div>
+            <div class="bid-mini featured">
+              <div>
+                <strong>Northside Handyman</strong>
+                <p>ETA 2 hours, 4.9 stars, insured.</p>
+              </div>
+              <span>$175</span>
+            </div>
+            <div class="bid-mini">
+              <div>
+                <strong>FixIt Crew</strong>
+                <p>Available Saturday morning.</p>
+              </div>
+              <span>$150</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="info-band">
+        <article>
+          <span>Who it serves</span>
+          <p>Homeowners, renters, independent handymen, and small local crews.</p>
+        </article>
+        <article>
+          <span>Primary problem</span>
+          <p>Compare fair pricing quickly while keeping trust, context, and messaging on-platform.</p>
+        </article>
+        <article>
+          <span>Recommended V1 scope</span>
+          <p>Skip escrow and strict identity checks at launch; keep them designed but staged for later.</p>
+        </article>
+      </section>
+
+      <section id="workflow" class="workflow-section">
+        <div class="section-heading">
+          <span class="eyebrow">Workflow</span>
+          <h2>The lifecycle is simple enough for first-time users and structured enough for operations.</h2>
+        </div>
+        <div class="lifecycle">
+          <div class="life-node active">
+            <strong>Open</strong>
+            <p>Job is published and visible in handyman search.</p>
+          </div>
+          <div class="life-arrow">&rarr;</div>
+          <div class="life-node">
+            <strong>In Review</strong>
+            <p>Homeowner compares bids, chats, and short-lists.</p>
+          </div>
+          <div class="life-arrow">&rarr;</div>
+          <div class="life-node">
+            <strong>Awarded</strong>
+            <p>One bid wins, the others are auto-declined with timestamps.</p>
+          </div>
+          <div class="life-arrow">&rarr;</div>
+          <div class="life-node">
+            <strong>Completed</strong>
+            <p>Homeowner confirms completion and unlocks rating.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="screens" class="screen-grid">
+        <article class="screen-card span-two">
+          <div class="screen-head">
+            <div>
+              <span class="eyebrow">Homeowner</span>
+              <h3>Job posting flow</h3>
+            </div>
+            <span class="screen-tag">Validated publish form</span>
+          </div>
+          <div class="composer-layout">
+            <form class="composer-card">
+              <div class="field-row two">
+                <label>
+                  <span>Job title</span>
+                  <input type="text" value="Paint nursery + assemble crib" readonly />
+                </label>
+                <label>
+                  <span>Category</span>
+                  <input type="text" value="Painting" readonly />
+                </label>
+              </div>
+              <label>
+                <span>Description</span>
+                <textarea rows="4" readonly>Need one accent wall painted sage green, baseboards touched up, and a crib assembled. Small bedroom on second floor. Parking available in driveway.</textarea>
+              </label>
+              <div class="field-row three">
+                <label>
+                  <span>Location</span>
+                  <input type="text" value="Columbus, OH 43215" readonly />
+                </label>
+                <label>
+                  <span>Target budget</span>
+                  <input type="text" value="$300" readonly />
+                </label>
+                <label>
+                  <span>Preferred date</span>
+                  <input type="text" value="Mar 15 - Mar 18" readonly />
+                </label>
+              </div>
+              <div class="upload-row">
+                <span class="upload-chip filled">Wall-photo.jpg</span>
+                <span class="upload-chip filled">Crib-box.png</span>
+                <span class="upload-chip">+ Add up to 5 photos</span>
+              </div>
+              <div class="publish-row">
+                <div>
+                  <strong>Ready to publish</strong>
+                  <p>Visible to local handymen only after required fields are complete.</p>
+                </div>
+                <button type="button" class="btn mockup-primary">Publish job</button>
+              </div>
+            </form>
+
+            <aside class="preview-card">
+              <h4>Live listing preview</h4>
+              <div class="preview-job">
+                <div class="preview-status">Open</div>
+                <strong>Paint nursery + assemble crib</strong>
+                <p>Budget target: $300</p>
+                <p>Category: Painting</p>
+                <p>3-day window, Columbus 43215</p>
+              </div>
+              <ul class="mini-checklist">
+                <li>Required: title, category, description, location, budget</li>
+                <li>Optional: photos and preferred date</li>
+                <li>Editable while job remains Open</li>
+              </ul>
+            </aside>
+          </div>
+        </article>
+
+        <article class="screen-card">
+          <div class="screen-head">
+            <div>
+              <span class="eyebrow">Handyman</span>
+              <h3>Local jobs feed</h3>
+            </div>
+            <span class="screen-tag">Search + filters</span>
+          </div>
+          <div class="filter-row">
+            <span>Within 15 mi</span>
+            <span>Painting</span>
+            <span>$150-$500</span>
+            <span>Newest</span>
+          </div>
+          <div class="job-feed-list">
+            <article class="job-feed-item featured">
+              <div>
+                <h4>Fence gate repair</h4>
+                <p>Worthington, OH · Budget $220 · Open</p>
+              </div>
+              <span>2.1 mi</span>
+            </article>
+            <article class="job-feed-item">
+              <div>
+                <h4>Ceiling fan install</h4>
+                <p>Dublin, OH · Budget $160 · 2 photos</p>
+              </div>
+              <span>4.8 mi</span>
+            </article>
+            <article class="job-feed-item">
+              <div>
+                <h4>Deck staining touch-up</h4>
+                <p>Grandview, OH · Budget $450 · Weekend preferred</p>
+              </div>
+              <span>6.4 mi</span>
+            </article>
+          </div>
+        </article>
+
+        <article class="screen-card">
+          <div class="screen-head">
+            <div>
+              <span class="eyebrow">Bid flow</span>
+              <h3>One bid per handyman</h3>
+            </div>
+            <span class="screen-tag">Editable before award</span>
+          </div>
+          <div class="bid-form-card">
+            <label>
+              <span>Quote amount</span>
+              <input type="text" value="$175" readonly />
+            </label>
+            <label>
+              <span>Estimated duration</span>
+              <input type="text" value="1 day" readonly />
+            </label>
+            <label>
+              <span>Message</span>
+              <textarea rows="4" readonly>I can bring drop cloths, patch minor nail holes, and finish the crib assembly in the same visit. Earliest arrival is Saturday at 9 AM.</textarea>
+            </label>
+            <button type="button" class="btn mockup-primary">Submit bid</button>
+          </div>
+        </article>
+
+        <article class="screen-card span-two">
+          <div class="screen-head">
+            <div>
+              <span class="eyebrow">Homeowner</span>
+              <h3>Bid comparison and awarding</h3>
+            </div>
+            <span class="screen-tag">Short-list + accept</span>
+          </div>
+          <div class="comparison-table">
+            <div class="comparison-row comparison-head">
+              <span>Handyman</span>
+              <span>Quote</span>
+              <span>ETA</span>
+              <span>Message</span>
+              <span>Action</span>
+            </div>
+            <div class="comparison-row">
+              <span><strong>Northside Handyman</strong><small>4.9 stars · Insured</small></span>
+              <span>$175</span>
+              <span>1 day</span>
+              <span>Can patch, paint, and assemble in one trip.</span>
+              <span><button type="button" class="btn btn-small">Short-list</button></span>
+            </div>
+            <div class="comparison-row winning">
+              <span><strong>Alex Repairs Co.</strong><small>4.8 stars · License verified</small></span>
+              <span>$165</span>
+              <span>6 hours</span>
+              <span>Best value, available Friday afternoon.</span>
+              <span><button type="button" class="btn mockup-primary btn-small">Accept bid</button></span>
+            </div>
+            <div class="comparison-row">
+              <span><strong>FixIt Crew</strong><small>4.6 stars · 78 jobs</small></span>
+              <span>$150</span>
+              <span>2 days</span>
+              <span>Lower cost but later appointment.</span>
+              <span><button type="button" class="btn btn-secondary btn-small">Message</button></span>
+            </div>
+          </div>
+        </article>
+
+        <article class="screen-card">
+          <div class="screen-head">
+            <div>
+              <span class="eyebrow">Messaging</span>
+              <h3>Bid-thread chat</h3>
+            </div>
+            <span class="screen-tag">On-platform only</span>
+          </div>
+          <div class="chat-card">
+            <div class="chat-bubble from-them">Can you confirm the paint brand you want used?</div>
+            <div class="chat-bubble from-me">Yes, Sherwin-Williams Emerald eggshell. I can send the exact color code.</div>
+            <div class="chat-bubble from-them">Perfect. I can pick it up before arriving.</div>
+            <div class="chat-compose">Type a message without sharing direct contact info</div>
+          </div>
+        </article>
+
+        <article class="screen-card">
+          <div class="screen-head">
+            <div>
+              <span class="eyebrow">Completion</span>
+              <h3>Ratings after confirmation</h3>
+            </div>
+            <span class="screen-tag">1 to 5 stars</span>
+          </div>
+          <div class="rating-card">
+            <div class="rating-stars">?????</div>
+            <p><strong>“Fast, clean, and very clear communicator.”</strong></p>
+            <p class="muted-large">Displayed on the handyman profile to improve trust on future bids.</p>
+          </div>
+        </article>
+      </section>
+
+      <section id="trust" class="trust-grid">
+        <article class="trust-card">
+          <span class="eyebrow">Trust and safety</span>
+          <h3>Verification and moderation layer</h3>
+          <ul class="trust-list">
+            <li>Role-based access control for homeowners and handymen</li>
+            <li>Server-side validation on every write</li>
+            <li>Rate limits on job posting and bidding</li>
+            <li>Insurance and license verification states on profiles</li>
+            <li>Report flags on jobs, bids, and user accounts</li>
+          </ul>
+        </article>
+
+        <article class="trust-card accent">
+          <span class="eyebrow">Future-ready</span>
+          <h3>Features staged beyond V1</h3>
+          <ul class="trust-list">
+            <li>Smart bid recommendations based on price, ratings, and ETA</li>
+            <li>Push notifications and SMS alerts</li>
+            <li>Escrow payments and dispute management center</li>
+            <li>Lead credits or subscription plans for pros</li>
+          </ul>
+        </article>
+      </section>
+
+      <section id="roadmap" class="roadmap-panel">
+        <div class="section-heading">
+          <span class="eyebrow">Build sequence</span>
+          <h2>A practical V1 path that keeps the riskiest features intentionally staged.</h2>
+        </div>
+        <div class="roadmap-grid">
+          <article>
+            <strong>Milestone 1</strong>
+            <p>Project setup, auth, role onboarding, and homeowner/handyman profiles.</p>
+          </article>
+          <article>
+            <strong>Milestone 2</strong>
+            <p>Schema, migrations, job posting, handyman feed, and bid submission.</p>
+          </article>
+          <article>
+            <strong>Milestone 3</strong>
+            <p>Bid comparison, award workflow, messaging MVP, and completion reviews.</p>
+          </article>
+          <article>
+            <strong>Milestone 4</strong>
+            <p>QA, moderation guardrails, analytics, and production deployment.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

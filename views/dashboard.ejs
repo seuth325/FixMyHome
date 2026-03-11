@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body app-body">
+  <div class="app-shell">
+    <header class="app-topbar app-card">
+      <div>
+        <p class="eyebrow">FixMyHome Dashboard</p>
+        <h1><%= user.role === 'HOMEOWNER' ? 'Manage your home projects' : 'Win your next local job' %></h1>
+        <p class="topbar-copy"><%= user.name %> · <%= getRoleLabel(user.role) %><% if (user.location) { %> · <%= user.location %><% } %></p>
+      </div>
+      <div class="topbar-actions">
+        <a href="/mockup" class="btn btn-secondary">View mockup</a>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-primary">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+    <% if (user.role === 'HOMEOWNER') { %>
+      <section class="dashboard-grid homeowner-grid">
+        <article class="app-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Profile</p>
+              <h2>Homeowner details</h2>
+            </div>
+            <span class="stat-pill"><%= roleData.jobCount %> jobs</span>
+          </div>
+          <form method="POST" action="/profile" class="stack-form">
+            <label>
+              <span>Name</span>
+              <input type="text" name="name" value="<%= user.name %>" required />
+            </label>
+            <label>
+              <span>Location</span>
+              <input type="text" name="location" value="<%= user.location || '' %>" required />
+            </label>
+            <button type="submit" class="btn btn-primary">Save profile</button>
+          </form>
+        </article>
+
+        <article class="app-card span-two">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Post a job</p>
+              <h2>Create a request and attract bids</h2>
+            </div>
+            <span class="stat-pill"><%= roleData.activeCount %> active</span>
+          </div>
+          <form method="POST" action="/jobs" class="stack-form">
+            <div class="form-grid two-col">
+              <label>
+                <span>Title</span>
+                <input type="text" name="title" required />
+              </label>
+              <label>
+                <span>Category</span>
+                <select name="category" required>
+                  <option value="">Select category</option>
+                  <% categories.forEach((category) => { %>
+                    <option value="<%= category %>"><%= category %></option>
+                  <% }) %>
+                </select>
+              </label>
+            </div>
+            <label>
+              <span>Description</span>
+              <textarea name="description" rows="4" required></textarea>
+            </label>
+            <div class="form-grid three-col">
+              <label>
+                <span>Location</span>
+                <input type="text" name="location" value="<%= user.location || '' %>" required />
+              </label>
+              <label>
+                <span>Target budget</span>
+                <input type="number" name="budget" min="1" required />
+              </label>
+              <label>
+                <span>Preferred date window</span>
+                <input type="text" name="preferredDate" placeholder="Mar 18-20 or weekends" />
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Publish job</button>
+          </form>
+        </article>
+
+        <article class="app-card span-three">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Your jobs</p>
+              <h2>Compare bids, award work, and complete projects</h2>
+            </div>
+          </div>
+          <% if (roleData.jobs.length === 0) { %>
+            <div class="empty-state">No jobs posted yet. Publish your first request to start receiving bids.</div>
+          <% } %>
+          <% roleData.jobs.forEach((job) => { %>
+            <section class="job-card">
+              <div class="job-summary">
+                <div>
+                  <div class="job-title-row">
+                    <h3><%= job.title %></h3>
+                    <span class="status-chip tone-<%= getStatusTone(job.status) %>"><%= job.status.replace('_', ' ') %></span>
+                  </div>
+                  <p class="job-meta"><%= job.category %> · <%= job.location %> · Budget <%= formatCurrency(job.budget) %><% if (job.preferredDate) { %> · <%= job.preferredDate %><% } %></p>
+                  <p><%= job.description %></p>
+                </div>
+                <div class="action-stack compact-actions">
+                  <% if (job.status === 'OPEN') { %>
+                    <form method="POST" action="/jobs/<%= job.id %>/status">
+                      <input type="hidden" name="action" value="review" />
+                      <button type="submit" class="btn btn-secondary btn-small">Move to In Review</button>
+                    </form>
+                  <% } %>
+                  <% if (job.status === 'AWARDED') { %>
+                    <form method="POST" action="/jobs/<%= job.id %>/status">
+                      <input type="hidden" name="action" value="complete" />
+                      <button type="submit" class="btn btn-primary btn-small">Mark complete</button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="bid-list">
+                <% if (job.bids.length === 0) { %>
+                  <div class="empty-state small">No bids yet. Local pros will appear here.</div>
+                <% } %>
+                <% job.bids.forEach((bid) => { %>
+                  <article class="bid-card <%= bid.status === 'ACCEPTED' ? 'bid-card-accepted' : '' %>">
+                    <div class="bid-header">
+                      <div>
+                        <h4><%= bid.handyman.handymanProfile?.businessName || bid.handyman.name %></h4>
+                        <p class="job-meta"><%= bid.handyman.name %> · <%= bid.handyman.location || 'Location pending' %></p>
+                      </div>
+                      <div class="bid-numbers">
+                        <strong><%= formatCurrency(bid.amount) %></strong>
+                        <span><%= bid.etaDays %> day<%= bid.etaDays === 1 ? '' : 's' %></span>
+                        <span class="status-chip tone-<%= getStatusTone(bid.status) %>"><%= bid.status %></span>
+                      </div>
+                    </div>
+                    <p><%= bid.message %></p>
+                    <div class="trust-row">
+                      <span><%= bid.handyman.handymanProfile?.ratingCount ? bid.handyman.handymanProfile.ratingAvg.toFixed(1) + '?' : 'New pro' %></span>
+                      <span><%= bid.handyman.handymanProfile?.insuranceVerified ? 'Insurance verified' : 'Insurance pending' %></span>
+                      <span><%= bid.handyman.handymanProfile?.licenseVerified ? 'License verified' : 'License pending' %></span>
+                    </div>
+                    <div class="action-stack inline-actions">
+                      <% if (job.status !== 'COMPLETED' && bid.status !== 'ACCEPTED') { %>
+                        <form method="POST" action="/bids/<%= bid.id %>/shortlist">
+                          <button type="submit" class="btn btn-secondary btn-small">Short-list</button>
+                        </form>
+                        <form method="POST" action="/bids/<%= bid.id %>/accept">
+                          <button type="submit" class="btn btn-primary btn-small">Accept bid</button>
+                        </form>
+                      <% } %>
+                    </div>
+                    <div class="message-thread">
+                      <% if (bid.messages.length === 0) { %>
+                        <p class="muted">No messages yet.</p>
+                      <% } %>
+                      <% bid.messages.forEach((message) => { %>
+                        <div class="message-bubble <%= message.senderId === user.id ? 'mine' : '' %>">
+                          <strong><%= message.sender.name %></strong>
+                          <span><%= new Date(message.createdAt).toLocaleString() %></span>
+                          <p><%= message.body %></p>
+                        </div>
+                      <% }) %>
+                      <form method="POST" action="/bids/<%= bid.id %>/messages" class="message-form">
+                        <textarea name="body" rows="2" placeholder="Ask a question or confirm details"></textarea>
+                        <button type="submit" class="btn btn-secondary btn-small">Send</button>
+                      </form>
+                    </div>
+                  </article>
+                <% }) %>
+              </div>
+
+              <% if (job.status === 'COMPLETED' && !job.review && job.acceptedBidId) { %>
+                <form method="POST" action="/jobs/<%= job.id %>/reviews" class="review-form">
+                  <h4>Leave a review</h4>
+                  <div class="form-grid review-grid">
+                    <label>
+                      <span>Stars</span>
+                      <select name="stars" required>
+                        <option value="">Select</option>
+                        <option value="5">5</option>
+                        <option value="4">4</option>
+                        <option value="3">3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                      </select>
+                    </label>
+                    <label class="review-text">
+                      <span>Review</span>
+                      <textarea name="text" rows="2" required></textarea>
+                    </label>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-small">Submit review</button>
+                </form>
+              <% } %>
+
+              <% if (job.review) { %>
+                <div class="review-display">
+                  <strong><%= job.review.stars %>/5 stars</strong>
+                  <p><%= job.review.text %></p>
+                </div>
+              <% } %>
+            </section>
+          <% }) %>
+        </article>
+      </section>
+    <% } else { %>
+      <section class="dashboard-grid handyman-grid">
+        <article class="app-card span-two">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Profile</p>
+              <h2>Handyman trust profile</h2>
+            </div>
+            <span class="stat-pill"><%= roleData.awardedCount %> awarded</span>
+          </div>
+          <form method="POST" action="/profile" class="stack-form">
+            <div class="form-grid two-col">
+              <label>
+                <span>Name</span>
+                <input type="text" name="name" value="<%= user.name %>" required />
+              </label>
+              <label>
+                <span>Business name</span>
+                <input type="text" name="businessName" value="<%= roleData.profile?.businessName || '' %>" />
+              </label>
+            </div>
+            <div class="form-grid three-col">
+              <label>
+                <span>Location</span>
+                <input type="text" name="location" value="<%= user.location || '' %>" required />
+              </label>
+              <label>
+                <span>Service radius (miles)</span>
+                <input type="number" name="serviceRadius" min="1" value="<%= roleData.profile?.serviceRadius || 15 %>" required />
+              </label>
+              <label>
+                <span>Hourly guideline</span>
+                <input type="number" name="hourlyGuideline" min="1" value="<%= roleData.profile?.hourlyGuideline || '' %>" />
+              </label>
+            </div>
+            <label>
+              <span>Skills</span>
+              <input type="text" name="skills" value="<%= roleData.profile?.skills?.join(', ') || '' %>" placeholder="Painting, drywall, TV mounting" />
+            </label>
+            <label>
+              <span>Bio</span>
+              <textarea name="bio" rows="3"><%= roleData.profile?.bio || '' %></textarea>
+            </label>
+            <div class="checkbox-row">
+              <label><input type="checkbox" name="insuranceVerified" <%= roleData.profile?.insuranceVerified ? 'checked' : '' %> /> Insurance verified</label>
+              <label><input type="checkbox" name="licenseVerified" <%= roleData.profile?.licenseVerified ? 'checked' : '' %> /> License verified</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save profile</button>
+          </form>
+          <div class="trust-row trust-row-strong">
+            <span><%= roleData.profile?.ratingCount ? roleData.profile.ratingAvg.toFixed(1) + ' average rating' : 'No ratings yet' %></span>
+            <span><%= roleData.profile?.ratingCount || 0 %> review<%= roleData.profile?.ratingCount === 1 ? '' : 's' %></span>
+          </div>
+        </article>
+
+        <article class="app-card span-two">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Open jobs</p>
+              <h2>Browse matching work and bid once per job</h2>
+            </div>
+            <span class="stat-pill"><%= roleData.openJobs.length %> open</span>
+          </div>
+          <% if (roleData.openJobs.length === 0) { %>
+            <div class="empty-state">No open jobs right now.</div>
+          <% } %>
+          <div class="job-feed-list">
+            <% roleData.openJobs.forEach((job) => { %>
+              <article class="job-feed-card">
+                <div class="job-title-row">
+                  <h3><%= job.title %></h3>
+                  <span class="status-chip tone-<%= getStatusTone(job.status) %>"><%= job.status.replace('_', ' ') %></span>
+                </div>
+                <p class="job-meta"><%= job.category %> · <%= job.location %> · Budget <%= formatCurrency(job.budget) %><% if (job.preferredDate) { %> · <%= job.preferredDate %><% } %></p>
+                <p><%= job.description %></p>
+                <% const existingBid = job.bids[0]; %>
+                <form method="POST" action="/jobs/<%= job.id %>/bids" class="stack-form bid-submit-form">
+                  <div class="form-grid three-col">
+                    <label>
+                      <span>Quote amount</span>
+                      <input type="number" name="amount" min="1" value="<%= existingBid?.amount || '' %>" required />
+                    </label>
+                    <label>
+                      <span>ETA (days)</span>
+                      <input type="number" name="etaDays" min="1" value="<%= existingBid?.etaDays || '' %>" required />
+                    </label>
+                    <div class="mini-stat-box">
+                      <strong><%= existingBid ? 'Bid saved' : 'No bid yet' %></strong>
+                      <span><%= existingBid ? 'You can update it until award.' : 'One bid per job.' %></span>
+                    </div>
+                  </div>
+                  <label>
+                    <span>Message</span>
+                    <textarea name="message" rows="3" required><%= existingBid?.message || '' %></textarea>
+                  </label>
+                  <button type="submit" class="btn btn-primary btn-small"><%= existingBid ? 'Update bid' : 'Submit bid' %></button>
+                </form>
+              </article>
+            <% }) %>
+          </div>
+        </article>
+
+        <article class="app-card span-four">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Your bids</p>
+              <h2>Track awards, declines, and conversations</h2>
+            </div>
+          </div>
+          <% if (roleData.myBids.length === 0) { %>
+            <div class="empty-state">Your submitted bids will show up here.</div>
+          <% } %>
+          <% roleData.myBids.forEach((bid) => { %>
+            <section class="job-card">
+              <div class="job-summary">
+                <div>
+                  <div class="job-title-row">
+                    <h3><%= bid.job.title %></h3>
+                    <span class="status-chip tone-<%= getStatusTone(bid.status) %>"><%= bid.status %></span>
+                  </div>
+                  <p class="job-meta">Homeowner: <%= bid.job.homeowner.name %> · <%= bid.job.location %> · Budget <%= formatCurrency(bid.job.budget) %></p>
+                  <p>Your quote: <strong><%= formatCurrency(bid.amount) %></strong> · ETA <strong><%= bid.etaDays %> days</strong></p>
+                  <p><%= bid.message %></p>
+                </div>
+                <% if (bid.job.review && bid.status === 'ACCEPTED') { %>
+                  <div class="review-display slim-review">
+                    <strong><%= bid.job.review.stars %>/5 stars</strong>
+                    <p><%= bid.job.review.text %></p>
+                  </div>
+                <% } %>
+              </div>
+              <div class="message-thread">
+                <% if (bid.messages.length === 0) { %>
+                  <p class="muted">No messages yet.</p>
+                <% } %>
+                <% bid.messages.forEach((message) => { %>
+                  <div class="message-bubble <%= message.senderId === user.id ? 'mine' : '' %>">
+                    <strong><%= message.sender.name %></strong>
+                    <span><%= new Date(message.createdAt).toLocaleString() %></span>
+                    <p><%= message.body %></p>
+                  </div>
+                <% }) %>
+                <% if (['PENDING', 'SHORTLISTED', 'ACCEPTED'].includes(bid.status)) { %>
+                  <form method="POST" action="/bids/<%= bid.id %>/messages" class="message-form">
+                    <textarea name="body" rows="2" placeholder="Send a quick update"></textarea>
+                    <button type="submit" class="btn btn-secondary btn-small">Send</button>
+                  </form>
+                <% } %>
+              </div>
+            </section>
+          <% }) %>
+        </article>
+      </section>
+    <% } %>
+  </div>
+</body>
+</html>

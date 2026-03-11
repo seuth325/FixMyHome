@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  name            String
+  passwordHash    String
+  role            UserRole
+  location        String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  homeownerJobs   Job[]             @relation("HomeownerJobs")
+  handymanProfile HandymanProfile?
+  bids            Bid[]
+  messages        Message[]
+  reviewsWritten  Review[]          @relation("ReviewerReviews")
+  reviewsReceived Review[]          @relation("HandymanReviews")
+}
+
+model HandymanProfile {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  businessName        String?
+  skills              String[]
+  bio                 String?
+  serviceRadius       Int      @default(15)
+  hourlyGuideline     Int?
+  ratingAvg           Float    @default(0)
+  ratingCount         Int      @default(0)
+  insuranceVerified   Boolean  @default(false)
+  licenseVerified     Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Job {
+  id                String      @id @default(uuid())
+  homeownerId       String
+  title             String
+  category          String
+  description       String
+  location          String
+  budget            Int
+  preferredDate     String?
+  status            JobStatus   @default(OPEN)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  awardedAt         DateTime?
+  completedAt       DateTime?
+  acceptedBidId     String?     @unique
+  homeowner         User        @relation("HomeownerJobs", fields: [homeownerId], references: [id], onDelete: Cascade)
+  bids              Bid[]
+  messages          Message[]
+  review            Review?
+  acceptedBid       Bid?        @relation("AcceptedBid", fields: [acceptedBidId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([homeownerId, createdAt])
+  @@index([status, createdAt])
+}
+
+model Bid {
+  id           String     @id @default(uuid())
+  jobId        String
+  handymanId   String
+  amount       Int
+  message      String
+  etaDays      Int
+  status       BidStatus  @default(PENDING)
+  shortlisted  Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  job          Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  handyman     User       @relation(fields: [handymanId], references: [id], onDelete: Cascade)
+  messages     Message[]
+  acceptedFor  Job?       @relation("AcceptedBid")
+
+  @@unique([jobId, handymanId])
+  @@index([handymanId, status])
+  @@index([jobId, status])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  jobId      String
+  bidId      String
+  senderId   String
+  body       String
+  createdAt  DateTime @default(now())
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  bid        Bid      @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, createdAt])
+  @@index([bidId, createdAt])
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  jobId        String   @unique
+  reviewerId   String
+  handymanId   String
+  stars        Int
+  text         String
+  createdAt    DateTime @default(now())
+  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  reviewer     User     @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+  handyman     User     @relation("HandymanReviews", fields: [handymanId], references: [id], onDelete: Cascade)
+
+  @@index([handymanId, createdAt])
+}
+
+enum UserRole {
+  HOMEOWNER
+  HANDYMAN
+}
+
+enum JobStatus {
+  OPEN
+  IN_REVIEW
+  AWARDED
+  COMPLETED
+}
+
+enum BidStatus {
+  PENDING
+  SHORTLISTED
+  ACCEPTED
+  DECLINED
+}
