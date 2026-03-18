@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body auth-body">
+  <div class="auth-theme-toggle">
+    <button type="button" class="btn btn-secondary" data-theme-toggle>Dark mode</button>
+  </div>
+  <main class="auth-shell legal-shell">
+    <section class="auth-hero">
+      <p class="eyebrow">FixMyHome Legal</p>
+      <h1>Privacy Policy</h1>
+      <p>This policy explains what account, job, payment, and support data the platform stores and how that information is used to run the marketplace.</p>
+      <p class="job-meta">Last updated: March 17, 2026</p>
+    </section>
+
+    <section class="auth-card app-card legal-card">
+      <h2>1. Information collected</h2>
+      <p>FixMyHome stores account details, job posts, bids, messages, reviews, uploaded files, notification events, support records, and payment-related metadata needed to operate the marketplace.</p>
+
+      <h2>2. How data is used</h2>
+      <p>We use data to authenticate users, publish jobs, route bids, process payments, support disputes, review verification documents, send account emails, and improve platform trust and reliability.</p>
+
+      <h2>3. Sharing</h2>
+      <p>Data may be shared with payment providers, storage providers, email providers, and service partners strictly as needed to run the platform. We do not sell personal information.</p>
+
+      <h2>4. Retention and safety</h2>
+      <p>We retain marketplace history, billing records, moderation records, and support artifacts as needed for platform integrity, fraud prevention, accounting, legal obligations, and user support.</p>
+
+      <h2>5. User controls</h2>
+      <p>Users can update account information in-app, and in some cases request deletion. Some records may be preserved where needed for completed work history, payment records, disputes, or legal compliance.</p>
+
+      <h2>6. Contact</h2>
+      <p>Privacy questions can be sent to <a href="mailto:<%= supportEmail %>"><%= supportEmail %></a>.</p>
+    </section>
+  </main>
+  <%- include('partials/site-footer') %>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

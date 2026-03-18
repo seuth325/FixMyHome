@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refund and Dispute Policy - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body auth-body">
+  <div class="auth-theme-toggle">
+    <button type="button" class="btn btn-secondary" data-theme-toggle>Dark mode</button>
+  </div>
+  <main class="auth-shell legal-shell">
+    <section class="auth-hero">
+      <p class="eyebrow">FixMyHome Legal</p>
+      <h1>Refund and Dispute Policy</h1>
+      <p>This policy describes how escrow funding, payment release, and disputes are handled on the platform.</p>
+      <p class="job-meta">Last updated: March 17, 2026</p>
+    </section>
+
+    <section class="auth-card app-card legal-card">
+      <h2>1. Escrow funding</h2>
+      <p>When a homeowner awards a bid, the platform may require escrow funding before work begins. Funds remain held until the work is completed and released or a dispute changes the outcome.</p>
+
+      <h2>2. Release</h2>
+      <p>After the homeowner confirms completion, escrowed funds are released to the accepted handyman according to the platform payment flow.</p>
+
+      <h2>3. Disputes</h2>
+      <p>Either side may open a dispute while funds are held. During an open dispute, payment release is paused while the issue is reviewed through the platform’s dispute workflow.</p>
+
+      <h2>4. Refunds</h2>
+      <p>Refunds may be issued where a dispute is resolved in the homeowner’s favor, where payment processing errors occur, or where required by law or provider policy.</p>
+
+      <h2>5. Support and evidence</h2>
+      <p>Users should provide clear messages, photos, receipts, and other relevant evidence to support a dispute or refund review.</p>
+
+      <h2>6. Contact</h2>
+      <p>Questions about refunds or disputes can be sent to <a href="mailto:<%= supportEmail %>"><%= supportEmail %></a>.</p>
+    </section>
+  </main>
+  <%- include('partials/site-footer') %>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

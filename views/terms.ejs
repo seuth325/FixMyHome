@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body auth-body">
+  <div class="auth-theme-toggle">
+    <button type="button" class="btn btn-secondary" data-theme-toggle>Dark mode</button>
+  </div>
+  <main class="auth-shell legal-shell">
+    <section class="auth-hero">
+      <p class="eyebrow">FixMyHome Legal</p>
+      <h1>Terms of Service</h1>
+      <p>These terms govern use of FixMyHome by homeowners, handymen, and admins. They are written as a launch-ready baseline and should still receive legal review before a full public launch.</p>
+      <p class="job-meta">Last updated: March 17, 2026</p>
+    </section>
+
+    <section class="auth-card app-card legal-card">
+      <h2>1. Marketplace role</h2>
+      <p>FixMyHome provides a marketplace for homeowners to post jobs and for independent handymen to submit bids. FixMyHome is not the direct provider of home services listed through the platform.</p>
+
+      <h2>2. Account responsibilities</h2>
+      <p>Users are responsible for maintaining accurate account information, protecting login credentials, and using the platform lawfully. Admins may suspend or remove accounts that violate policy or create trust and safety risk.</p>
+
+      <h2>3. Bids, awards, and payments</h2>
+      <p>Quotes are submitted by service providers, and homeowners choose whether to shortlist or award work. When escrow is enabled, funds are held and released under the platform payment flow and dispute rules.</p>
+
+      <h2>4. Verification and trust</h2>
+      <p>Insurance, license, ratings, and profile details help users evaluate trust, but homeowners remain responsible for reviewing whether a provider is appropriate for a specific job.</p>
+
+      <h2>5. Platform rules</h2>
+      <p>Users may not post unlawful jobs, evade on-platform protections, misuse payments, spam the marketplace, or submit fraudulent identity, insurance, or license information.</p>
+
+      <h2>6. Termination</h2>
+      <p>FixMyHome may suspend, restrict, or terminate access where needed for fraud prevention, safety, abuse prevention, legal compliance, or unresolved payment and dispute issues.</p>
+
+      <h2>7. Contact</h2>
+      <p>Questions about these terms can be sent to <a href="mailto:<%= supportEmail %>"><%= supportEmail %></a>.</p>
+    </section>
+  </main>
+  <%- include('partials/site-footer') %>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

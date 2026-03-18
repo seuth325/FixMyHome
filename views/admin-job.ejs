@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
+  <title>Admin Job - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body app-body">
+  <div class="app-shell">
+    <header class="app-topbar app-card">
+      <div>
+        <p class="eyebrow">Admin job detail</p>
+        <h1><%= adminJob.title %></h1>
+        <p class="topbar-copy"><%= adminJob.category %> ? <%= adminJob.location %> ? Posted <%= new Date(adminJob.createdAt).toLocaleString() %></p>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-secondary theme-toggle" data-theme-toggle>Dark mode</button>
+        <a href="/admin" class="btn btn-secondary">Back to admin</a>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-primary">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+    <section class="dashboard-grid handyman-grid admin-grid">
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Overview</p>
+            <h2>Job summary</h2>
+          </div>
+          <span class="status-chip tone-<%= getStatusTone(adminJob.status) %>"><%= adminJob.status.replace('_', ' ') %></span>
+        </div>
+        <div class="verification-card billing-detail-card">
+          <p class="job-meta">Homeowner</p>
+          <p><%= adminJob.homeowner.name %> ? <%= adminJob.homeowner.email %></p>
+          <p class="job-meta">Budget</p>
+          <p><%= formatCurrency(adminJob.budget) %></p>
+          <% if (adminJob.preferredDate) { %>
+            <p class="job-meta">Preferred date</p>
+            <p><%= adminJob.preferredDate %></p>
+          <% } %>
+          <p class="job-meta">Description</p>
+          <p><%= adminJob.description %></p>
+        </div>
+        <div class="inline-actions compact-actions wrap-actions">
+          <% if (adminJob.isFunded) { %><span class="status-chip tone-success">Funded</span><% } %>
+          <% if (adminJob.isUnread) { %><span class="status-chip tone-review">Unread</span><% } %>
+          <% if (adminJob.needsActionReason) { %><span class="status-chip tone-warning"><%= adminJob.needsActionReason %></span><% } %>
+          <% if (adminJob.review) { %><span class="status-chip tone-neutral">Reviewed</span><% } %>
+        </div>
+        <% if (adminJob.photos.length > 0) { %>
+          <div class="photo-grid compact-photo-grid">
+            <% adminJob.photos.forEach((photo) => { %>
+              <a href="<%= photo.url %>" target="_blank" rel="noreferrer" class="photo-thumb-link">
+                <img src="<%= photo.url %>" alt="Photo for <%= adminJob.title %>" class="photo-thumb" />
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Payment and dispute</p>
+            <h2>Current operations state</h2>
+          </div>
+        </div>
+        <div class="verification-card billing-detail-card">
+          <p class="job-meta">Accepted handyman</p>
+          <p><%= adminJob.acceptedBid?.handyman?.name || 'Not awarded yet' %></p>
+          <% if (adminJob.payment) { %>
+            <p class="job-meta">Escrow</p>
+            <p><%= formatCurrency(adminJob.payment.amount) %> ? <%= formatPaymentStatus(adminJob.payment.status) %></p>
+            <% if (adminJob.payment.fundedAt) { %>
+              <p class="job-meta">Funded at</p>
+              <p><%= new Date(adminJob.payment.fundedAt).toLocaleString() %></p>
+            <% } %>
+          <% } else { %>
+            <p class="job-meta">Escrow</p>
+            <p>No payment record yet.</p>
+          <% } %>
+          <% if (adminJob.dispute) { %>
+            <p class="job-meta">Dispute</p>
+            <p><%= formatDisputeStatus(adminJob.dispute.status) %> ? <%= adminJob.dispute.reason %></p>
+            <p class="job-meta">Opened by</p>
+            <p><%= adminJob.dispute.openedBy?.name || 'Unknown' %></p>
+            <% if (adminJob.dispute.assignedAdmin) { %>
+              <p class="job-meta">Assigned admin</p>
+              <p><%= adminJob.dispute.assignedAdmin.name %></p>
+            <% } %>
+            <% if (adminJob.dispute.resolutionNotes) { %>
+              <p class="job-meta">Resolution notes</p>
+              <p><%= adminJob.dispute.resolutionNotes %></p>
+            <% } %>
+          <% } else { %>
+            <p class="job-meta">Dispute</p>
+            <p>No dispute opened.</p>
+          <% } %>
+          <% if (adminJob.review) { %>
+            <p class="job-meta">Homeowner review</p>
+            <p><%= adminJob.review.stars %>/5 stars ? <%= adminJob.review.text || 'No review text.' %></p>
+          <% } %>
+        </div>
+      </article>
+
+      <article class="app-card span-four">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Timeline</p>
+            <h2>Job lifecycle</h2>
+          </div>
+        </div>
+        <% if (jobTimeline.length === 0) { %>
+          <div class="empty-state">No timeline events are available for this job yet.</div>
+        <% } %>
+        <% jobTimeline.forEach((entry) => { %>
+          <div class="mini-card admin-list-card admin-audit-card">
+            <div>
+              <strong><%= entry.label %></strong>
+              <p><%= entry.detail %></p>
+            </div>
+            <div class="status-stack">
+              <span class="status-chip tone-<%= entry.tone %>"><%= new Date(entry.at).toLocaleString() %></span>
+            </div>
+          </div>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-four">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Bids and conversations</p>
+            <h2>Compare pro activity on this job</h2>
+          </div>
+        </div>
+        <% if (adminJob.bids.length === 0) { %>
+          <div class="empty-state">No bids have been submitted yet.</div>
+        <% } %>
+        <% adminJob.bids.forEach((bid) => { %>
+          <section class="job-card">
+            <div class="job-summary">
+              <div>
+                <div class="job-title-row">
+                  <h3><%= bid.handyman.handymanProfile?.businessName || bid.handyman.name %></h3>
+                  <div class="inline-actions compact-actions">
+                    <span class="status-chip tone-<%= getStatusTone(bid.status) %>"><%= bid.status %></span>
+                    <% if (adminJob.acceptedBidId === bid.id) { %><span class="status-chip tone-success">Accepted</span><% } %>
+                  </div>
+                </div>
+                <p class="job-meta"><%= bid.handyman.name %> ? <%= bid.handyman.email %> ? <%= bid.handyman.location || 'Location pending' %></p>
+                <p>Quote <strong><%= formatCurrency(bid.amount) %></strong> ? ETA <strong><%= bid.etaDays %> days</strong></p>
+                <p><%= bid.message %></p>
+                <div class="trust-row trust-row-strong">
+                  <span><%= bid.handyman.handymanProfile?.ratingCount ? bid.handyman.handymanProfile.ratingAvg.toFixed(1) + ' stars' : 'No rating yet' %></span>
+                  <span>Insurance: <%= formatVerificationStatus(bid.handyman.handymanProfile?.insuranceStatus || 'NOT_SUBMITTED') %></span>
+                  <span>License: <%= formatVerificationStatus(bid.handyman.handymanProfile?.licenseStatus || 'NOT_SUBMITTED') %></span>
+                </div>
+              </div>
+            </div>
+            <div class="message-thread">
+              <% if (bid.messages.length === 0) { %>
+                <p class="muted">No messages on this bid yet.</p>
+              <% } %>
+              <% bid.messages.forEach((message) => { %>
+                <div class="message-bubble <%= message.senderId === bid.handymanId ? 'mine' : '' %>">
+                  <strong><%= message.sender.name %></strong>
+                  <span><%= new Date(message.createdAt).toLocaleString() %></span>
+                  <p><%= message.body %></p>
+                </div>
+              <% }) %>
+            </div>
+          </section>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Reports</p>
+            <h2>Moderation visibility</h2>
+          </div>
+        </div>
+        <% if (adminJob.reports.length === 0) { %>
+          <div class="empty-state">No moderation reports are attached to this job.</div>
+        <% } %>
+        <% adminJob.reports.forEach((report) => { %>
+          <div class="mini-card admin-list-card">
+            <div>
+              <strong><%= report.reason %></strong>
+              <p class="job-meta">Filed by <%= report.filedBy?.name || 'Unknown' %> ? <%= new Date(report.createdAt).toLocaleString() %></p>
+              <% if (report.details) { %><p><%= report.details %></p><% } %>
+            </div>
+            <div class="status-stack">
+              <span class="status-chip tone-<%= report.status === 'OPEN' ? 'review' : 'success' %>"><%= report.status %></span>
+            </div>
+          </div>
+        <% }) %>
+      </article>
+    </section>
+  </div>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/photo-fallback.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

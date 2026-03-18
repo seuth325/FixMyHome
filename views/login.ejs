@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
   <title>Log In - FixMyHome</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -10,6 +11,9 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body class="site-body auth-body">
+  <div class="auth-theme-toggle">
+    <button type="button" class="btn btn-secondary" data-theme-toggle>Dark mode</button>
+  </div>
   <main class="auth-shell">
     <section class="auth-hero">
       <p class="eyebrow">FixMyHome</p>
@@ -28,20 +32,33 @@
         <p class="eyebrow">Welcome back</p>
         <h2>Log in</h2>
       </div>
-      <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+      <% if (flash) { %><div class="flash" role="alert"><%= flash %></div><% } %>
       <form method="POST" action="/login" class="stack-form">
         <label>
           <span>Email</span>
-          <input type="email" name="email" required />
+          <input type="email" id="login-email" name="email" value="<%= formData?.email || '' %>" class="<%= errors?.email ? 'input-error' : '' %>" aria-invalid="<%= errors?.email ? 'true' : 'false' %>" aria-describedby="login-email-help<%= errors?.email ? ' login-email-error' : '' %>" required data-email-hint-output="login-email-help" />
+          <% if (errors?.email) { %><small id="login-email-error" class="field-help field-error" role="alert"><%= errors.email %></small><% } %>
+          <small id="login-email-help" class="field-help email-help" data-email-hint-tone="muted">Use the email linked to your FixMyHome account.</small>
         </label>
         <label>
           <span>Password</span>
-          <input type="password" name="password" required />
+          <div class="password-input-row">
+            <input type="password" id="login-password" name="password" class="<%= errors?.password ? 'input-error' : '' %>" aria-invalid="<%= errors?.password ? 'true' : 'false' %>" aria-describedby="login-password-caps-help<%= errors?.password ? ' login-password-error' : '' %>" required data-caps-lock-output="login-password-caps-help" />
+            <button type="button" class="btn btn-secondary btn-small password-toggle" data-password-toggle="login-password">Show</button>
+          </div>
+          <% if (errors?.password) { %><small id="login-password-error" class="field-help field-error" role="alert"><%= errors.password %></small><% } %>
+          <small id="login-password-caps-help" class="field-help caps-lock-help" data-caps-lock-tone="muted">Caps lock is off.</small>
         </label>
         <button type="submit" class="btn btn-primary">Log in</button>
       </form>
+      <p class="auth-switch"><a href="/forgot-password">Forgot password?</a></p>
       <p class="auth-switch">Need an account? <a href="/signup">Create one</a>.</p>
     </section>
   </main>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/auth-passwords.js" defer></script>
+  <script src="/auth-accessibility.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
 </body>
 </html>

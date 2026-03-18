@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
+  <title>Admin User - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body app-body">
+  <div class="app-shell">
+    <header class="app-topbar app-card">
+      <div>
+        <p class="eyebrow">Admin user detail</p>
+        <h1><%= adminAccount.name %></h1>
+        <p class="topbar-copy"><%= getRoleLabel(adminAccount.role) %> · <%= adminAccount.email %><% if (adminAccount.location) { %> · <%= adminAccount.location %><% } %></p>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-secondary theme-toggle" data-theme-toggle>Dark mode</button>
+        <a href="/admin" class="btn btn-secondary">Back to admin</a>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-primary">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+    <section class="dashboard-grid handyman-grid admin-grid">
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Overview</p>
+            <h2>Account summary</h2>
+          </div>
+          <span class="status-chip tone-<%= adminAccount.isSuspended ? 'warning' : 'success' %>"><%= adminAccount.isSuspended ? 'Suspended' : 'Active' %></span>
+        </div>
+        <div class="verification-card billing-detail-card">
+          <p class="job-meta">Role</p>
+          <p><%= getRoleLabel(adminAccount.role) %></p>
+          <p class="job-meta">Delete status</p>
+          <p><%= deletionState.summary %></p>
+          <% if (!deletionState.allowed && deletionState.reason) { %>
+            <p class="job-meta">Why deletion is blocked</p>
+            <p><%= deletionState.reason %></p>
+          <% } %>
+          <p class="job-meta">Joined</p>
+          <p><%= new Date(adminAccount.createdAt).toLocaleString() %></p>
+          <p class="job-meta">Last updated</p>
+          <p><%= new Date(adminAccount.updatedAt).toLocaleString() %></p>
+        </div>
+        <% if (adminAccount.role !== 'ADMIN') { %>
+          <div class="inline-actions compact-actions wrap-actions">
+            <form method="POST" action="/admin/users/<%= adminAccount.id %>/toggle-suspension">
+              <button type="submit" class="btn btn-<%= adminAccount.isSuspended ? 'secondary' : 'primary' %> btn-small"><%= adminAccount.isSuspended ? 'Restore user' : 'Suspend user' %></button>
+            </form>
+            <% if (deletionState.allowed) { %>
+              <form method="POST" action="/admin/users/<%= adminAccount.id %>/delete" onsubmit="return confirm('Delete this account permanently? This cannot be undone.');">
+                <button type="submit" class="btn btn-danger btn-small">Delete account</button>
+              </form>
+            <% } else { %>
+              <span class="status-chip tone-warning">Delete blocked</span>
+            <% } %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Recent activity</p>
+            <h2>What changed lately</h2>
+          </div>
+        </div>
+        <% if (recentActivity.length === 0) { %>
+          <div class="empty-state">No recent activity is available for this account yet.</div>
+        <% } else { %>
+          <% recentActivity.forEach((entry) => { %>
+            <div class="mini-card admin-list-card admin-audit-card">
+              <div>
+                <strong><%= entry.label %></strong>
+                <p><%= entry.detail %></p>
+              </div>
+              <div class="status-stack">
+                <span class="status-chip tone-<%= entry.tone %>"><%= new Date(entry.at).toLocaleString() %></span>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </article>
+
+      <% if (adminAccount.role === 'HOMEOWNER') { %>
+        <article class="app-card span-four">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Homeowner activity</p>
+              <h2>Jobs and spending context</h2>
+            </div>
+            <div class="inline-actions compact-actions">
+              <span class="stat-pill"><%= homeownerMetrics.totalJobs %> jobs</span>
+              <span class="stat-pill"><%= homeownerMetrics.fundedJobs %> funded</span>
+              <span class="stat-pill"><%= homeownerMetrics.openJobs %> open</span>
+              <span class="stat-pill"><%= homeownerMetrics.completedJobs %> completed</span>
+            </div>
+          </div>
+          <% if (homeownerJobs.length === 0) { %>
+            <div class="empty-state">This homeowner has not posted any jobs yet.</div>
+          <% } %>
+          <% homeownerJobs.forEach((job) => { %>
+            <section class="job-card">
+              <div class="job-summary">
+                <div>
+                  <div class="job-title-row">
+                    <h3><a href="/admin/jobs/<%= job.id %>" class="text-link"><%= job.title %></a></h3>
+                    <div class="inline-actions compact-actions">
+                      <span class="status-chip tone-<%= getStatusTone(job.status) %>"><%= job.status.replaceAll('_', ' ') %></span>
+                      <% if (job.payment) { %><span class="status-chip tone-<%= getStatusTone(job.payment.status) %>"><%= formatPaymentStatus(job.payment.status) %></span><% } %>
+                    </div>
+                  </div>
+                  <p class="job-meta"><%= job.category %> · <%= job.location %> · <%= formatCurrency(job.budget) %></p>
+                  <p><%= job.description %></p>
+                  <div class="trust-row trust-row-strong">
+                    <span><%= job.bids.length %> bids</span>
+                    <span><%= job.acceptedBid ? `Accepted: ${job.acceptedBid.handyman.name}` : 'Not awarded yet' %></span>
+                    <span><%= job.dispute ? `Dispute: ${formatDisputeStatus(job.dispute.status)}` : 'No dispute' %></span>
+                    <span><%= job.review ? `${job.review.stars}/5 review` : 'No review yet' %></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          <% }) %>
+        </article>
+      <% } %>
+
+      <% if (adminAccount.role === 'HANDYMAN') { %>
+        <article class="app-card span-two">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Handyman profile</p>
+              <h2>Trust and billing snapshot</h2>
+            </div>
+          </div>
+          <div class="verification-card billing-detail-card">
+            <p class="job-meta">Business</p>
+            <p><%= adminAccount.handymanProfile?.businessName || adminAccount.name %></p>
+            <p class="job-meta">Skills</p>
+            <p><%= adminAccount.handymanProfile?.skills?.length ? adminAccount.handymanProfile.skills.join(', ') : 'No skills listed yet.' %></p>
+            <p class="job-meta">Hourly guideline</p>
+            <p><%= adminAccount.handymanProfile?.hourlyGuideline ? formatCurrency(adminAccount.handymanProfile.hourlyGuideline) : 'Not set' %></p>
+            <p class="job-meta">Lead credits</p>
+            <p><%= adminAccount.handymanProfile?.leadCredits ?? 0 %></p>
+            <p class="job-meta">Plan</p>
+            <p><%= adminAccount.handymanProfile ? formatSubscriptionPlan(adminAccount.handymanProfile.subscriptionPlan) : 'No profile yet' %></p>
+            <p class="job-meta">Insurance</p>
+            <p><%= formatVerificationStatus(adminAccount.handymanProfile?.insuranceStatus || 'NOT_SUBMITTED') %></p>
+            <p class="job-meta">License</p>
+            <p><%= formatVerificationStatus(adminAccount.handymanProfile?.licenseStatus || 'NOT_SUBMITTED') %></p>
+          </div>
+        </article>
+
+        <article class="app-card span-two">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Handyman activity</p>
+              <h2>Bids and outcomes</h2>
+            </div>
+            <div class="inline-actions compact-actions">
+              <span class="stat-pill"><%= handymanMetrics.totalBids %> bids</span>
+              <span class="stat-pill"><%= handymanMetrics.acceptedBids %> accepted</span>
+              <span class="stat-pill"><%= handymanMetrics.pendingBids %> pending</span>
+              <span class="stat-pill"><%= handymanMetrics.completedJobs %> completed</span>
+            </div>
+          </div>
+          <% if (adminAccount.bids.length === 0) { %>
+            <div class="empty-state">This handyman has not placed any bids yet.</div>
+          <% } else { %>
+            <% adminAccount.bids.forEach((bid) => { %>
+              <div class="mini-card admin-list-card">
+                <div>
+                  <strong><a href="/admin/jobs/<%= bid.job.id %>" class="text-link"><%= bid.job.title %></a></strong>
+                  <p class="job-meta"><%= bid.job.homeowner.name %> · <%= formatCurrency(bid.amount) %> · ETA <%= bid.etaDays %> days</p>
+                  <p><%= bid.message %></p>
+                  <% if (bid.messages[0]) { %>
+                    <p class="job-meta">Latest message: <%= bid.messages[0].sender.name %> · <%= bid.messages[0].body %></p>
+                  <% } %>
+                </div>
+                <div class="status-stack">
+                  <span class="status-chip tone-<%= getStatusTone(bid.status) %>"><%= bid.status.replaceAll('_', ' ') %></span>
+                  <% if (bid.job.payment) { %><span class="status-chip tone-<%= getStatusTone(bid.job.payment.status) %>"><%= formatPaymentStatus(bid.job.payment.status) %></span><% } %>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </article>
+
+        <article class="app-card span-two">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Reviews</p>
+              <h2>Trust signals</h2>
+            </div>
+          </div>
+          <% if (adminAccount.reviewsReceived.length === 0) { %>
+            <div class="empty-state">No homeowner reviews yet.</div>
+          <% } else { %>
+            <% adminAccount.reviewsReceived.forEach((review) => { %>
+              <div class="mini-card admin-list-card">
+                <div>
+                  <strong><%= review.stars %>/5 from <%= review.reviewer.name %></strong>
+                  <p class="job-meta"><a href="/admin/jobs/<%= review.job.id %>" class="text-link"><%= review.job.title %></a> · <%= new Date(review.createdAt).toLocaleString() %></p>
+                  <p><%= review.text || 'No review text provided.' %></p>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+        </article>
+      <% } %>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Reports against user</p>
+            <h2>Moderation context</h2>
+          </div>
+        </div>
+        <% if (adminAccount.reportsAgainst.length === 0) { %>
+          <div class="empty-state">No reports have been filed against this account.</div>
+        <% } else { %>
+          <% adminAccount.reportsAgainst.forEach((report) => { %>
+            <div class="mini-card admin-list-card">
+              <div>
+                <strong><%= report.reason %></strong>
+                <p class="job-meta">Filed by <%= report.filedBy?.name || 'Unknown' %> · <%= new Date(report.createdAt).toLocaleString() %></p>
+                <% if (report.job) { %><p class="job-meta"><a href="/admin/jobs/<%= report.job.id %>" class="text-link"><%= report.job.title %></a></p><% } %>
+                <% if (report.details) { %><p><%= report.details %></p><% } %>
+              </div>
+              <div class="status-stack">
+                <span class="status-chip tone-<%= report.status === 'OPEN' ? 'review' : 'success' %>"><%= report.status %></span>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Reports filed</p>
+            <h2>Outgoing moderation history</h2>
+          </div>
+        </div>
+        <% if (adminAccount.reportsFiled.length === 0) { %>
+          <div class="empty-state">This account has not filed moderation reports.</div>
+        <% } else { %>
+          <% adminAccount.reportsFiled.forEach((report) => { %>
+            <div class="mini-card admin-list-card">
+              <div>
+                <strong><%= report.reason %></strong>
+                <p class="job-meta">Against <%= report.reportedUser?.name || 'unknown user' %> · <%= new Date(report.createdAt).toLocaleString() %></p>
+                <% if (report.job) { %><p class="job-meta"><a href="/admin/jobs/<%= report.job.id %>" class="text-link"><%= report.job.title %></a></p><% } %>
+                <% if (report.details) { %><p><%= report.details %></p><% } %>
+              </div>
+              <div class="status-stack">
+                <span class="status-chip tone-<%= report.status === 'OPEN' ? 'review' : 'success' %>"><%= report.status %></span>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </article>
+    </section>
+  </div>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

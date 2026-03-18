@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
+  <title>Billing Playbook - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body app-body">
+  <div class="app-shell">
+    <header class="app-topbar app-card">
+      <div>
+        <p class="eyebrow">Billing playbook</p>
+        <h1><%= playbook ? playbook.name : latestHistory.playbookName %></h1>
+        <p class="topbar-copy">
+          <% if (playbook) { %>
+            <%= playbook.scope === 'SHARED' ? 'Shared team' : 'Personal' %> ? <%= playbook.status === 'ARCHIVED' ? 'Archived' : 'Active' %>
+          <% } else { %>
+            Deleted playbook ? history only
+          <% } %>
+        </p>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-secondary theme-toggle" data-theme-toggle>Dark mode</button>
+        <a href="/admin" class="btn btn-secondary">Back to admin</a>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-primary">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+    <% const historyLabels = { CREATED: 'Created', UPDATED: 'Updated', ARCHIVED: 'Archived', RESTORED: 'Restored', DELETED: 'Deleted' }; %>
+
+    <section class="dashboard-grid handyman-grid admin-grid">
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Playbook overview</p>
+            <h2>Saved workflow details</h2>
+          </div>
+          <span class="status-chip tone-<%= playbook ? (playbook.status === 'ARCHIVED' ? 'review' : 'success') : 'muted' %>"><%= playbook ? (playbook.status === 'ARCHIVED' ? 'Archived' : 'Active') : 'History only' %></span>
+        </div>
+        <div class="verification-card billing-detail-card">
+          <p class="job-meta">Name</p>
+          <p><%= playbook ? playbook.name : latestHistory.playbookName %></p>
+          <p class="job-meta">Creator</p>
+          <p><%= playbook?.createdByAdmin ? playbook.createdByAdmin.name : (latestHistory?.actorAdmin ? latestHistory.actorAdmin.name : 'Unknown') %></p>
+          <% if (playbook) { %>
+            <p class="job-meta">Support status</p>
+            <p><%= formatBillingSupportStatus(playbook.supportStatus) %></p>
+            <p class="job-meta">Provider match</p>
+            <p><%= playbook.provider || 'Any provider' %><% if (playbook.eventType) { %> ? <%= playbook.eventType %><% } %><% if (playbook.targetType) { %> ? <%= playbook.targetType.replaceAll('_', ' ') %><% } %></p>
+            <p class="job-meta">Usage</p>
+            <p><%= playbook.usageCount || 0 %> runs<% if (playbook.lastUsedAt) { %> ? last used <%= new Date(playbook.lastUsedAt).toLocaleString() %><% } %></p>
+            <p class="job-meta">Scope</p>
+            <p><%= playbook.scope === 'SHARED' ? 'Shared team' : 'Personal' %><% if (playbook.isFavorite) { %> ? Favorite<% } %></p>
+            <% if (playbook.cleanupReason) { %>
+              <p class="job-meta">Cleanup note</p>
+              <p><%= playbook.cleanupReason %></p>
+            <% } %>
+            <% if (playbook.archivedAt) { %>
+              <p class="job-meta">Archived</p>
+              <p><%= new Date(playbook.archivedAt).toLocaleString() %><% if (playbook.archivedByAdmin) { %> by <%= playbook.archivedByAdmin.name %><% } %></p>
+            <% } %>
+          <% } else { %>
+            <p class="job-meta">Current state</p>
+            <p>This playbook has been deleted, but its activity history is still available.</p>
+          <% } %>
+        </div>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Support summary</p>
+            <h2>Copyable handoff summary</h2>
+          </div>
+          <div class="inline-actions filter-actions">
+            <a href="/admin/billing-playbooks/<%= playbook ? playbook.id : latestHistory.playbookId %>/history/summary?<%= playbookHistoryQueryString %>" class="btn btn-secondary btn-small">Download TXT</a>
+            <a href="/admin/billing-playbooks/<%= playbook ? playbook.id : latestHistory.playbookId %>/history/summary.json?<%= playbookHistoryQueryString %>" class="btn btn-secondary btn-small">Download JSON</a>
+          </div>
+        </div>
+        <textarea rows="12" readonly><%= playbookSummaryText %></textarea>
+        <form method="POST" action="/admin/billing-playbooks/<%= playbook ? playbook.id : latestHistory.playbookId %>/history/cases" class="stack-form">
+          <input type="hidden" name="action" value="<%= playbookHistoryFilters.action %>" />
+          <input type="hidden" name="actorAdminUserId" value="<%= playbookHistoryFilters.actorAdminUserId %>" />
+          <input type="hidden" name="dateRange" value="<%= playbookHistoryFilters.dateRange %>" />
+          <label>
+            <span>Case title</span>
+            <input type="text" name="caseTitle" maxlength="120" placeholder="<%= (playbook ? playbook.name : latestHistory.playbookName) %> handoff case" />
+          </label>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Create support case</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Activity timeline</p>
+            <h2>Every admin action for this playbook</h2>
+          </div>
+          <span class="stat-pill"><%= playbookHistoryPagination.totalCount %> events</span>
+        </div>
+        <form method="GET" action="/admin/billing-playbooks/<%= playbook ? playbook.id : latestHistory.playbookId %>/history" class="filter-panel stack-form">
+          <div class="dashboard-grid filter-row-grid">
+            <label>
+              <span>Action</span>
+              <select name="action">
+                <option value="">All actions</option>
+                <% Object.entries(historyLabels).forEach(([value, label]) => { %>
+                  <option value="<%= value %>" <%= playbookHistoryFilters.action === value ? 'selected' : '' %>><%= label %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label>
+              <span>Admin</span>
+              <select name="actorAdminUserId">
+                <option value="">All admins</option>
+                <% adminUsers.forEach((adminUser) => { %>
+                  <option value="<%= adminUser.id %>" <%= playbookHistoryFilters.actorAdminUserId === adminUser.id ? 'selected' : '' %>><%= adminUser.name %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label>
+              <span>Date range</span>
+              <select name="dateRange">
+                <option value="ALL" <%= playbookHistoryFilters.dateRange === 'ALL' ? 'selected' : '' %>>All time</option>
+                <option value="30D" <%= playbookHistoryFilters.dateRange === '30D' ? 'selected' : '' %>>Last 30 days</option>
+                <option value="7D" <%= playbookHistoryFilters.dateRange === '7D' ? 'selected' : '' %>>Last 7 days</option>
+              </select>
+            </label>
+          </div>
+          <input type="hidden" name="page" value="1" />
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-secondary btn-small">Apply filters</button>
+            <a href="/admin/billing-playbooks/<%= playbook ? playbook.id : latestHistory.playbookId %>/history" class="text-link">Clear filters</a>
+          </div>
+        </form>
+        <% if (playbookHistory.length === 0) { %>
+          <div class="empty-state">No playbook activity matches the current filters.</div>
+        <% } else { %>
+          <p class="job-meta">Page <%= playbookHistoryPagination.page %> of <%= playbookHistoryPagination.totalPages %></p>
+          <div class="stack-list compact-stack-list">
+            <% playbookHistory.forEach((entry) => { %>
+              <div class="mini-card admin-list-card admin-audit-card">
+                <div class="section-head compact-section-head">
+                  <div>
+                    <strong><%= historyLabels[entry.action] || entry.action %></strong>
+                    <p class="job-meta">By <%= entry.actorAdmin ? entry.actorAdmin.name : 'Admin' %> on <%= new Date(entry.createdAt).toLocaleString() %></p>
+                    <% if (entry.notes) { %><p class="job-meta"><%= entry.notes %></p><% } %>
+                  </div>
+                  <span class="status-chip tone-<%= entry.action === 'DELETED' ? 'muted' : entry.action === 'ARCHIVED' ? 'review' : entry.action === 'RESTORED' ? 'success' : 'neutral' %>"><%= historyLabels[entry.action] || entry.action %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+          <div class="inline-actions filter-actions">
+            <% const historyBaseQuery = 'action=' + encodeURIComponent(playbookHistoryFilters.action || '') + '&actorAdminUserId=' + encodeURIComponent(playbookHistoryFilters.actorAdminUserId || '') + '&dateRange=' + encodeURIComponent(playbookHistoryFilters.dateRange || 'ALL'); %>
+            <% if (playbookHistoryPagination.hasPreviousPage) { %>
+              <a href="/admin/billing-playbooks/<%= playbook ? playbook.id : latestHistory.playbookId %>/history?<%= historyBaseQuery %>&page=<%= playbookHistoryPagination.page - 1 %>" class="btn btn-secondary btn-small">Previous page</a>
+            <% } %>
+            <% if (playbookHistoryPagination.hasNextPage) { %>
+              <a href="/admin/billing-playbooks/<%= playbook ? playbook.id : latestHistory.playbookId %>/history?<%= historyBaseQuery %>&page=<%= playbookHistoryPagination.page + 1 %>" class="btn btn-secondary btn-small">Next page</a>
+            <% } %>
+          </div>
+        <% } %>
+      </article>
+    </section>
+  </div>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

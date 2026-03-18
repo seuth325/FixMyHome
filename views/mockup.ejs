@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
   <title>FixMyHome Mockup</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,6 +19,7 @@
         <h1 class="brand-mark">FixMyHome</h1>
       </div>
       <nav class="market-nav-links">
+        <button type="button" class="btn nav-theme-toggle" data-theme-toggle>Dark mode</button>
         <a href="#workflow">Workflow</a>
         <a href="#screens">App Screens</a>
         <a href="#trust">Trust Layer</a>
@@ -235,21 +237,21 @@
             <article class="job-feed-item featured">
               <div>
                 <h4>Fence gate repair</h4>
-                <p>Worthington, OH · Budget $220 · Open</p>
+                <p>Worthington, OH Â· Budget $220 Â· Open</p>
               </div>
               <span>2.1 mi</span>
             </article>
             <article class="job-feed-item">
               <div>
                 <h4>Ceiling fan install</h4>
-                <p>Dublin, OH · Budget $160 · 2 photos</p>
+                <p>Dublin, OH Â· Budget $160 Â· 2 photos</p>
               </div>
               <span>4.8 mi</span>
             </article>
             <article class="job-feed-item">
               <div>
                 <h4>Deck staining touch-up</h4>
-                <p>Grandview, OH · Budget $450 · Weekend preferred</p>
+                <p>Grandview, OH Â· Budget $450 Â· Weekend preferred</p>
               </div>
               <span>6.4 mi</span>
             </article>
@@ -298,21 +300,21 @@
               <span>Action</span>
             </div>
             <div class="comparison-row">
-              <span><strong>Northside Handyman</strong><small>4.9 stars · Insured</small></span>
+              <span><strong>Northside Handyman</strong><small>4.9 stars Â· Insured</small></span>
               <span>$175</span>
               <span>1 day</span>
               <span>Can patch, paint, and assemble in one trip.</span>
               <span><button type="button" class="btn btn-small">Short-list</button></span>
             </div>
             <div class="comparison-row winning">
-              <span><strong>Alex Repairs Co.</strong><small>4.8 stars · License verified</small></span>
+              <span><strong>Alex Repairs Co.</strong><small>4.8 stars Â· License verified</small></span>
               <span>$165</span>
               <span>6 hours</span>
               <span>Best value, available Friday afternoon.</span>
               <span><button type="button" class="btn mockup-primary btn-small">Accept bid</button></span>
             </div>
             <div class="comparison-row">
-              <span><strong>FixIt Crew</strong><small>4.6 stars · 78 jobs</small></span>
+              <span><strong>FixIt Crew</strong><small>4.6 stars Â· 78 jobs</small></span>
               <span>$150</span>
               <span>2 days</span>
               <span>Lower cost but later appointment.</span>
@@ -347,7 +349,7 @@
           </div>
           <div class="rating-card">
             <div class="rating-stars">?????</div>
-            <p><strong>“Fast, clean, and very clear communicator.”</strong></p>
+            <p><strong>â€œFast, clean, and very clear communicator.â€</strong></p>
             <p class="muted-large">Displayed on the handyman profile to improve trust on future bids.</p>
           </div>
         </article>
@@ -404,5 +406,8 @@
       </section>
     </main>
   </div>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
 </body>
 </html>

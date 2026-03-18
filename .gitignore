@@ -19,4 +19,5 @@ fixmyhome-*.png
 server.out.log
 server.err.log
 
+public/uploads/
 data/

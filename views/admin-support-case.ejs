@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
+  <title>Support Case - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body app-body">
+  <div class="app-shell">
+    <header class="app-topbar app-card">
+      <div>
+        <p class="eyebrow">Support case</p>
+        <h1><%= supportCase.title %></h1>
+        <p class="topbar-copy"><%= supportCase.sourcePlaybookName %> - <%= supportCase.status %></p>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-secondary theme-toggle" data-theme-toggle>Dark mode</button>
+        <a href="/admin" class="btn btn-secondary">Back to admin</a>
+        <a href="/admin/support-cases/<%= supportCase.id %>/export.txt" class="btn btn-secondary">Download TXT</a>
+        <a href="/admin/support-cases/<%= supportCase.id %>/export.json" class="btn btn-secondary">Download JSON</a>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-primary">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+    <section class="dashboard-grid handyman-grid admin-grid">
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Case overview</p>
+            <h2>Assignment and internal notes</h2>
+          </div>
+          <span class="status-chip tone-<%= supportCase.status === 'CLOSED' ? 'muted' : 'review' %>"><%= supportCase.status %></span>
+        </div>
+        <div class="verification-card billing-detail-card">
+          <p class="job-meta">Created by</p>
+          <p><%= supportCase.createdByAdmin ? supportCase.createdByAdmin.name : 'Admin' %></p>
+          <p class="job-meta">Created at</p>
+          <p><%= new Date(supportCase.createdAt).toLocaleString() %></p>
+          <p class="job-meta">Current owner</p>
+          <p><%= supportCase.assignedAdmin ? supportCase.assignedAdmin.name : 'Unassigned' %></p>
+          <% if (supportCase.sourcePlaybookId) { %>
+            <p class="job-meta">Source playbook</p>
+            <p><a href="/admin/billing-playbooks/<%= supportCase.sourcePlaybookId %>/history" class="text-link"><%= supportCase.sourcePlaybookName %></a></p>
+          <% } %>
+        </div>
+        <form method="POST" action="/admin/support-cases/<%= supportCase.id %>" class="stack-form">
+          <label>
+            <span>Owner</span>
+            <select name="assignedAdminUserId">
+              <option value="">Unassigned</option>
+              <% adminUsers.forEach((adminUser) => { %>
+                <option value="<%= adminUser.id %>" <%= supportCase.assignedAdminUserId === adminUser.id ? 'selected' : '' %>><%= adminUser.name %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label>
+            <span>Status</span>
+            <select name="status">
+              <option value="OPEN" <%= supportCase.status === 'OPEN' ? 'selected' : '' %>>OPEN</option>
+              <option value="CLOSED" <%= supportCase.status === 'CLOSED' ? 'selected' : '' %>>CLOSED</option>
+            </select>
+          </label>
+          <label>
+            <span>Notes</span>
+            <textarea name="notes" rows="8" placeholder="Add internal investigation notes, owners, or next steps."><%= supportCase.notes || '' %></textarea>
+          </label>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Save case details</button>
+          </div>
+        </form>
+        <% if (supportCase.notesUpdatedAt) { %>
+          <p class="job-meta">Last updated <%= new Date(supportCase.notesUpdatedAt).toLocaleString() %></p>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Case activity</p>
+            <h2>Activity log</h2>
+          </div>
+          <span class="stat-pill"><%= supportCase.activities.length %> entries</span>
+        </div>
+        <% if (supportCase.activities.length === 0) { %>
+          <div class="empty-state">No support case activity recorded yet.</div>
+        <% } else { %>
+          <div class="stack-list compact-stack-list">
+            <% supportCase.activities.forEach((activity) => { %>
+              <div class="mini-card admin-list-card admin-audit-card">
+                <div class="section-head compact-section-head">
+                  <div>
+                    <strong><%= activity.type.replaceAll('_', ' ') %></strong>
+                    <p class="job-meta"><%= activity.actorAdmin ? activity.actorAdmin.name : 'Admin' %> - <%= new Date(activity.createdAt).toLocaleString() %></p>
+                    <p class="job-meta"><%= activity.message %></p>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Internal discussion</p>
+            <h2>Case comments</h2>
+          </div>
+          <span class="stat-pill"><%= supportCase.comments.length %> comments</span>
+        </div>
+        <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/comments" class="stack-form">
+          <label>
+            <span>Add comment</span>
+            <textarea name="body" rows="4" placeholder="Share investigation context, handoff notes, or questions for the next admin."></textarea>
+          </label>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Post internal comment</button>
+          </div>
+        </form>
+        <% if (supportCase.comments.length === 0) { %>
+          <div class="empty-state">No internal comments have been added yet.</div>
+        <% } else { %>
+          <div class="stack-list compact-stack-list">
+            <% supportCase.comments.forEach((comment) => { %>
+              <div class="mini-card admin-list-card admin-audit-card">
+                <div class="section-head compact-section-head">
+                  <div>
+                    <strong><%= comment.authorAdmin ? comment.authorAdmin.name : 'Admin' %></strong>
+                    <p class="job-meta"><%= new Date(comment.createdAt).toLocaleString() %><% if (String(comment.updatedAt) !== String(comment.createdAt)) { %> - edited <%= new Date(comment.updatedAt).toLocaleString() %><% } %></p>
+                    <% if (comment.isResolution) { %>
+                      <p><span class="status-chip tone-success">Current answer</span></p>
+                    <% } %>
+                    <p><%= comment.body %></p>
+                  </div>
+                </div>
+                <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/comments/<%= comment.id %>" class="stack-form compact-stack-form">
+                  <label>
+                    <span>Edit comment</span>
+                    <textarea name="body" rows="3"><%= comment.body %></textarea>
+                  </label>
+                  <div class="inline-actions filter-actions">
+                    <button type="submit" class="btn btn-secondary btn-small">Save edit</button>
+                  </div>
+                </form>
+                <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/comments/<%= comment.id %>/resolution" class="inline-actions filter-actions">
+                  <input type="hidden" name="action" value="<%= comment.isResolution ? 'clear' : 'mark' %>" />
+                  <button type="submit" class="btn btn-secondary btn-small"><%= comment.isResolution ? 'Clear current answer' : 'Mark as current answer' %></button>
+                </form>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Case evidence</p>
+            <h2>Attachments</h2>
+          </div>
+          <span class="stat-pill"><%= supportCase.attachments.filter((attachment) => !attachment.archivedAt).length %> active</span>
+        </div>
+        <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/attachments" enctype="multipart/form-data" class="stack-form">
+          <label>
+            <span>Upload evidence</span>
+            <input type="file" name="attachments" accept="image/*,.pdf,.txt,.json,.csv" multiple />
+          </label>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-secondary btn-small">Upload attachments</button>
+          </div>
+        </form>
+        <% const activeAttachments = supportCase.attachments.filter((attachment) => !attachment.archivedAt); %>
+        <% const archivedAttachments = supportCase.attachments.filter((attachment) => attachment.archivedAt); %>
+        <% if (activeAttachments.length === 0) { %>
+          <div class="empty-state">No active evidence files have been attached yet.</div>
+        <% } else { %>
+          <div class="stack-list compact-stack-list">
+            <% activeAttachments.forEach((attachment) => { %>
+              <div class="mini-card admin-list-card admin-audit-card">
+                <div class="section-head compact-section-head">
+                  <div>
+                    <strong><a href="<%= attachment.protectedHref %>" class="text-link"><%= attachment.filename %></a></strong>
+                    <p class="job-meta"><%= attachment.mimeType %> - <%= Math.max(1, Math.round(attachment.sizeBytes / 1024)) %> KB</p>
+                    <p class="job-meta">Uploaded by <%= attachment.uploadedByAdmin ? attachment.uploadedByAdmin.name : 'Admin' %> - <%= new Date(attachment.createdAt).toLocaleString() %></p>
+                    <% if (attachment.note) { %>
+                      <p class="job-meta"><%= attachment.note %></p>
+                    <% } %>
+                  </div>
+                </div>
+                <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/attachments/<%= attachment.id %>" class="stack-form compact-stack-form">
+                  <label>
+                    <span>Attachment note</span>
+                    <textarea name="note" rows="3" placeholder="Why this file matters or what it confirms."><%= attachment.note || '' %></textarea>
+                  </label>
+                  <div class="inline-actions filter-actions">
+                    <button type="submit" class="btn btn-secondary btn-small">Save note</button>
+                  </div>
+                </form>
+                <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/attachments/<%= attachment.id %>/archive" class="inline-actions filter-actions">
+                  <input type="hidden" name="action" value="archive" />
+                  <button type="submit" class="btn btn-secondary btn-small">Archive attachment</button>
+                </form>
+                <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/attachments/<%= attachment.id %>/delete" class="inline-actions filter-actions">
+                  <button type="submit" class="btn btn-secondary btn-small">Delete attachment</button>
+                </form>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Archived evidence</p>
+            <h2>Archived attachments</h2>
+          </div>
+          <span class="stat-pill"><%= archivedAttachments.length %> archived</span>
+        </div>
+        <% if (archivedAttachments.length === 0) { %>
+          <div class="empty-state">No archived evidence files yet.</div>
+        <% } else { %>
+          <div class="stack-list compact-stack-list">
+            <% archivedAttachments.forEach((attachment) => { %>
+              <div class="mini-card admin-list-card admin-audit-card">
+                <div class="section-head compact-section-head">
+                  <div>
+                    <strong><a href="<%= attachment.protectedHref %>" class="text-link"><%= attachment.filename %></a></strong>
+                    <p class="job-meta"><%= attachment.mimeType %> - <%= Math.max(1, Math.round(attachment.sizeBytes / 1024)) %> KB</p>
+                    <p class="job-meta">Archived by <%= attachment.archivedByAdmin ? attachment.archivedByAdmin.name : 'Admin' %> - <%= new Date(attachment.archivedAt).toLocaleString() %></p>
+                    <% if (attachment.note) { %>
+                      <p class="job-meta"><%= attachment.note %></p>
+                    <% } %>
+                  </div>
+                </div>
+                <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/attachments/<%= attachment.id %>/archive" class="inline-actions filter-actions">
+                  <input type="hidden" name="action" value="restore" />
+                  <button type="submit" class="btn btn-secondary btn-small">Restore attachment</button>
+                </form>
+                <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/attachments/<%= attachment.id %>/delete" class="inline-actions filter-actions">
+                  <button type="submit" class="btn btn-secondary btn-small">Delete attachment</button>
+                </form>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Saved handoff</p>
+            <h2>Case summary snapshot</h2>
+          </div>
+        </div>
+        <textarea rows="14" readonly><%= supportCase.summaryText %></textarea>
+      </article>
+    </section>
+  </div>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

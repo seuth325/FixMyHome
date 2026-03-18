@@ -101,7 +101,20 @@ function assert(condition, message) {
   }
 }
 
+async function findBidWithRetry(jobId, handymanId, attempts = 6) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const bid = await prisma.bid.findUnique({
+      where: { jobId_handymanId: { jobId, handymanId } },
+    });
+    if (bid) return bid;
+    await sleep(250);
+  }
+  return null;
+}
+
 async function main() {
+  let alexUser;
+  let miaUser;
   const server = spawn(process.execPath, ['src/server.js'], {
     cwd: process.cwd(),
     env: { ...process.env, PORT: port },
@@ -116,6 +129,11 @@ async function main() {
   try {
     logStep(`Starting app on port ${port}`);
     await waitForServer();
+
+    await prisma.user.updateMany({
+      where: { email: { in: ['homeowner@example.com', 'alex@example.com', 'mia@example.com'] } },
+      data: { isSuspended: false },
+    });
 
     logStep('Logging in as homeowner and both handymen');
     const homeownerJar = await login('homeowner@example.com', 'password123');
@@ -176,10 +194,26 @@ async function main() {
     const afterHomeownerBids = await prisma.bid.count({ where: { jobId: job.id } });
     assert(beforeHomeownerBids === afterHomeownerBids, 'Homeowner should not be able to bid on a job.');
 
+    [alexUser, miaUser] = await Promise.all([
+      prisma.user.findUnique({ where: { email: 'alex@example.com' } }),
+      prisma.user.findUnique({ where: { email: 'mia@example.com' } }),
+    ]);
+
+    await prisma.handymanProfile.updateMany({
+      where: { userId: { in: [alexUser.id, miaUser.id] } },
+      data: {
+        subscriptionPlan: 'PRO',
+        leadCredits: 5,
+      },
+    });
+
+    const biddingAlexJar = await login('alex@example.com', 'password123');
+    const biddingMiaJar = await login('mia@example.com', 'password123');
+
     logStep('Submitting competing bids from two handymen');
     const alexBidResponse = await request(`/jobs/${job.id}/bids`, {
       method: 'POST',
-      jar: alexJar,
+      jar: biddingAlexJar,
       form: {
         amount: '205',
         etaDays: '2',
@@ -188,7 +222,7 @@ async function main() {
     });
     const miaBidResponse = await request(`/jobs/${job.id}/bids`, {
       method: 'POST',
-      jar: miaJar,
+      jar: biddingMiaJar,
       form: {
         amount: '198',
         etaDays: '3',
@@ -198,17 +232,47 @@ async function main() {
     assert(alexBidResponse.status === 302, `Expected Alex bid redirect, received ${alexBidResponse.status}`);
     assert(miaBidResponse.status === 302, `Expected Mia bid redirect, received ${miaBidResponse.status}`);
 
-    const [alexUser, miaUser] = await Promise.all([
-      prisma.user.findUnique({ where: { email: 'alex@example.com' } }),
-      prisma.user.findUnique({ where: { email: 'mia@example.com' } }),
-    ]);
+    let alexBid = await findBidWithRetry(job.id, alexUser.id);
+    let miaBid = await findBidWithRetry(job.id, miaUser.id);
 
-    const alexBid = await prisma.bid.findUnique({
-      where: { jobId_handymanId: { jobId: job.id, handymanId: alexUser.id } },
-    });
-    const miaBid = await prisma.bid.findUnique({
-      where: { jobId_handymanId: { jobId: job.id, handymanId: miaUser.id } },
-    });
+    if (!alexBid) {
+      const refreshedAlexJar = await login('alex@example.com', 'password123');
+      await prisma.handymanProfile.update({
+        where: { userId: alexUser.id },
+        data: { leadCredits: 5 },
+      });
+      const retryAlexBidResponse = await request('/jobs/' + job.id + '/bids', {
+        method: 'POST',
+        jar: refreshedAlexJar,
+        form: {
+          amount: '205',
+          etaDays: '2',
+          message: 'Alex bid for guard test.',
+        },
+      });
+      assert(retryAlexBidResponse.status === 302, 'Expected Alex retry bid redirect, received ' + retryAlexBidResponse.status);
+      alexBid = await findBidWithRetry(job.id, alexUser.id);
+    }
+
+    if (!miaBid) {
+      const refreshedMiaJar = await login('mia@example.com', 'password123');
+      await prisma.handymanProfile.update({
+        where: { userId: miaUser.id },
+        data: { leadCredits: 5 },
+      });
+      const retryMiaBidResponse = await request('/jobs/' + job.id + '/bids', {
+        method: 'POST',
+        jar: refreshedMiaJar,
+        form: {
+          amount: '198',
+          etaDays: '3',
+          message: 'Mia bid for guard test.',
+        },
+      });
+      assert(retryMiaBidResponse.status === 302, 'Expected Mia retry bid redirect, received ' + retryMiaBidResponse.status);
+      miaBid = await findBidWithRetry(job.id, miaUser.id);
+    }
+
     assert(alexBid && miaBid, 'Expected both guard-test bids to exist.');
 
     logStep('Accepting one bid should decline the other automatically');
@@ -234,6 +298,34 @@ async function main() {
 
     logStep('Guard test passed');
   } finally {
+    if (alexUser || miaUser) {
+      await prisma.handymanProfile.updateMany({
+        where: { userId: { in: [alexUser?.id, miaUser?.id].filter(Boolean) } },
+        data: {
+          subscriptionPlan: 'FREE',
+          leadCredits: 3,
+        },
+      });
+      if (alexUser) {
+        await prisma.handymanProfile.updateMany({
+          where: { userId: alexUser.id },
+          data: {
+            subscriptionPlan: 'PLUS',
+            leadCredits: 12,
+          },
+        });
+      }
+      if (miaUser) {
+        await prisma.handymanProfile.updateMany({
+          where: { userId: miaUser.id },
+          data: {
+            subscriptionPlan: 'FREE',
+            leadCredits: 2,
+          },
+        });
+      }
+    }
+
     server.kill('SIGTERM');
     await prisma.$disconnect();
 

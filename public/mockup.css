@@ -76,6 +76,11 @@
   flex-wrap: wrap;
 }
 
+.nav-theme-toggle {
+  background: rgba(18, 38, 58, 0.08);
+  color: var(--ink-deep);
+}
+
 .market-nav-links a {
   color: var(--ink-deep);
   text-decoration: none;
@@ -86,6 +91,86 @@
   padding: 10px 14px;
   border-radius: 999px;
   background: rgba(18, 38, 58, 0.08);
+}
+
+body[data-theme='dark'].mockup-body {
+  --sand: #0f1b23;
+  --cream: #13212a;
+  --ink-deep: #edf6fb;
+  --ink-soft: #a7bcc8;
+  --line: rgba(173, 205, 221, 0.14);
+  --teal: #3ab9c2;
+  --teal-dark: #87e5ea;
+  --gold: #f4c76b;
+  --coral: #f08a68;
+  background:
+    radial-gradient(circle at top left, rgba(244, 199, 107, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(58, 185, 194, 0.14), transparent 26%),
+    linear-gradient(180deg, #0f1b23 0%, #172833 100%);
+  color: var(--ink-deep);
+}
+
+body[data-theme='dark'] .market-nav,
+body[data-theme='dark'] .hero-panel,
+body[data-theme='dark'] .info-band,
+body[data-theme='dark'] .workflow-section,
+body[data-theme='dark'] .screen-card,
+body[data-theme='dark'] .trust-card,
+body[data-theme='dark'] .roadmap-panel {
+  background: rgba(19, 33, 42, 0.92);
+  border-color: rgba(158, 194, 214, 0.12);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+body[data-theme='dark'] .market-nav-links a,
+body[data-theme='dark'] .hero-text,
+body[data-theme='dark'] .screen-card p,
+body[data-theme='dark'] .trust-card p,
+body[data-theme='dark'] .info-band p,
+body[data-theme='dark'] .life-node p,
+body[data-theme='dark'] .preview-card p,
+body[data-theme='dark'] .composer-card p,
+body[data-theme='dark'] .bid-mini p,
+body[data-theme='dark'] .roadmap-copy p,
+body[data-theme='dark'] .stage-location,
+body[data-theme='dark'] .stage-time {
+  color: var(--ink-soft);
+}
+
+body[data-theme='dark'] .nav-pill,
+body[data-theme='dark'] .nav-theme-toggle,
+body[data-theme='dark'] .life-node,
+body[data-theme='dark'] .preview-job,
+body[data-theme='dark'] .upload-chip,
+body[data-theme='dark'] .bid-mini,
+body[data-theme='dark'] .trust-list li,
+body[data-theme='dark'] .roadmap-phase,
+body[data-theme='dark'] .hero-metrics li {
+  background: rgba(32, 52, 64, 0.82);
+  border-color: rgba(173, 205, 221, 0.14);
+  color: var(--ink-deep);
+}
+
+body[data-theme='dark'] .nav-theme-toggle:hover,
+body[data-theme='dark'] .nav-pill:hover {
+  background: rgba(58, 185, 194, 0.18);
+}
+
+body[data-theme='dark'] .mockup-secondary {
+  background: rgba(58, 185, 194, 0.18);
+  color: #dff9fb;
+  border: 1px solid rgba(135, 229, 234, 0.24);
+}
+
+body[data-theme='dark'] .mockup-secondary:hover {
+  background: rgba(58, 185, 194, 0.26);
+}
+
+body[data-theme='dark'] input,
+body[data-theme='dark'] textarea {
+  background: rgba(32, 52, 64, 0.94);
+  border-color: rgba(173, 205, 221, 0.14);
+  color: var(--ink-deep);
 }
 
 .market-main {

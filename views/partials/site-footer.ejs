@@ -1,0 +1,13 @@
+<footer class="site-footer app-card">
+  <div>
+    <strong>FixMyHome</strong>
+    <p class="job-meta">Local home services, clearer bids, and safer hiring.</p>
+  </div>
+  <nav class="site-footer-links" aria-label="Legal and support">
+    <% (legalNavItems || []).forEach((item) => { %>
+      <a href="<%= item.href %>"><%= item.label %></a>
+    <% }) %>
+    <a href="mailto:<%= supportEmail %>"><%= supportEmail %></a>
+  </nav>
+  <small class="job-meta">© <%= currentYear %> FixMyHome. All rights reserved.</small>
+</footer>

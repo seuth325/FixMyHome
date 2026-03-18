@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
+  <title>Admin - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body app-body">
+  <div class="app-shell">
+    <header class="app-topbar app-card">
+      <div>
+        <p class="eyebrow">FixMyHome Admin</p>
+        <h1>Moderation and dispute review</h1>
+        <p class="topbar-copy"><%= user.name %> � <%= getRoleLabel(user.role) %></p>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-secondary theme-toggle" data-theme-toggle>Dark mode</button>
+        <a href="/mockup" class="btn btn-secondary">View mockup</a>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-primary">Log out</button>
+        </form>
+      </div>
+    </header>
+    <section class="notification-center app-card">
+      <div class="section-head compact-section-head">
+        <div>
+          <p class="eyebrow">Notifications</p>
+          <h2>Recent alerts</h2>
+        </div>
+        <div class="inline-actions compact-actions">
+          <span class="stat-pill"><%= unreadNotificationCount %> unread</span>
+          <% if (notifications.length > 0) { %>
+            <form method="POST" action="/notifications/read-all">
+              <button type="submit" class="btn btn-secondary btn-small">Mark all read</button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+      <% if (notifications.length === 0) { %>
+        <div class="empty-state small">No notifications yet.</div>
+      <% } %>
+      <% if (notifications.length > 0) { %>
+        <div class="notification-list">
+          <% notifications.forEach((notification) => { %>
+            <article class="notification-item <%= notification.isRead ? 'read' : 'unread' %>">
+              <div>
+                <strong><%= notification.title %></strong>
+                <p><%= notification.body %></p>
+                <small><%= new Date(notification.createdAt).toLocaleString() %></small>
+              </div>
+              <form method="POST" action="/notifications/<%= notification.id %>/read" class="notification-action">
+                <button type="submit" class="btn btn-secondary btn-small"><%= notification.isRead ? 'Open' : 'Mark read' %></button>
+              </form>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+    <div class="admin-collapse-toolbar app-card">
+      <div>
+        <p class="eyebrow">Dashboard view</p>
+        <h2>Collapse sections for faster scanning</h2>
+      </div>
+      <div class="inline-actions compact-actions">
+        <button type="button" class="btn btn-secondary btn-small" data-admin-collapse-all>Collapse all</button>
+        <button type="button" class="btn btn-secondary btn-small" data-admin-expand-all>Expand all</button>
+      </div>
+    </div>
+
+    <section class="dashboard-grid handyman-grid admin-grid">
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Support case ops</p>
+            <h2>Tracked playbook handoffs</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.supportCaseMetrics.open %> open</span>
+        </div>
+        <div class="inline-actions compact-actions">
+          <span class="stat-pill"><%= roleData.supportCaseMetrics.unassigned %> unassigned</span>
+          <span class="stat-pill"><%= roleData.supportCaseMetrics.myOpen %> mine</span>
+          <span class="stat-pill"><%= roleData.supportCaseMetrics.overdue24 %> over 24h</span>
+          <span class="stat-pill"><%= roleData.supportCaseMetrics.overdue72 %> over 72h</span>
+          <span class="stat-pill"><%= roleData.supportCaseMetrics.autoRoutedRecently %> auto-routed</span>
+          <span class="stat-pill"><%= roleData.supportCaseMetrics.routingExceptions %> exceptions</span>
+        </div>
+        <% if (roleData.savedSupportCaseViews.length > 0) { %>
+          <div class="mini-card admin-list-card">
+            <div class="section-head compact-section-head">
+              <div>
+                <p class="eyebrow">Saved views</p>
+                <h3>Reusable case filters</h3>
+              </div>
+            </div>
+            <div class="saved-view-list">
+              <% roleData.savedSupportCaseViews.forEach((savedView) => { %>
+                <div class="saved-view-row">
+                  <div class="saved-view-meta">
+                    <a href="<%= buildSupportCaseViewQuery(savedView) %>" class="btn <%= roleData.selectedSupportCaseViewId === savedView.id ? 'btn-primary' : 'btn-secondary' %> btn-small"><%= savedView.name %></a>
+                    <span class="job-meta"><%= savedView.scope === 'SHARED' ? 'Shared team view' : 'Personal view' %><% if (savedView.isPinned) { %> - pinned<% } %><% if (savedView.isDefaultLanding) { %> - default landing<% } %><% if (savedView.autoApplyOnCreate && savedView.autoAssignAdmin) { %> - auto-routes to <%= savedView.autoAssignAdmin.name %><% } %> - by <%= savedView.user ? savedView.user.name : 'Admin' %></span>
+                  </div>
+                  <div class="inline-actions compact-actions wrap-actions">
+                    <form method="POST" action="/admin/support-case-views/<%= savedView.id %>/pin">
+                      <input type="hidden" name="action" value="<%= savedView.isPinned ? 'unpin' : 'pin' %>" />
+                      <button type="submit" class="btn btn-secondary btn-small"><%= savedView.isPinned ? 'Unpin' : 'Pin' %></button>
+                    </form>
+                    <form method="POST" action="/admin/support-case-views/<%= savedView.id %>/default">
+                      <input type="hidden" name="action" value="<%= savedView.isDefaultLanding ? 'clear' : 'set' %>" />
+                      <button type="submit" class="btn btn-secondary btn-small"><%= savedView.isDefaultLanding ? 'Clear default' : 'Set default' %></button>
+                    </form>
+                    <% if (savedView.userId === user.id) { %>
+                      <form method="POST" action="/admin/support-case-views/<%= savedView.id %>/delete">
+                        <button type="submit" class="btn btn-secondary btn-small">Remove</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+        <% if (roleData.supportCaseRoutingInsights.autoRoutingViewCount > 0) { %>
+          <div class="dashboard-grid filter-row-grid">
+            <div class="mini-card admin-list-card">
+              <div class="section-head compact-section-head">
+                <div>
+                  <p class="eyebrow">Routing analytics</p>
+                  <h3>Preset routing analytics</h3>
+                </div>
+              </div>
+              <% if (roleData.supportCaseRoutingInsights.presetAnalytics.length === 0) { %>
+                <div class="empty-state small">No auto-routing presets are active yet.</div>
+              <% } else { %>
+                <div class="saved-view-list">
+                  <% roleData.supportCaseRoutingInsights.presetAnalytics.forEach((preset) => { %>
+                    <div class="saved-view-row">
+                      <div class="saved-view-meta">
+                        <a href="<%= buildSupportCaseViewQuery(preset) %>" class="text-link"><strong><%= preset.name %></strong></a>
+                        <span class="job-meta"><%= preset.recentRoutedCount %> routed recently - <%= preset.openMatchesNow %> open matches now - target <%= preset.autoAssignAdmin ? preset.autoAssignAdmin.name : 'Admin' %><% if (preset.lastRoutedAt) { %> - last fired <%= new Date(preset.lastRoutedAt).toLocaleString() %><% } %></span>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+            <div class="mini-card admin-list-card">
+              <div class="section-head compact-section-head">
+                <div>
+                  <p class="eyebrow">Routing exceptions</p>
+                  <h3>Recent routing exceptions</h3>
+                </div>
+              </div>
+              <% if (roleData.supportCaseRoutingInsights.routingExceptions.length === 0) { %>
+                <div class="empty-state small">Recent support cases are following preset routing cleanly.</div>
+              <% } else { %>
+                <div class="saved-view-list">
+                  <% roleData.supportCaseRoutingInsights.routingExceptions.forEach((entry) => { %>
+                    <div class="saved-view-row">
+                      <div class="saved-view-meta">
+                        <a href="<%= entry.href %>" class="text-link"><strong><%= entry.title %></strong></a>
+                        <span class="job-meta"><%= entry.reason %> Owner: <%= entry.ownerLabel %>.<% if (entry.matchedViewNames.length > 0) { %> Matching presets: <%= entry.matchedViewNames.join(', ') %>.<% } %> Updated <%= new Date(entry.updatedAt).toLocaleString() %>.</span>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+        <form method="GET" action="/admin" class="stack-form">
+          <input type="hidden" name="billingSearch" value="<%= roleData.billingFilters.billingSearch || '' %>" />
+          <input type="hidden" name="billingProvider" value="<%= roleData.billingFilters.billingProvider || '' %>" />
+          <input type="hidden" name="billingEventType" value="<%= roleData.billingFilters.billingEventType || '' %>" />
+          <input type="hidden" name="billingStatus" value="<%= roleData.billingFilters.billingStatus || '' %>" />
+          <input type="hidden" name="billingSupportStatus" value="<%= roleData.billingFilters.billingSupportStatus || '' %>" />
+          <label>
+            <span>Search cases</span>
+            <input type="search" name="supportCaseSearch" value="<%= roleData.billingFilters.supportCaseSearch || '' %>" placeholder="Search title, source, notes, or owner" />
+          </label>
+          <div class="filter-grid billing-filter-grid">
+            <label>
+              <span>Status</span>
+              <select name="supportCaseStatus">
+                <option value="">All statuses</option>
+                <option value="OPEN" <%= roleData.billingFilters.supportCaseStatus === 'OPEN' ? 'selected' : '' %>>Open</option>
+                <option value="CLOSED" <%= roleData.billingFilters.supportCaseStatus === 'CLOSED' ? 'selected' : '' %>>Closed</option>
+              </select>
+            </label>
+            <label>
+              <span>Owner</span>
+              <select name="supportCaseOwner">
+                <option value="">Any owner</option>
+                <option value="unassigned" <%= roleData.billingFilters.supportCaseOwner === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
+                <% roleData.adminUsers.forEach((adminUser) => { %>
+                  <option value="<%= adminUser.id %>" <%= roleData.billingFilters.supportCaseOwner === adminUser.id ? 'selected' : '' %>><%= adminUser.name %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label>
+              <span>Queue</span>
+              <select name="supportCaseQueue">
+                <option value="">All queues</option>
+                <option value="my_open" <%= roleData.billingFilters.supportCaseQueue === 'my_open' ? 'selected' : '' %>>My open cases</option>
+                <option value="unassigned" <%= roleData.billingFilters.supportCaseQueue === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
+                <option value="team_open" <%= roleData.billingFilters.supportCaseQueue === 'team_open' ? 'selected' : '' %>>Team open</option>
+                <option value="overdue_24h" <%= roleData.billingFilters.supportCaseQueue === 'overdue_24h' ? 'selected' : '' %>>Over 24h</option>
+                <option value="overdue_72h" <%= roleData.billingFilters.supportCaseQueue === 'overdue_72h' ? 'selected' : '' %>>Over 72h</option>
+              </select>
+            </label>
+          </div>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Apply case filters</button>
+            <a href="/admin" class="btn btn-secondary btn-small">Clear</a>
+          </div>
+        </form>
+        <form method="POST" action="/admin/support-case-views" class="filter-panel stack-form">
+          <input type="hidden" name="supportCaseSearch" value="<%= roleData.billingFilters.supportCaseSearch || '' %>" />
+          <input type="hidden" name="supportCaseStatus" value="<%= roleData.billingFilters.supportCaseStatus || '' %>" />
+          <input type="hidden" name="supportCaseOwner" value="<%= roleData.billingFilters.supportCaseOwner || '' %>" />
+          <input type="hidden" name="supportCaseQueue" value="<%= roleData.billingFilters.supportCaseQueue || '' %>" />
+          <label>
+            <span>Save current case view</span>
+            <input type="text" name="name" placeholder="My stale cases" />
+          </label>
+          <div class="filter-grid billing-filter-grid">
+            <label>
+              <span>View scope</span>
+              <select name="scope">
+                <option value="PERSONAL">Personal</option>
+                <option value="SHARED">Shared team</option>
+              </select>
+            </label>
+            <label>
+              <span>Auto-assign new matches to</span>
+              <select name="autoAssignAdminUserId">
+                <option value="">No auto-assignment</option>
+                <% roleData.adminUsers.forEach((adminUser) => { %>
+                  <option value="<%= adminUser.id %>"><%= adminUser.name %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label class="checkbox-tile">
+              <span>Pin this view</span>
+              <input type="checkbox" name="isPinned" value="1" />
+            </label>
+            <label class="checkbox-tile">
+              <span>Auto-apply on new cases</span>
+              <input type="checkbox" name="autoApplyOnCreate" value="1" />
+            </label>
+          </div>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-secondary btn-small">Save view</button>
+          </div>
+        </form>
+        <form id="support-case-bulk-form" method="POST" action="/admin/support-cases/bulk" class="filter-panel stack-form">
+          <input type="hidden" name="returnTo" value="/admin?supportCaseSearch=<%= encodeURIComponent(roleData.billingFilters.supportCaseSearch || '') %>&supportCaseStatus=<%= roleData.billingFilters.supportCaseStatus || '' %>&supportCaseOwner=<%= roleData.billingFilters.supportCaseOwner || '' %>&supportCaseQueue=<%= roleData.billingFilters.supportCaseQueue || '' %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider || '' %>&billingEventType=<%= roleData.billingFilters.billingEventType || '' %>&billingStatus=<%= roleData.billingFilters.billingStatus || '' %>&billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus || '' %>" />
+          <p class="job-meta">Select visible cases below to bulk assign owners or update status from the filtered queue.</p>
+          <div class="dashboard-grid filter-row-grid">
+            <label>
+              <span>Bulk owner</span>
+              <select name="bulkAssignedAdminUserId">
+                <option value="__NO_CHANGE__">Keep current owner</option>
+                <option value="unassigned">Unassign</option>
+                <% roleData.adminUsers.forEach((adminUser) => { %>
+                  <option value="<%= adminUser.id %>"><%= adminUser.name %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label>
+              <span>Bulk status</span>
+              <select name="bulkStatus">
+                <option value="__NO_CHANGE__">Keep current status</option>
+                <option value="OPEN">Open</option>
+                <option value="CLOSED">Closed</option>
+              </select>
+            </label>
+          </div>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Bulk update selected cases</button>
+          </div>
+        </form>
+        <div class="queue-grid">
+          <% ['my_open', 'unassigned', 'overdue_24h', 'overdue_72h'].forEach((queueKey) => { const queue = roleData.supportCaseQueue[queueKey]; %>
+            <section class="mini-card admin-list-card">
+              <div class="section-head compact-section-head">
+                <div>
+                  <strong><%= queue.label %></strong>
+                  <p class="job-meta"><%= queue.count %> cases<% if (queue.oldestUpdatedAt) { %> - oldest update <%= new Date(queue.oldestUpdatedAt).toLocaleString() %><% } %></p>
+                </div>
+              </div>
+              <% if (queue.count > 0) { %>
+                <form method="POST" action="/admin/support-cases/bulk" class="stack-form quick-support-form">
+                  <input type="hidden" name="supportCaseIds" value="<%= queue.items.map((item) => item.id).join(',') %>" />
+                  <input type="hidden" name="returnTo" value="/admin?supportCaseQueue=<%= queue.id %>&supportCaseSearch=<%= encodeURIComponent(roleData.billingFilters.supportCaseSearch || '') %>&supportCaseStatus=<%= roleData.billingFilters.supportCaseStatus || '' %>&supportCaseOwner=<%= roleData.billingFilters.supportCaseOwner || '' %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider || '' %>&billingEventType=<%= roleData.billingFilters.billingEventType || '' %>&billingStatus=<%= roleData.billingFilters.billingStatus || '' %>&billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus || '' %>" />
+                  <div class="dashboard-grid filter-row-grid">
+                    <label>
+                      <span>Queue owner</span>
+                      <select name="bulkAssignedAdminUserId">
+                        <option value="__NO_CHANGE__">Keep current owner</option>
+                        <option value="unassigned">Unassign</option>
+                        <% roleData.adminUsers.forEach((adminUser) => { %>
+                          <option value="<%= adminUser.id %>"><%= adminUser.name %></option>
+                        <% }) %>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Queue status</span>
+                      <select name="bulkStatus">
+                        <option value="__NO_CHANGE__">Keep current status</option>
+                        <option value="OPEN">Open</option>
+                        <option value="CLOSED">Closed</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div class="inline-actions filter-actions">
+                    <button type="submit" class="btn btn-secondary btn-small">Update this queue</button>
+                  </div>
+                </form>
+              <% } %>
+              <% if (queue.preview.length === 0) { %>
+                <div class="empty-state small">Nothing queued.</div>
+              <% } else { %>
+                <% queue.preview.forEach((supportCase) => { %>
+                  <p class="job-meta"><a href="/admin/support-cases/<%= supportCase.id %>" class="text-link"><%= supportCase.title %></a></p>
+                <% }) %>
+              <% } %>
+            </section>
+          <% }) %>
+        </div>
+        <% if (roleData.supportCases.length === 0) { %>
+          <div class="empty-state">No support cases match the current filters.</div>
+        <% } %>
+        <% roleData.supportCases.forEach((supportCase) => { const ageHours = Math.max(0, Math.floor((Date.now() - new Date(supportCase.updatedAt).getTime()) / (60 * 60 * 1000))); %>
+          <section class="job-card">
+            <div class="section-head compact-section-head">
+              <div>
+                <p class="eyebrow">Support case</p>
+                <label class="queue-select-row"><input type="checkbox" name="supportCaseIds" value="<%= supportCase.id %>" form="support-case-bulk-form" /> <strong>Include in bulk action</strong></label>
+                <h3><a href="/admin/support-cases/<%= supportCase.id %>" class="text-link"><%= supportCase.title %></a></h3>
+              </div>
+              <span class="status-chip tone-<%= supportCase.status === 'CLOSED' ? 'muted' : ageHours >= 72 ? 'review' : 'neutral' %>"><%= supportCase.status %></span>
+            </div>
+            <p class="job-meta">Source: <%= supportCase.sourcePlaybookName %> - Created by <%= supportCase.createdByAdmin ? supportCase.createdByAdmin.name : 'Admin' %> - Owner: <%= supportCase.assignedAdmin ? supportCase.assignedAdmin.name : 'Unassigned' %></p>
+            <p class="job-meta">Updated <%= new Date(supportCase.updatedAt).toLocaleString() %> - SLA age: <%= ageHours %>h<% if (ageHours >= 72 && supportCase.status === 'OPEN') { %> - urgent<% } else if (ageHours >= 24 && supportCase.status === 'OPEN') { %> - overdue<% } %></p>
+            <p><%= supportCase.summaryText.split('\n').slice(0, 3).join(' ') %></p>
+            <div class="inline-actions filter-actions">
+              <a href="/admin/support-cases/<%= supportCase.id %>" class="btn btn-secondary btn-small">Open case</a>
+              <% if (supportCase.sourcePlaybookId) { %><a href="/admin/billing-playbooks/<%= supportCase.sourcePlaybookId %>/history" class="btn btn-secondary btn-small">Open playbook</a><% } %>
+              <form method="POST" action="/admin/support-cases/<%= supportCase.id %>/status">
+                <input type="hidden" name="status" value="<%= supportCase.status === 'OPEN' ? 'CLOSED' : 'OPEN' %>" />
+                <button type="submit" class="btn btn-secondary btn-small"><%= supportCase.status === 'OPEN' ? 'Close case' : 'Reopen case' %></button>
+              </form>
+            </div>
+          </section>
+        <% }) %>
+      </article>
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Verification queue</p>
+            <h2>Insurance and license reviews</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.pendingVerifications.length %> pending</span>
+        </div>
+        <% if (roleData.pendingVerifications.length === 0) { %>
+          <div class="empty-state">No pending verification submissions.</div>
+        <% } %>
+        <% roleData.pendingVerifications.forEach((profile) => { %>
+          <section class="job-card">
+            <div class="section-head compact-section-head">
+              <div>
+                <p class="eyebrow"><%= profile.user.name %></p>
+                <h3><%= profile.businessName || profile.user.email %></h3>
+              </div>
+            </div>
+            <% if (profile.insuranceStatus === 'PENDING') { %>
+              <div class="verification-review-block">
+                <p class="job-meta">Insurance submission</p>
+                <p><%= profile.insuranceProofDetails %></p>
+                <form method="POST" action="/admin/verification/<%= profile.userId %>/insurance" class="stack-form">
+                  <label>
+                    <span>Decision</span>
+                    <select name="decision" required>
+                      <option value="">Choose one</option>
+                      <option value="APPROVED">Approve</option>
+                      <option value="REJECTED">Reject</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Admin notes</span>
+                    <textarea name="adminNotes" rows="2" required></textarea>
+                  </label>
+                  <button type="submit" class="btn btn-primary btn-small">Review insurance</button>
+                </form>
+              </div>
+            <% } %>
+            <% if (profile.licenseStatus === 'PENDING') { %>
+              <div class="verification-review-block">
+                <p class="job-meta">License submission</p>
+                <p><%= profile.licenseProofDetails %></p>
+                <form method="POST" action="/admin/verification/<%= profile.userId %>/license" class="stack-form">
+                  <label>
+                    <span>Decision</span>
+                    <select name="decision" required>
+                      <option value="">Choose one</option>
+                      <option value="APPROVED">Approve</option>
+                      <option value="REJECTED">Reject</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Admin notes</span>
+                    <textarea name="adminNotes" rows="2" required></textarea>
+                  </label>
+                  <button type="submit" class="btn btn-primary btn-small">Review license</button>
+                </form>
+              </div>
+            <% } %>
+          </section>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Open reports</p>
+            <h2>Flagged jobs, users, and disputes</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.openReports.length %> open</span>
+        </div>
+        <% if (roleData.openReports.length === 0) { %>
+          <div class="empty-state">No open moderation reports right now.</div>
+        <% } %>
+        <% roleData.openReports.forEach((report) => { %>
+          <section class="job-card">
+            <div class="section-head compact-section-head">
+              <div>
+                <p class="eyebrow"><%= report.subjectType %> report</p>
+                <h3><%= report.reason %></h3>
+              </div>
+              <span class="status-chip tone-<%= getStatusTone(report.status) %>"><%= formatReportStatus(report.status) %></span>
+            </div>
+            <p class="job-meta">Filed by <%= report.filedBy.name %><% if (report.reportedUser) { %> � User: <%= report.reportedUser.name %><% } %><% if (report.job) { %> � Job: <%= report.job.title %><% } %><% if (report.dispute) { %> � Dispute: <%= report.dispute.reason %><% } %></p>
+            <p class="job-meta">Owner: <%= report.assignedAdmin ? report.assignedAdmin.name : 'Unassigned' %></p>
+            <p><%= report.details %></p>
+            <form method="POST" action="/admin/reports/<%= report.id %>/assign" class="stack-form">
+              <label>
+                <span>Assign report</span>
+                <select name="adminUserId">
+                  <option value="">Unassigned</option>
+                  <% roleData.adminUsers.forEach((adminUser) => { %>
+                    <option value="<%= adminUser.id %>" <%= report.assignedAdminUserId === adminUser.id ? 'selected' : '' %>><%= adminUser.name %></option>
+                  <% }) %>
+                </select>
+              </label>
+              <button type="submit" class="btn btn-secondary btn-small">Save assignment</button>
+            </form>
+            <form method="POST" action="/admin/reports/<%= report.id %>/resolve" class="stack-form">
+              <label>
+                <span>Resolution notes</span>
+                <textarea name="resolutionNotes" rows="2" required></textarea>
+              </label>
+              <button type="submit" class="btn btn-primary btn-small">Resolve report</button>
+            </form>
+          </section>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Open disputes</p>
+            <h2>Admin dispute decisions</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.openDisputes.length %> open</span>
+        </div>
+        <% if (roleData.openDisputes.length === 0) { %>
+          <div class="empty-state">No open disputes to resolve.</div>
+        <% } %>
+        <% roleData.openDisputes.forEach((dispute) => { %>
+          <section class="job-card">
+            <div class="section-head compact-section-head">
+              <div>
+                <p class="eyebrow">Dispute</p>
+                <h3><%= dispute.reason %></h3>
+              </div>
+              <span class="status-chip tone-review"><%= formatDisputeStatus(dispute.status) %></span>
+            </div>
+            <p class="job-meta"><%= dispute.job.title %> � Opened by <%= dispute.openedBy.name %> � Escrow <%= formatCurrency(dispute.job.payment?.amount || 0) %></p>
+            <p class="job-meta">Owner: <%= dispute.assignedAdmin ? dispute.assignedAdmin.name : 'Unassigned' %></p>
+            <p><%= dispute.details %></p>
+            <form method="POST" action="/admin/disputes/<%= dispute.id %>/assign" class="stack-form">
+              <label>
+                <span>Assign dispute</span>
+                <select name="adminUserId">
+                  <option value="">Unassigned</option>
+                  <% roleData.adminUsers.forEach((adminUser) => { %>
+                    <option value="<%= adminUser.id %>" <%= dispute.assignedAdminUserId === adminUser.id ? 'selected' : '' %>><%= adminUser.name %></option>
+                  <% }) %>
+                </select>
+              </label>
+              <button type="submit" class="btn btn-secondary btn-small">Save assignment</button>
+            </form>
+            <form method="POST" action="/admin/disputes/<%= dispute.id %>/resolve" class="stack-form">
+              <label>
+                <span>Resolution</span>
+                <select name="resolution" required>
+                  <option value="">Choose one</option>
+                  <option value="RELEASE_PAYMENT">Release payment</option>
+                  <option value="REFUND_HOMEOWNER">Refund homeowner</option>
+                </select>
+              </label>
+              <label>
+                <span>Resolution notes</span>
+                <textarea name="resolutionNotes" rows="2" required></textarea>
+              </label>
+              <button type="submit" class="btn btn-primary btn-small">Resolve dispute</button>
+            </form>
+          </section>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Users</p>
+            <h2>Suspend, restore, or delete accounts</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.suspendedCount %> suspended</span>
+        </div>
+        <% roleData.users.forEach((account) => { %>
+          <div class="mini-card admin-list-card">
+            <div>
+              <a href="/admin/users/<%= account.id %>" class="text-link"><strong><%= account.name %></strong></a>
+              <% if (account.deletionState?.summary) { %>
+                <p class="job-meta"><strong>Delete status:</strong> <%= account.deletionState.summary %></p>
+              <% } %>
+              <p class="job-meta"><%= account.email %> � <%= getRoleLabel(account.role) %></p>
+            </div>
+            <% if (account.role !== 'ADMIN') { %>
+              <form method="POST" action="/admin/users/<%= account.id %>/toggle-suspension">
+                <button type="submit" class="btn btn-<%= account.isSuspended ? 'secondary' : 'primary' %> btn-small"><%= account.isSuspended ? 'Restore user' : 'Suspend user' %></button>
+              </form>
+              <% if (account.deletionState?.allowed) { %>
+                <form method="POST" action="/admin/users/<%= account.id %>/delete" onsubmit="return confirm('Delete this account permanently? This cannot be undone.');">
+                  <button type="submit" class="btn btn-danger btn-small">Delete account</button>
+                </form>
+              <% } else { %>
+                <span class="status-chip tone-warning">Delete blocked</span>
+              <% } %>
+            <% } %>
+          </div>
+        <% }) %>
+      </article>
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Billing support queue</p>
+            <h2>Work by triage status</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.billingEvents.length %> tracked</span>
+        </div>
+        <form id="billing-bulk-form" method="POST" action="/admin/billing-events/bulk-support" class="filter-panel stack-form">
+          <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" />
+          <% if (roleData.selectedBillingGroup) { %>
+            <p class="job-meta">Group selected: <%= roleData.selectedBillingGroup.eventTypeLabel %> ? <%= roleData.selectedBillingGroup.supportStatusLabel %> ? <%= roleData.selectedBillingEventIds.length %> events preselected</p>
+          <% } %>
+          <div class="dashboard-grid filter-row-grid">
+            <label>
+              <span>Bulk owner</span>
+              <select name="assignedAdminUserId">
+                <option value="">Unassigned</option>
+                <% roleData.adminUsers.forEach((adminUser) => { %>
+                  <option value="<%= adminUser.id %>"><%= adminUser.name %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label>
+              <span>Bulk status</span>
+              <select name="supportStatus" required>
+                <option value="NEEDS_FOLLOW_UP">Needs follow-up</option>
+                <option value="WAITING_ON_PROVIDER">Waiting on provider</option>
+                <option value="RESOLVED">Resolved</option>
+                <option value="NEW">New</option>
+              </select>
+            </label>
+          </div>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Bulk update selected</button>
+          </div>
+        </form>
+        <% roleData.billingQueue.forEach((queue) => { %>
+          <section class="verification-review-block">
+            <div class="section-head compact-section-head">
+              <div>
+                <p class="eyebrow"><%= queue.label %></p>
+                <h3><%= queue.items.length %> events</h3>
+                <p class="job-meta"><%= queue.staleCount %> older than 24h<% if (queue.oldestCreatedAt) { %> ? oldest <%= new Date(queue.oldestCreatedAt).toLocaleString() %><% } %></p>
+              </div>
+              <span class="status-chip tone-<%= queue.tone %>"><%= queue.label %></span>
+            </div>
+            <% if (queue.items.length === 0) { %>
+              <div class="empty-state small">No billing events in this queue.</div>
+            <% } %>
+            <% queue.items.slice(0, 4).forEach((entry) => { %>
+              <div class="mini-card admin-list-card admin-audit-card">
+                <div>
+                  <label class="queue-select-row"><input type="checkbox" name="eventIds" value="<%= entry.id %>" form="billing-bulk-form" <%= roleData.selectedBillingEventIds.includes(entry.id) ? 'checked' : '' %> /> <strong><a href="/admin/billing-events/<%= entry.id %>" class="text-link"><%= entry.summary.title %></a></strong></label>
+                  <% if (entry.summary.context) { %><p class="job-meta"><%= entry.summary.context %></p><% } %>
+                  <p class="job-meta"><%= entry.assignedAdmin ? 'Owner: ' + entry.assignedAdmin.name : 'Owner: Unassigned' %></p>
+                  <p class="job-meta"><%= entry.queueAge.label %></p>
+                  <form method="POST" action="/admin/billing-events/<%= entry.id %>/support" class="stack-form quick-support-form">
+                    <input type="hidden" name="supportNotes" value="<%= entry.supportNotes || '' %>" />
+                    <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" />
+                    <label>
+                      <span>Owner</span>
+                      <select name="assignedAdminUserId">
+                        <option value="">Unassigned</option>
+                        <% roleData.adminUsers.forEach((adminUser) => { %>
+                          <option value="<%= adminUser.id %>" <%= entry.assignedAdminUserId === adminUser.id ? 'selected' : '' %>><%= adminUser.name %></option>
+                        <% }) %>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Status</span>
+                      <select name="supportStatus">
+                        <option value="NEW" <%= entry.supportStatus === 'NEW' ? 'selected' : '' %>>New</option>
+                        <option value="NEEDS_FOLLOW_UP" <%= entry.supportStatus === 'NEEDS_FOLLOW_UP' ? 'selected' : '' %>>Needs follow-up</option>
+                        <option value="WAITING_ON_PROVIDER" <%= entry.supportStatus === 'WAITING_ON_PROVIDER' ? 'selected' : '' %>>Waiting on provider</option>
+                        <option value="RESOLVED" <%= entry.supportStatus === 'RESOLVED' ? 'selected' : '' %>>Resolved</option>
+                      </select>
+                    </label>
+                    <div class="inline-actions filter-actions">
+                      <button type="submit" class="btn btn-secondary btn-small">Quick update</button>
+                      <a href="/admin/billing-events/<%= entry.id %>" class="text-link">Open</a>
+                    </div>
+                  </form>
+                </div>
+                <span class="job-meta"><%= new Date(entry.createdAt).toLocaleString() %></span>
+              </div>
+            <% }) %>
+          </section>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Related billing groups</p>
+            <h2>Patterns across recent events</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.billingGroups.length %> groups</span>
+        </div>
+        <form method="POST" action="/admin/billing-playbooks" class="filter-panel stack-form">
+          <div class="section-head compact-section-head">
+            <div>
+              <p class="eyebrow">Custom billing playbooks</p>
+              <h3>Create a reusable batch action</h3>
+            </div>
+            <span class="stat-pill"><%= roleData.billingPlaybooks.length %> saved</span>
+          </div>
+          <div class="dashboard-grid filter-row-grid">
+            <label>
+              <span>Playbook name</span>
+              <input type="text" name="name" maxlength="60" placeholder="Assign escrow batch to me" required />
+            </label>
+            <label>
+              <span>Provider</span>
+              <select name="provider">
+                <option value="">Any provider</option>
+                <option value="mockpay">mockpay</option>
+                <option value="stripe">stripe</option>
+              </select>
+            </label>
+            <label>
+              <span>Event type</span>
+              <select name="eventType">
+                <option value="">Any event</option>
+                <option value="checkout.session.completed">Checkout completed</option>
+                <option value="customer.subscription.updated">Subscription updated</option>
+                <option value="customer.subscription.deleted">Subscription canceled</option>
+                <option value="invoice.paid">Invoice paid</option>
+                <option value="invoice.payment_failed">Invoice payment failed</option>
+              </select>
+            </label>
+            <label>
+              <span>Target type</span>
+              <select name="targetType">
+                <option value="">Any target</option>
+                <option value="PLAN">Plan checkout</option>
+                <option value="CREDIT_PACK">Credit pack</option>
+                <option value="ESCROW_FUNDING">Escrow funding</option>
+              </select>
+            </label>
+            <label>
+              <span>Support status</span>
+              <select name="supportStatus" required>
+                <option value="NEEDS_FOLLOW_UP">Needs follow-up</option>
+                <option value="WAITING_ON_PROVIDER">Waiting on provider</option>
+                <option value="RESOLVED">Resolved</option>
+                <option value="NEW">New</option>
+              </select>
+            </label>
+            <label>
+              <span>Scope</span>
+              <select name="scope">
+                <option value="PERSONAL">Personal</option>
+                <option value="SHARED">Shared team</option>
+              </select>
+            </label>
+            <label>
+              <span>Favorite</span>
+              <select name="isFavorite">
+                <option value="0">Standard</option>
+                <option value="1">Favorite</option>
+              </select>
+            </label>
+            <label>
+              <span>Status</span>
+              <select name="status">
+                <option value="ACTIVE">Active</option>
+                <option value="ARCHIVED">Archived</option>
+              </select>
+            </label>
+            <label>
+              <span>Ownership</span>
+              <select name="assignToCreator">
+                <option value="1">Assign to me</option>
+                <option value="0">Leave unassigned</option>
+              </select>
+            </label>
+          </div>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Save playbook</button>
+            <% if (roleData.billingPlaybooks.length > 0) { %>
+              <span class="job-meta">Latest: <%= roleData.billingPlaybooks[0].name %></span>
+            <% } %>
+          </div>
+        </form>
+        <% if (roleData.staleBillingPlaybooks.length > 0) { %>
+          <form method="POST" action="/admin/billing-playbooks/actions/bulk-status" class="mini-card admin-list-card admin-audit-card stack-form">
+            <div class="section-head compact-section-head">
+              <div>
+                <strong>Stale cleanup candidates</strong>
+                <p class="job-meta"><%= roleData.staleBillingPlaybooks.map((playbook) => playbook.name).join(', ') %></p>
+              </div>
+              <span class="stat-pill"><%= roleData.staleBillingPlaybooks.length %> stale</span>
+            </div>
+            <div class="inline-actions quick-support-form">
+              <% roleData.staleBillingPlaybooks.forEach((playbook) => { %>
+                <label class="queue-select-row"><input type="checkbox" name="playbookIds" value="<%= playbook.id %>" /> <%= playbook.name %></label>
+              <% }) %>
+            </div>
+            <label>
+              <span>Cleanup reason</span>
+              <input type="text" name="cleanupReason" maxlength="120" placeholder="Low usage and duplicate flow" />
+            </label>
+            <div class="inline-actions filter-actions">
+              <button type="submit" name="action" value="ARCHIVE" class="btn btn-secondary btn-small">Archive selected</button>
+              <button type="submit" name="action" value="DELETE" class="btn btn-secondary btn-small">Delete selected</button>
+            </div>
+          </form>
+        <% } %>
+        <% if (roleData.favoriteBillingPlaybooks.length > 0) { %>
+          <div class="mini-card admin-list-card admin-audit-card">
+            <div>
+              <strong>Favorite playbooks</strong>
+              <p class="job-meta"><%= roleData.favoriteBillingPlaybooks.map((playbook) => playbook.name + ' (' + (playbook.usageCount || 0) + ' uses)').join(', ') %></p>
+            </div>
+            <span class="stat-pill"><%= roleData.favoriteBillingPlaybooks.length %> favorites</span>
+          </div>
+        <% } %>
+        <div class="mini-card admin-list-card admin-audit-card">
+          <div class="section-head compact-section-head">
+            <div>
+              <p class="eyebrow">Playbook history</p>
+              <h3>Recent cleanup activity</h3>
+            </div>
+            <span class="stat-pill"><%= roleData.billingPlaybookHistory.length %> events</span>
+          </div>
+          <% if (roleData.billingPlaybookHistory.length === 0) { %>
+            <div class="empty-state small">No playbook history yet.</div>
+          <% } else { %>
+            <% const historyLabels = { CREATED: 'Created', UPDATED: 'Updated', ARCHIVED: 'Archived', RESTORED: 'Restored', DELETED: 'Deleted' }; %>
+            <div class="stack-list compact-stack-list">
+              <% roleData.billingPlaybookHistory.forEach((entry) => { %>
+                <div class="mini-card admin-list-card admin-audit-card">
+                  <div class="section-head compact-section-head">
+                    <div>
+                      <strong><% if (entry.playbookId) { %><a href="/admin/billing-playbooks/<%= entry.playbookId %>/history" class="text-link"><%= entry.playbookName %></a><% } else { %><%= entry.playbookName %><% } %></strong>
+                      <p class="job-meta"><%= historyLabels[entry.action] || entry.action %> by <%= entry.actorAdmin ? entry.actorAdmin.name : 'Admin' %> on <%= new Date(entry.createdAt).toLocaleString() %></p>
+                      <% if (entry.notes) { %><p class="job-meta"><%= entry.notes %></p><% } %>
+                    </div>
+                    <span class="status-chip tone-<%= entry.action === 'DELETED' ? 'muted' : entry.action === 'ARCHIVED' ? 'review' : entry.action === 'RESTORED' ? 'success' : 'neutral' %>"><%= historyLabels[entry.action] || entry.action %></span>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+        <% const playbookSections = [
+          { title: 'My personal playbooks', items: roleData.personalBillingPlaybooks, empty: 'No personal playbooks yet.' },
+          { title: 'Shared team playbooks', items: roleData.sharedBillingPlaybooks, empty: 'No shared team playbooks yet.' },
+        ]; %>
+        <% playbookSections.forEach((section) => { %>
+          <div class="section-head compact-section-head">
+            <div>
+              <p class="eyebrow"><%= section.title %></p>
+              <h3><%= section.items.length %> saved</h3>
+            </div>
+          </div>
+          <% if (section.items.length === 0) { %>
+            <div class="empty-state small"><%= section.empty %></div>
+          <% } %>
+          <div class="stack-list compact-stack-list">
+            <% section.items.forEach((playbook) => { %>
+              <form method="POST" action="/admin/billing-playbooks/<%= playbook.id %>" class="mini-card admin-list-card stack-form">
+                <div class="section-head compact-section-head">
+                  <div>
+                    <strong><%= playbook.name %></strong>
+                    <p class="job-meta">Saved by <%= playbook.createdByAdmin ? playbook.createdByAdmin.name : 'Admin' %> on <%= new Date(playbook.createdAt).toLocaleString() %></p>
+                    <p class="job-meta">Usage: <%= playbook.usageCount || 0 %> runs<% if (playbook.lastUsedAt) { %> | Last used <%= new Date(playbook.lastUsedAt).toLocaleString() %><% } %></p>
+                    <% if (playbook.cleanupReason) { %><p class="job-meta">Cleanup note: <%= playbook.cleanupReason %></p><% } %>
+                    <% if ((playbook.archivedByAdmin ? playbook.archivedByAdmin.name : playbook.archivedByAdminName)) { %><p class="job-meta">Archived by <%= (playbook.archivedByAdmin ? playbook.archivedByAdmin.name : playbook.archivedByAdminName) %></p><% } %>
+                  </div>
+                  <div class="status-stack">
+                    <% if (playbook.isFavorite) { %><span class="status-chip tone-success">Favorite</span><% } %>
+                    <% if (roleData.staleBillingPlaybooks.some((entry) => entry.id === playbook.id)) { %><span class="status-chip tone-muted">Stale</span><% } %>
+                    <span class="status-chip tone-neutral"><%= playbook.scope === 'SHARED' ? 'Shared' : 'Personal' %></span>
+                    <span class="status-chip tone-<%= playbook.supportStatus === 'RESOLVED' ? 'success' : playbook.supportStatus === 'WAITING_ON_PROVIDER' ? 'review' : playbook.supportStatus === 'NEEDS_FOLLOW_UP' ? 'muted' : 'neutral' %>"><%= formatBillingSupportStatus(playbook.supportStatus) %></span>
+                  </div>
+                </div>
+                <div class="dashboard-grid filter-row-grid">
+                  <label>
+                    <span>Playbook name</span>
+                    <input type="text" name="name" maxlength="60" value="<%= playbook.name %>" required />
+                  </label>
+                  <label>
+                    <span>Provider</span>
+                    <select name="provider">
+                      <option value="" <%= !playbook.provider ? 'selected' : '' %>>Any provider</option>
+                      <option value="mockpay" <%= playbook.provider === 'mockpay' ? 'selected' : '' %>>mockpay</option>
+                      <option value="stripe" <%= playbook.provider === 'stripe' ? 'selected' : '' %>>stripe</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Event type</span>
+                    <select name="eventType">
+                      <option value="" <%= !playbook.eventType ? 'selected' : '' %>>Any event</option>
+                      <option value="checkout.session.completed" <%= playbook.eventType === 'checkout.session.completed' ? 'selected' : '' %>>Checkout completed</option>
+                      <option value="customer.subscription.updated" <%= playbook.eventType === 'customer.subscription.updated' ? 'selected' : '' %>>Subscription updated</option>
+                      <option value="customer.subscription.deleted" <%= playbook.eventType === 'customer.subscription.deleted' ? 'selected' : '' %>>Subscription canceled</option>
+                      <option value="invoice.paid" <%= playbook.eventType === 'invoice.paid' ? 'selected' : '' %>>Invoice paid</option>
+                      <option value="invoice.payment_failed" <%= playbook.eventType === 'invoice.payment_failed' ? 'selected' : '' %>>Invoice payment failed</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Target type</span>
+                    <select name="targetType">
+                      <option value="" <%= !playbook.targetType ? 'selected' : '' %>>Any target</option>
+                      <option value="PLAN" <%= playbook.targetType === 'PLAN' ? 'selected' : '' %>>Plan checkout</option>
+                      <option value="CREDIT_PACK" <%= playbook.targetType === 'CREDIT_PACK' ? 'selected' : '' %>>Credit pack</option>
+                      <option value="ESCROW_FUNDING" <%= playbook.targetType === 'ESCROW_FUNDING' ? 'selected' : '' %>>Escrow funding</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Support status</span>
+                    <select name="supportStatus" required>
+                      <option value="NEEDS_FOLLOW_UP" <%= playbook.supportStatus === 'NEEDS_FOLLOW_UP' ? 'selected' : '' %>>Needs follow-up</option>
+                      <option value="WAITING_ON_PROVIDER" <%= playbook.supportStatus === 'WAITING_ON_PROVIDER' ? 'selected' : '' %>>Waiting on provider</option>
+                      <option value="RESOLVED" <%= playbook.supportStatus === 'RESOLVED' ? 'selected' : '' %>>Resolved</option>
+                      <option value="NEW" <%= playbook.supportStatus === 'NEW' ? 'selected' : '' %>>New</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Scope</span>
+                    <select name="scope">
+                      <option value="PERSONAL" <%= playbook.scope === 'PERSONAL' ? 'selected' : '' %>>Personal</option>
+                      <option value="SHARED" <%= playbook.scope === 'SHARED' ? 'selected' : '' %>>Shared team</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Favorite</span>
+                    <select name="isFavorite">
+                      <option value="0" <%= !playbook.isFavorite ? 'selected' : '' %>>Standard</option>
+                      <option value="1" <%= playbook.isFavorite ? 'selected' : '' %>>Favorite</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Status</span>
+                    <select name="status">
+                      <option value="ACTIVE" <%= playbook.status === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                      <option value="ARCHIVED" <%= playbook.status === 'ARCHIVED' ? 'selected' : '' %>>Archived</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Cleanup reason</span>
+                    <input type="text" name="cleanupReason" maxlength="120" value="<%= playbook.cleanupReason || '' %>" placeholder="Why archive this playbook" />
+                  </label>
+                  <label>
+                    <span>Ownership</span>
+                    <select name="assignToCreator">
+                      <option value="1" <%= playbook.assignToCreator ? 'selected' : '' %>>Assign to me</option>
+                      <option value="0" <%= !playbook.assignToCreator ? 'selected' : '' %>>Leave unassigned</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="inline-actions filter-actions">
+                  <a href="/admin/billing-playbooks/<%= playbook.id %>/history" class="btn btn-secondary btn-small">View activity</a>
+                  <button type="submit" class="btn btn-secondary btn-small">Update playbook</button>
+                  <% if (playbook.status === 'ACTIVE') { %>
+                    <button type="submit" formaction="/admin/billing-playbooks/<%= playbook.id %>/archive" formmethod="POST" class="btn btn-secondary btn-small">Archive playbook</button>
+                  <% } else { %>
+                    <button type="submit" formaction="/admin/billing-playbooks/<%= playbook.id %>/restore" formmethod="POST" class="btn btn-secondary btn-small">Restore playbook</button>
+                  <% } %>
+                  <button type="submit" formaction="/admin/billing-playbooks/<%= playbook.id %>/delete" formmethod="POST" class="btn btn-secondary btn-small">Delete playbook</button>
+                </div>
+              </form>
+            <% }) %>
+          </div>
+        <% }) %>
+        <% if (roleData.archivedBillingPlaybooks.length > 0) { %>
+          <form method="POST" action="/admin/billing-playbooks/actions/bulk-status" class="section-head compact-section-head stack-form">
+            <div>
+              <p class="eyebrow">Archived playbooks</p>
+              <h3><%= roleData.archivedBillingPlaybooks.length %> archived</h3>
+            </div>
+            <div class="inline-actions filter-actions">
+              <button type="submit" name="action" value="RESTORE" class="btn btn-secondary btn-small">Restore selected</button>
+              <button type="submit" name="action" value="DELETE" class="btn btn-secondary btn-small">Delete selected</button>
+            </div>
+            <div class="inline-actions quick-support-form">
+              <% roleData.archivedBillingPlaybooks.forEach((playbook) => { %>
+                <label class="queue-select-row"><input type="checkbox" name="playbookIds" value="<%= playbook.id %>" /> <%= playbook.name %></label>
+              <% }) %>
+            </div>
+          </form>
+          <div class="stack-list compact-stack-list">
+            <% roleData.archivedBillingPlaybooks.forEach((playbook) => { %>
+              <form method="POST" action="/admin/billing-playbooks/<%= playbook.id %>" class="mini-card admin-list-card stack-form">
+                <div class="section-head compact-section-head">
+                  <div>
+                    <strong><%= playbook.name %></strong>
+                    <p class="job-meta">Archived<% if (playbook.archivedAt) { %> on <%= new Date(playbook.archivedAt).toLocaleString() %><% } %></p>
+                    <% if ((playbook.archivedByAdmin ? playbook.archivedByAdmin.name : playbook.archivedByAdminName)) { %><p class="job-meta">Archived by <%= (playbook.archivedByAdmin ? playbook.archivedByAdmin.name : playbook.archivedByAdminName) %></p><% } %>
+                    <% if (playbook.cleanupReason) { %><p class="job-meta">Cleanup note: <%= playbook.cleanupReason %></p><% } %>
+                  </div>
+                  <div class="status-stack">
+                    <span class="status-chip tone-muted">Archived</span>
+                    <span class="status-chip tone-neutral"><%= playbook.scope === 'SHARED' ? 'Shared' : 'Personal' %></span>
+                  </div>
+                </div>
+                <div class="inline-actions filter-actions">
+                  <a href="/admin/billing-playbooks/<%= playbook.id %>/history" class="btn btn-secondary btn-small">View activity</a>
+                  <button type="submit" formaction="/admin/billing-playbooks/<%= playbook.id %>/restore" formmethod="POST" class="btn btn-secondary btn-small">Restore playbook</button>
+                  <button type="submit" formaction="/admin/billing-playbooks/<%= playbook.id %>/delete" formmethod="POST" class="btn btn-secondary btn-small">Delete playbook</button>
+                </div>
+              </form>
+            <% }) %>
+          </div>
+        <% } %>
+        <% if (roleData.billingGroups.length === 0) { %>
+          <div class="empty-state">No billing groups available yet.</div>
+        <% } %>
+        <% roleData.billingGroups.forEach((group) => { %>
+          <div class="mini-card admin-list-card admin-audit-card">
+            <div>
+              <strong><%= group.groupLabel %></strong>
+              <p class="job-meta">Provider: <%= group.provider %> ? Support: <%= group.supportStatusLabel %></p>
+              <p class="job-meta"><%= group.count %> related events ? Latest <%= new Date(group.latestCreatedAt).toLocaleString() %></p>
+              <p class="job-meta">Sample: <%= group.samples.map((sample) => sample.summary.title).join(', ') %></p>
+              <p class="job-meta"><a href="/admin?selectedBillingGroup=<%= encodeURIComponent(group.id) %>&billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" class="text-link">Select this group</a></p>
+              <% if (group.playbooks.length > 0) { %>
+                <div class="inline-actions quick-support-form">
+                  <% group.playbooks.forEach((playbook) => { %>
+                    <form method="POST" action="/admin/billing-events/bulk-support">
+                      <input type="hidden" name="eventIds" value="<%= group.eventIds.join(',') %>" />
+                      <input type="hidden" name="assignedAdminUserId" value="<%= playbook.assignToCurrentAdmin ? user.id : '' %>" />
+                      <% if (playbook.isCustom) { %><input type="hidden" name="playbookId" value="<%= playbook.id %>" /><% } %>
+                      <input type="hidden" name="supportStatus" value="<%= playbook.supportStatus %>" />
+                      <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" />
+                      <button type="submit" class="btn btn-secondary btn-small"><%= playbook.label %></button>
+                      <% if (playbook.isCustom) { %><span class="job-meta">Custom<% if (playbook.scope === 'SHARED') { %> shared<% } else { %> personal<% } %><% if (playbook.isFavorite) { %> favorite<% } %><% if (playbook.creatorName) { %> by <%= playbook.creatorName %><% } %></span><% } %>
+                    </form>
+                  <% }) %>
+                </div>
+              <% } %>
+              <form method="POST" action="/admin/billing-events/bulk-support" class="stack-form quick-support-form">
+                <input type="hidden" name="eventIds" value="<%= group.eventIds.join(',') %>" />
+                <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" />
+                <label>
+                  <span>Assign batch</span>
+                  <select name="assignedAdminUserId">
+                    <option value="">Unassigned</option>
+                    <% roleData.adminUsers.forEach((adminUser) => { %>
+                      <option value="<%= adminUser.id %>"><%= adminUser.name %></option>
+                    <% }) %>
+                  </select>
+                </label>
+                <label>
+                  <span>Batch status</span>
+                  <select name="supportStatus">
+                    <option value="NEEDS_FOLLOW_UP">Needs follow-up</option>
+                    <option value="WAITING_ON_PROVIDER">Waiting on provider</option>
+                    <option value="RESOLVED">Resolved</option>
+                    <option value="NEW">New</option>
+                  </select>
+                </label>
+                <div class="inline-actions filter-actions">
+                  <button type="submit" class="btn btn-secondary btn-small">Update this batch</button>
+                </div>
+              </form>
+            </div>
+            <span class="status-chip tone-<%= group.supportTone %>"><%= group.supportStatusLabel %></span>
+          </div>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Billing timeline</p>
+            <h2>Recent checkout and webhook activity</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.billingEvents.length %> events</span>
+        </div>
+        <form method="GET" action="/admin" class="filter-panel stack-form">
+          <div class="dashboard-grid filter-row-grid">
+            <label>
+              <span>Search</span>
+              <input type="text" name="billingSearch" value="<%= roleData.billingFilters.billingSearch %>" placeholder="Search user, job, provider, or event" />
+            </label>
+            <label>
+              <span>Provider</span>
+              <select name="billingProvider">
+                <option value="">All providers</option>
+                <option value="mockpay" <%= roleData.billingFilters.billingProvider === 'mockpay' ? 'selected' : '' %>>mockpay</option>
+                <option value="stripe" <%= roleData.billingFilters.billingProvider === 'stripe' ? 'selected' : '' %>>stripe</option>
+              </select>
+            </label>
+            <label>
+              <span>Event type</span>
+              <select name="billingEventType">
+                <option value="">All events</option>
+                <option value="checkout.session.completed" <%= roleData.billingFilters.billingEventType === 'checkout.session.completed' ? 'selected' : '' %>>Checkout completed</option>
+                <option value="customer.subscription.updated" <%= roleData.billingFilters.billingEventType === 'customer.subscription.updated' ? 'selected' : '' %>>Subscription updated</option>
+                <option value="customer.subscription.deleted" <%= roleData.billingFilters.billingEventType === 'customer.subscription.deleted' ? 'selected' : '' %>>Subscription canceled</option>
+                <option value="invoice.paid" <%= roleData.billingFilters.billingEventType === 'invoice.paid' ? 'selected' : '' %>>Invoice paid</option>
+                <option value="invoice.payment_failed" <%= roleData.billingFilters.billingEventType === 'invoice.payment_failed' ? 'selected' : '' %>>Invoice payment failed</option>
+              </select>
+            </label>
+            <label>
+              <span>Processing state</span>
+              <select name="billingStatus">
+                <option value="">All statuses</option>
+                <option value="PROCESSED" <%= roleData.billingFilters.billingStatus === 'PROCESSED' ? 'selected' : '' %>>Processed</option>
+                <option value="IGNORED" <%= roleData.billingFilters.billingStatus === 'IGNORED' ? 'selected' : '' %>>Ignored</option>
+                <option value="FAILED" <%= roleData.billingFilters.billingStatus === 'FAILED' ? 'selected' : '' %>>Failed</option>
+                <option value="RECEIVED" <%= roleData.billingFilters.billingStatus === 'RECEIVED' ? 'selected' : '' %>>Received</option>
+              </select>
+            </label>
+            <label>
+              <span>Support status</span>
+              <select name="billingSupportStatus">
+                <option value="">All support states</option>
+                <option value="NEW" <%= roleData.billingFilters.billingSupportStatus === 'NEW' ? 'selected' : '' %>>New</option>
+                <option value="NEEDS_FOLLOW_UP" <%= roleData.billingFilters.billingSupportStatus === 'NEEDS_FOLLOW_UP' ? 'selected' : '' %>>Needs follow-up</option>
+                <option value="WAITING_ON_PROVIDER" <%= roleData.billingFilters.billingSupportStatus === 'WAITING_ON_PROVIDER' ? 'selected' : '' %>>Waiting on provider</option>
+                <option value="RESOLVED" <%= roleData.billingFilters.billingSupportStatus === 'RESOLVED' ? 'selected' : '' %>>Resolved</option>
+              </select>
+            </label>
+          </div>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Apply filters</button>
+            <a href="/admin" class="btn btn-secondary btn-small">Clear</a>
+          </div>
+        </form>
+        <% if (roleData.billingEvents.length === 0) { %>
+          <div class="empty-state"><%= roleData.billingFilters.hasFilters ? 'No billing events match this filter set.' : 'No billing activity has been recorded yet.' %></div>
+        <% } %>
+        <% roleData.billingEvents.forEach((entry) => { %>
+          <div class="mini-card admin-list-card admin-audit-card">
+            <div>
+              <strong><a href="/admin/billing-events/<%= entry.id %>" class="text-link"><%= entry.summary.title %></a></strong>
+              <% if (entry.summary.hasSupportNotes) { %><p class="job-meta">Internal notes saved</p><% } %>
+              <% if (entry.summary.context) { %><p class="job-meta"><%= entry.summary.context %></p><% } %>
+              <% if (entry.summary.detail) { %><p><%= entry.summary.detail %></p><% } %>
+              <p class="job-meta">Provider: <%= entry.provider %> ? <%= formatBillingStatus(entry.status) %></p>
+              <p class="job-meta">Support: <%= formatBillingSupportStatus(entry.supportStatus) %><% if (entry.assignedAdmin) { %> ? Owner: <%= entry.assignedAdmin.name %><% } %></p>
+              <p class="job-meta"><a href="/admin/billing-events/<%= entry.id %>" class="text-link">Open event details</a></p>
+            </div>
+            <div class="status-stack">
+              <span class="status-chip tone-<%= entry.summary.tone %>"><%= formatBillingEventType(entry.eventType) %></span>
+              <span class="status-chip tone-<%= entry.summary.supportTone %>"><%= formatBillingSupportStatus(entry.supportStatus) %></span>
+            </div>
+          </div>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Job mix</p>
+            <h2>Job types by category</h2>
+          </div>
+          <div class="inline-actions compact-actions">
+            <span class="stat-pill"><%= roleData.totalCategoryJobs %> total jobs</span>
+            <% if (roleData.adminJobCategory) { %>
+              <a href="<%= buildAdminJobViewHref(roleData.billingFilters, roleData.adminJobView, '') %>" class="btn btn-secondary btn-small">Clear category</a>
+            <% } %>
+          </div>
+        </div>
+        <div class="saved-search-list jobs-filter-chip-row">
+          <% roleData.adminJobDateRangeOptions.forEach((entry) => { %>
+            <a href="<%= entry.href %>" class="saved-search-chip <%= entry.active ? 'saved-search-chip-active' : '' %>"><%= entry.label %></a>
+          <% }) %>
+        </div>
+        <% if (roleData.jobCategoryChart.length === 0) { %>
+          <div class="empty-state">No category activity is available yet.</div>
+        <% } else { %>
+          <div class="category-pie-card">
+            <div class="category-pie-chart" style="<%= roleData.jobCategoryChartStyle %>" aria-label="Pie chart of jobs by category">
+              <div class="category-pie-center">
+                <strong><%= roleData.totalCategoryJobs %></strong>
+                <span>Total jobs</span>
+              </div>
+            </div>
+            <div class="category-pie-legend">
+              <% roleData.jobCategoryChart.forEach((entry) => { %>
+                <a href="<%= entry.href %>" class="category-pie-legend-row <%= entry.active ? 'category-pie-legend-row-active' : '' %>">
+                  <div class="category-pie-label">
+                    <span class="category-pie-dot" style="background: <%= entry.color %>;"></span>
+                    <strong><%= entry.category %></strong>
+                  </div>
+                  <div class="status-stack">
+                    <span class="stat-pill"><%= entry.count %> jobs</span>
+                    <span class="job-meta"><%= entry.percent %>%</span>
+                  </div>
+                </a>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Job snapshot</p>
+            <h2><%= roleData.adminJobCategory ? `Showing ${roleData.adminJobCategory} jobs` : 'Click a total to open matching jobs' %></h2>
+          </div>
+          <div class="status-stack">
+            <% if (roleData.adminJobStatus) { %>
+              <a href="<%= buildAdminJobViewHref(roleData.billingFilters, roleData.adminJobView, roleData.adminJobCategory, roleData.adminJobDateRange, '') %>" class="btn btn-secondary btn-small">Clear status</a>
+            <% } %>
+            <span class="job-meta"><%= roleData.adminJobDateRange === '7d' ? 'Last 7 days' : roleData.adminJobDateRange === '30d' ? 'Last 30 days' : 'All time' %></span>
+          </div>
+        </div>
+        <div class="mini-card admin-list-card">
+          <div class="section-head compact-section-head">
+            <div>
+              <p class="eyebrow">Status chart</p>
+              <h3>Workflow states</h3>
+            </div>
+          </div>
+          <div class="status-chart-list">
+            <% roleData.adminJobStatusChart.forEach((entry) => { %>
+              <a href="<%= entry.href %>" class="status-chart-row <%= entry.active ? 'status-chart-row-active' : '' %>">
+                <div class="status-chart-label">
+                  <span class="category-pie-dot" style="background: <%= entry.color %>;"></span>
+                  <strong><%= entry.label %></strong>
+                </div>
+                <div class="status-chart-track" aria-label="<%= entry.label %> has <%= entry.count %> jobs">
+                  <div class="status-chart-fill" style="width: <%= Math.max(entry.percent, entry.count > 0 ? 12 : 0) %>%; background: <%= entry.color %>;">
+                    <% if (entry.count > 0) { %><span class="status-chart-value"><%= entry.count %></span><% } %>
+                  </div>
+                </div>
+                <span class="job-meta"><%= entry.percent %>%</span>
+              </a>
+            <% }) %>
+          </div>
+        </div>
+        <div class="saved-search-list jobs-filter-chip-row">
+          <% roleData.adminJobStats.forEach((entry) => { %>
+            <a href="<%= entry.href %>" class="saved-search-chip <%= entry.active ? 'saved-search-chip-active' : '' %>"><%= entry.label %> (<%= entry.count %>)</a>
+          <% }) %>
+        </div>
+        <% if (roleData.adminJobFilterSummary.length > 0) { %>
+          <div class="filter-summary-bar">
+            <div class="inline-actions compact-actions wrap-actions">
+              <span class="job-meta"><strong>Active filters:</strong></span>
+              <% roleData.adminJobFilterSummary.forEach((entry) => { %>
+                <span class="status-chip tone-<%= entry.tone %>"><%= entry.label %></span>
+              <% }) %>
+            </div>
+            <a href="<%= roleData.clearAdminJobFiltersHref %>" class="btn btn-secondary btn-small">Clear all</a>
+          </div>
+        <% } %>
+        <% if (roleData.recentJobs.length === 0) { %>
+          <div class="empty-state">No jobs match this admin view right now.</div>
+        <% } %>
+        <% roleData.recentJobs.forEach((job) => { %>
+          <div class="mini-card admin-list-card">
+            <div>
+              <strong><a href="/admin/jobs/<%= job.id %>" class="text-link"><%= job.title %></a></strong>
+              <p class="job-meta"><%= job.category %> ? <%= job.location %> ? <%= job.homeowner.name %></p>
+              <% if (job.needsActionReason) { %>
+                <p class="job-meta"><strong>Needs action:</strong> <%= job.needsActionReason %></p>
+              <% } %>
+              <% if (job.latestMessage) { %>
+                <p class="job-meta"><strong>Latest activity:</strong> <%= job.latestMessage.sender.name %> ? <%= job.latestMessage.body.length > 72 ? job.latestMessage.body.slice(0, 72) + '...' : job.latestMessage.body %></p>
+              <% } %>
+              <p class="job-meta"><a href="/admin/jobs/<%= job.id %>" class="text-link">Open full job details</a></p>
+            </div>
+            <div class="status-stack">
+              <% if (job.isFunded) { %>
+                <span class="status-chip tone-success">Funded</span>
+              <% } %>
+              <% if (job.isUnread) { %>
+                <span class="status-chip tone-review">Unread</span>
+              <% } %>
+              <% if (job.needsActionReason) { %>
+                <span class="status-chip tone-warning">Needs action</span>
+              <% } %>
+              <span class="status-chip tone-<%= getStatusTone(job.status) %>"><%= job.status.replace('_', ' ') %></span>
+            </div>
+          </div>
+        <% }) %>
+      </article>
+
+      <article class="app-card span-four">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Audit log</p>
+            <h2>Recent moderation actions</h2>
+          </div>
+        </div>
+        <% if (roleData.auditLogs.length === 0) { %>
+          <div class="empty-state">No moderation actions have been logged yet.</div>
+        <% } %>
+        <% roleData.auditLogs.forEach((entry) => { %>
+          <div class="mini-card admin-list-card admin-audit-card">
+            <div>
+              <strong><%= formatAuditAction(entry.action) %></strong>
+              <p class="job-meta">By <%= entry.actorAdmin.name %><% if (entry.moderationReport) { %> ? Report <%= entry.moderationReport.reason %><% } %><% if (entry.dispute) { %> ? Dispute <%= entry.dispute.reason %><% } %></p>
+              <% if (entry.notes) { %><p><%= entry.notes %></p><% } %>
+            </div>
+            <span class="job-meta"><%= new Date(entry.createdAt).toLocaleString() %></span>
+          </div>
+        <% }) %>
+      </article>
+    </section>
+  </div>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/admin-dashboard.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>
+
+

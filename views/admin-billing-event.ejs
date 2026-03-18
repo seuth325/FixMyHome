@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
+  <title>Billing Event - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="site-body app-body">
+  <div class="app-shell">
+    <header class="app-topbar app-card">
+      <div>
+        <p class="eyebrow">Billing event</p>
+        <h1><%= billingEvent.summary.title %></h1>
+        <p class="topbar-copy"><%= billingEvent.provider %> ? <%= formatBillingStatus(billingEvent.status) %> ? <%= new Date(billingEvent.createdAt).toLocaleString() %></p>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-secondary theme-toggle" data-theme-toggle>Dark mode</button>
+        <a href="/admin" class="btn btn-secondary">Back to admin</a>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-primary">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+    <section class="dashboard-grid handyman-grid admin-grid">
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Event overview</p>
+            <h2>Support summary</h2>
+          </div>
+          <span class="status-chip tone-<%= billingEvent.summary.tone %>"><%= formatBillingEventType(billingEvent.eventType) %></span>
+        </div>
+        <% if (billingEvent.summary.context) { %><p class="job-meta"><%= billingEvent.summary.context %></p><% } %>
+        <% if (billingEvent.summary.detail) { %><p><%= billingEvent.summary.detail %></p><% } %>
+        <div class="verification-card billing-detail-card">
+          <p class="job-meta">Provider event ID</p>
+          <p><code><%= billingEvent.providerEventId %></code></p>
+          <p class="job-meta">Event type</p>
+          <p><%= billingEvent.eventType %></p>
+          <p class="job-meta">Support status</p>
+          <p><%= formatBillingSupportStatus(billingEvent.supportStatus) %></p>
+          <p class="job-meta">Owner</p>
+          <p><%= billingEvent.assignedAdmin ? billingEvent.assignedAdmin.name : 'Unassigned' %></p>
+          <p class="job-meta">Processed at</p>
+          <p><%= billingEvent.processedAt ? new Date(billingEvent.processedAt).toLocaleString() : 'Pending processing' %></p>
+        </div>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Checkout session</p>
+            <h2>Linked billing context</h2>
+          </div>
+        </div>
+        <% if (!billingEvent.checkoutSession) { %>
+          <div class="empty-state">This event is not linked to a checkout session.</div>
+        <% } else { %>
+          <div class="verification-card billing-detail-card">
+            <p class="job-meta">Provider session</p>
+            <p><code><%= billingEvent.checkoutSession.providerSessionId %></code></p>
+            <p class="job-meta">Target</p>
+            <p><%= billingEvent.checkoutSession.targetType.replaceAll('_', ' ') %></p>
+            <p class="job-meta">Checkout status</p>
+            <p><%= formatCheckoutStatus(billingEvent.checkoutSession.status) %></p>
+            <p class="job-meta">Amount</p>
+            <p><%= formatCurrency(billingEvent.checkoutSession.amount) %></p>
+            <% if (billingEvent.checkoutSession.user) { %>
+              <p class="job-meta">Account</p>
+              <p><%= billingEvent.checkoutSession.user.name %> ? <%= billingEvent.checkoutSession.user.email %></p>
+            <% } %>
+            <% if (billingEvent.checkoutSession.job) { %>
+              <p class="job-meta">Job</p>
+              <p><%= billingEvent.checkoutSession.job.title %> ? <%= billingEvent.checkoutSession.job.location %></p>
+            <% } %>
+            <% if (billingEvent.checkoutSession.job?.payment) { %>
+              <p class="job-meta">Payment state</p>
+              <p><%= formatPaymentStatus(billingEvent.checkoutSession.job.payment.status) %></p>
+            <% } %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Support notes</p>
+            <h2>Internal investigation context</h2>
+          </div>
+        </div>
+        <form method="POST" action="/admin/billing-events/<%= billingEvent.id %>/support" class="stack-form">
+          <label>
+            <span>Owner</span>
+            <select name="assignedAdminUserId">
+              <option value="">Unassigned</option>
+              <% adminUsers.forEach((adminUser) => { %>
+                <option value="<%= adminUser.id %>" <%= billingEvent.assignedAdminUserId === adminUser.id ? 'selected' : '' %>><%= adminUser.name %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label>
+            <span>Support status</span>
+            <select name="supportStatus" required>
+              <option value="NEW" <%= billingEvent.supportStatus === 'NEW' ? 'selected' : '' %>>New</option>
+              <option value="NEEDS_FOLLOW_UP" <%= billingEvent.supportStatus === 'NEEDS_FOLLOW_UP' ? 'selected' : '' %>>Needs follow-up</option>
+              <option value="WAITING_ON_PROVIDER" <%= billingEvent.supportStatus === 'WAITING_ON_PROVIDER' ? 'selected' : '' %>>Waiting on provider</option>
+              <option value="RESOLVED" <%= billingEvent.supportStatus === 'RESOLVED' ? 'selected' : '' %>>Resolved</option>
+            </select>
+          </label>
+          <label>
+            <span>Notes</span>
+            <textarea name="supportNotes" rows="7" placeholder="Summarize what support observed, next steps, or who owns follow-up."><%= billingEvent.supportNotes || '' %></textarea>
+          </label>
+          <div class="inline-actions filter-actions">
+            <button type="submit" class="btn btn-primary btn-small">Save support details</button>
+          </div>
+        </form>
+        <% if (billingEvent.supportNotesUpdatedAt) { %>
+          <p class="job-meta">Last updated <%= new Date(billingEvent.supportNotesUpdatedAt).toLocaleString() %></p>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Raw payload</p>
+            <h2>Webhook body</h2>
+          </div>
+        </div>
+        <pre class="payload-block"><code><%= JSON.stringify(billingEvent.payload, null, 2) %></code></pre>
+      </article>
+    </section>
+  </div>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>
