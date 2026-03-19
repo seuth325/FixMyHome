@@ -3439,11 +3439,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/mockup', (req, res) => {
-  res.render('mockup', {
-    supportEmail: getSupportEmail(),
-    legalNavItems: getLegalNavItems(),
-    currentYear: new Date().getFullYear(),
-  });
+  const user = currentUser(req);
+  if (user) {
+    return res.redirect('/dashboard');
+  }
+
+  return res.redirect('/login');
 });
 
 app.get('/terms', (req, res) => {
@@ -3668,7 +3669,7 @@ app.post('/forgot-password', wrap(async (req, res) => {
 
   return res.render('forgot-password', {
     flash: null,
-    message: 'If that account exists, a reset link has been generated. In this local app, check the server log for the reset URL.',
+    message: 'If that account exists, a password reset email has been sent. Please check your inbox and spam folder.',
     email,
     errors: {},
     supportEmail: getSupportEmail(),
