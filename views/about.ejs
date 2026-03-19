@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <%- include('partials/favicon-head') %>
+</head>
+<body class="site-body auth-body">
+  <div class="auth-theme-toggle">
+    <button type="button" class="btn btn-secondary" data-theme-toggle>Dark mode</button>
+  </div>
+  <main class="auth-shell legal-shell">
+    <section class="auth-hero">
+      <p class="eyebrow">About FixMyHome</p>
+      <h1>Built to make local home help easier to trust and easier to hire.</h1>
+      <p>FixMyHome helps homeowners post real jobs, compare clear bids, and stay organized from the first message through payment, review, and support.</p>
+      <ul class="auth-highlights">
+        <li>Homeowners can describe work clearly and attract better bids</li>
+        <li>Handymen get a cleaner workflow for quoting, messaging, and winning jobs</li>
+        <li>Admins have the tools to keep trust, billing, and support moving smoothly</li>
+      </ul>
+    </section>
+
+    <section class="auth-card app-card legal-card">
+      <h2>What we care about</h2>
+      <p>We want FixMyHome to feel transparent, local, and dependable. That means clearer bids, safer payments, stronger moderation, and less confusion for both sides of the job.</p>
+
+      <h2>Who it is for</h2>
+      <p>FixMyHome is for homeowners who need trusted help around the house and handymen who want a more organized way to discover work, communicate clearly, and get paid with confidence.</p>
+
+      <h2>How we support users</h2>
+      <p>From password recovery to billing support and dispute handling, we’re building the product around practical support workflows instead of leaving users stuck when something goes wrong.</p>
+
+      <h2>Questions?</h2>
+      <p>You can reach our team through the <a href="/contact">Contact Us form</a>.</p>
+    </section>
+  </main>
+  <%- include('partials/site-footer') %>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

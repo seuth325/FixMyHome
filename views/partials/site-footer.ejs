@@ -3,11 +3,13 @@
     <a href="/" class="site-footer-brand" aria-label="Go to FixMyHome home page">FixMyHome</a>
     <p class="job-meta">Local home services, clearer bids, and safer hiring.</p>
   </div>
-  <nav class="site-footer-links" aria-label="Legal and support">
-    <% (legalNavItems || []).forEach((item) => { %>
+  <nav class="site-footer-links" aria-label="Site footer links">
+    <% (footerNavItems || legalNavItems || []).forEach((item) => { %>
       <a href="<%= item.href %>"><%= item.label %></a>
     <% }) %>
-    <a href="mailto:<%= supportEmail %>"><%= supportEmail %></a>
+    <% if (showFooterSupportEmail !== false && supportEmail) { %>
+      <a href="mailto:<%= supportEmail %>"><%= supportEmail %></a>
+    <% } %>
   </nav>
   <small class="job-meta">&copy; <%= currentYear %> FixMyHome. All rights reserved.</small>
 </footer>

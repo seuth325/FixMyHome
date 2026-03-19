@@ -68,7 +68,50 @@ async function sendPasswordResetEmail({ to, resetUrl }) {
   };
 }
 
+async function sendContactMessageEmail({ fromName, fromEmail, subject, message }) {
+  const config = getMailerConfig();
+  const supportEmail = String(process.env.SUPPORT_EMAIL || 'support@fixmyhome.pro').trim() || 'support@fixmyhome.pro';
+  if (!config.enabled) {
+    return {
+      delivered: false,
+      mode: 'log',
+      reason: 'SMTP is not configured.',
+    };
+  }
+
+  const transport = createTransport(config);
+  const safeName = String(fromName || '').trim() || 'FixMyHome visitor';
+  const safeEmail = String(fromEmail || '').trim();
+  const safeSubject = String(subject || '').trim() || 'New FixMyHome contact form message';
+  const safeMessage = String(message || '').trim();
+
+  await transport.sendMail({
+    from: config.from,
+    to: supportEmail,
+    replyTo: safeEmail || undefined,
+    subject: `[FixMyHome Contact] ${safeSubject}`,
+    text: [
+      `Name: ${safeName}`,
+      `Email: ${safeEmail || 'Not provided'}`,
+      '',
+      safeMessage,
+    ].join('\n'),
+    html: `
+      <p><strong>Name:</strong> ${safeName}</p>
+      <p><strong>Email:</strong> ${safeEmail || 'Not provided'}</p>
+      <p><strong>Message:</strong></p>
+      <p>${safeMessage.replace(/\n/g, '<br />')}</p>
+    `,
+  });
+
+  return {
+    delivered: true,
+    mode: 'smtp',
+  };
+}
+
 module.exports = {
   getMailerConfig,
   sendPasswordResetEmail,
+  sendContactMessageEmail,
 };

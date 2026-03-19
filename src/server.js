@@ -9,7 +9,7 @@ const { prisma } = require('./lib/prisma');
 const { PrismaSessionStore } = require('./lib/session-store');
 const { saveJobPhoto, saveSupportCaseAttachment, getSupportCaseAttachmentLocalPath } = require('./lib/storage');
 const { extractZip, geocodeLocation, haversineDistanceMiles, normalizeLocation } = require('./lib/geocode');
-const { sendPasswordResetEmail } = require('./lib/mailer');
+const { sendPasswordResetEmail, sendContactMessageEmail } = require('./lib/mailer');
 const { STRIPE_PROVIDER_NAME, buildWebhookEvent, createBillingPortalSession, createCheckoutSession, getPaymentProvider, signPayload, verifyWebhookRequest } = require('./lib/payments');
 const { initializeMonitoring, setMonitoringUser, clearMonitoringUser, captureAppError } = require('./lib/monitoring');
 
@@ -42,6 +42,7 @@ const passwordResetAttempts = new Map();
 const ACTION_RATE_LIMITS = {
   login: { windowMs: 15 * 60 * 1000, maxAttempts: 10 },
   signup: { windowMs: 30 * 60 * 1000, maxAttempts: 5 },
+  contact: { windowMs: 15 * 60 * 1000, maxAttempts: 6 },
   jobPost: { windowMs: 15 * 60 * 1000, maxAttempts: 8 },
   bidSubmit: { windowMs: 15 * 60 * 1000, maxAttempts: 15 },
   adminPost: { windowMs: 10 * 60 * 1000, maxAttempts: 120 },
@@ -194,6 +195,15 @@ function getLegalNavItems() {
     { href: '/terms', label: 'Terms' },
     { href: '/privacy', label: 'Privacy' },
     { href: '/refund-policy', label: 'Refund policy' },
+  ];
+}
+
+function getLoginFooterNavItems() {
+  return [
+    { href: '/terms', label: 'Terms' },
+    { href: '/privacy', label: 'Privacy' },
+    { href: '/about', label: 'About Us' },
+    { href: '/contact', label: 'Contact Us' },
   ];
 }
 
@@ -3477,6 +3487,110 @@ app.get('/refund-policy', (req, res) => {
   });
 });
 
+app.get('/about', (req, res) => {
+  res.render('about', {
+    flash: popFlash(req),
+    supportEmail: getSupportEmail(),
+    legalNavItems: getLegalNavItems(),
+    currentYear: new Date().getFullYear(),
+    appBaseUrl: getAppBaseUrl(req),
+  });
+});
+
+app.get('/contact', (req, res) => {
+  res.render('contact', {
+    flash: popFlash(req),
+    message: null,
+    formData: {
+      name: '',
+      email: '',
+      subject: '',
+      message: '',
+    },
+    errors: {},
+    supportEmail: getSupportEmail(),
+    legalNavItems: getLegalNavItems(),
+    currentYear: new Date().getFullYear(),
+    appBaseUrl: getAppBaseUrl(req),
+  });
+});
+
+app.post('/contact', createRateLimitMiddleware({
+  action: 'contact',
+  getIdentifier: (req) => String(req.body.email || '').trim().toLowerCase() || 'contact',
+  onLimit: (_req, res) => {
+    return res.render('contact', {
+      flash: null,
+      message: null,
+      formData: {
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+      },
+      errors: { email: 'Too many contact requests. Please wait a few minutes and try again.' },
+      supportEmail: getSupportEmail(),
+      legalNavItems: getLegalNavItems(),
+      currentYear: new Date().getFullYear(),
+      appBaseUrl: getAppBaseUrl(_req),
+    });
+  },
+}), wrap(async (req, res) => {
+  const formData = {
+    name: String(req.body.name || '').trim(),
+    email: String(req.body.email || '').trim(),
+    subject: String(req.body.subject || '').trim(),
+    message: String(req.body.message || '').trim(),
+  };
+  const errors = {};
+
+  if (!formData.name) {
+    errors.name = 'Name is required.';
+  }
+  if (!formData.email) {
+    errors.email = 'Email is required.';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    errors.email = 'Enter a valid email address.';
+  }
+  if (!formData.message) {
+    errors.message = 'Message is required.';
+  }
+
+  if (Object.keys(errors).length) {
+    return res.render('contact', {
+      flash: null,
+      message: null,
+      formData,
+      errors,
+      supportEmail: getSupportEmail(),
+      legalNavItems: getLegalNavItems(),
+      currentYear: new Date().getFullYear(),
+      appBaseUrl: getAppBaseUrl(req),
+    });
+  }
+
+  const delivery = await sendContactMessageEmail(formData);
+  if (!delivery.delivered) {
+    console.log(`[contact-form] ${formData.email} (${formData.name}) -> ${formData.subject || 'No subject'}\n${formData.message}`);
+  }
+
+  return res.render('contact', {
+    flash: null,
+    message: 'Thanks for reaching out. Our team received your message and will follow up soon.',
+    formData: {
+      name: '',
+      email: formData.email,
+      subject: '',
+      message: '',
+    },
+    errors: {},
+    supportEmail: getSupportEmail(),
+    legalNavItems: getLegalNavItems(),
+    currentYear: new Date().getFullYear(),
+    appBaseUrl: getAppBaseUrl(req),
+  });
+}));
+
 app.get('/signup', (req, res) => {
   res.render('signup', {
     flash: popFlash(req),
@@ -3594,6 +3708,8 @@ app.get('/login', (req, res) => {
     errors: popFormState(req, 'loginErrors', {}),
     supportEmail: getSupportEmail(),
     legalNavItems: getLegalNavItems(),
+    footerNavItems: getLoginFooterNavItems(),
+    showFooterSupportEmail: false,
     currentYear: new Date().getFullYear(),
   });
 });

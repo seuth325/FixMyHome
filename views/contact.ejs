@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<%= csrfToken %>" />
+  <title>Contact Us - FixMyHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <%- include('partials/favicon-head') %>
+</head>
+<body class="site-body auth-body">
+  <div class="auth-theme-toggle">
+    <button type="button" class="btn btn-secondary" data-theme-toggle>Dark mode</button>
+  </div>
+  <main class="auth-shell legal-shell">
+    <section class="auth-hero">
+      <p class="eyebrow">Contact FixMyHome</p>
+      <h1>Send us a message and we’ll point it to the right team.</h1>
+      <p>Use this form for general questions, account help, launch feedback, or anything else that isn’t already handled inside the app.</p>
+      <ul class="auth-highlights">
+        <li>Account and login questions</li>
+        <li>Billing or support follow-up</li>
+        <li>General product feedback and launch questions</li>
+      </ul>
+    </section>
+
+    <section class="auth-card app-card">
+      <div class="auth-card-head">
+        <p class="eyebrow">Contact Us</p>
+        <h2>We’re listening</h2>
+      </div>
+      <% if (flash) { %><div class="flash" role="alert"><%= flash %></div><% } %>
+      <% if (message) { %><div class="flash flash-success" role="status"><%= message %></div><% } %>
+      <form method="POST" action="/contact" class="stack-form">
+        <label>
+          <span>Name</span>
+          <input type="text" name="name" value="<%= formData?.name || '' %>" class="<%= errors?.name ? 'input-error' : '' %>" required />
+          <% if (errors?.name) { %><small class="field-help field-error" role="alert"><%= errors.name %></small><% } %>
+        </label>
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" value="<%= formData?.email || '' %>" class="<%= errors?.email ? 'input-error' : '' %>" required />
+          <% if (errors?.email) { %><small class="field-help field-error" role="alert"><%= errors.email %></small><% } %>
+        </label>
+        <label>
+          <span>Subject</span>
+          <input type="text" name="subject" value="<%= formData?.subject || '' %>" placeholder="What do you need help with?" />
+        </label>
+        <label>
+          <span>Message</span>
+          <textarea name="message" rows="6" class="<%= errors?.message ? 'input-error' : '' %>" required><%= formData?.message || '' %></textarea>
+          <% if (errors?.message) { %><small class="field-help field-error" role="alert"><%= errors.message %></small><% } %>
+        </label>
+        <button type="submit" class="btn btn-primary">Send message</button>
+      </form>
+    </section>
+  </main>
+  <%- include('partials/site-footer') %>
+  <script src="/csrf-forms.js" defer></script>
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>
