@@ -389,6 +389,19 @@ img {
   color: var(--teal-dark);
 }
 
+.eyebrow-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 160ms ease, opacity 160ms ease;
+}
+
+.eyebrow-link:hover,
+.eyebrow-link:focus-visible {
+  border-bottom-color: currentColor;
+  opacity: 0.92;
+}
+
 .stack-form,
 .message-form,
 .action-stack {

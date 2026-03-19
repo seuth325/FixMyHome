@@ -1,10 +1,10 @@
 <footer class="site-footer app-card">
   <div>
-    <a href="/" class="site-footer-brand" aria-label="Go to FixMyHome home page">FixMyHome</a>
+    <a href="/dashboard" class="site-footer-brand" aria-label="Go to FixMyHome dashboard">FixMyHome</a>
     <p class="job-meta">Local home services, clearer bids, and safer hiring.</p>
   </div>
       <% const resolvedFooterNavItems = (typeof footerNavItems !== 'undefined' && footerNavItems) || (typeof legalNavItems !== 'undefined' && legalNavItems) || []; %>
-      <% const resolvedShowFooterSupportEmail = typeof showFooterSupportEmail === 'undefined' ? true : showFooterSupportEmail; %>
+      <% const resolvedShowFooterSupportEmail = typeof showFooterSupportEmail === 'undefined' ? false : showFooterSupportEmail; %>
       <nav class="site-footer-links" aria-label="Site footer links">
         <% resolvedFooterNavItems.forEach((item) => { %>
           <a href="<%= item.href %>"><%= item.label %></a>

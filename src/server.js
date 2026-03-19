@@ -191,11 +191,7 @@ function getSupportEmail() {
 }
 
 function getLegalNavItems() {
-  return [
-    { href: '/terms', label: 'Terms' },
-    { href: '/privacy', label: 'Privacy' },
-    { href: '/refund-policy', label: 'Refund policy' },
-  ];
+  return getAppFooterNavItems();
 }
 
 function isLikelyBcryptHash(value) {
@@ -203,12 +199,7 @@ function isLikelyBcryptHash(value) {
 }
 
 function getLoginFooterNavItems() {
-  return [
-    { href: '/terms', label: 'Terms' },
-    { href: '/privacy', label: 'Privacy' },
-    { href: '/about', label: 'About Us' },
-    { href: '/contact', label: 'Contact Us' },
-  ];
+  return getAppFooterNavItems();
 }
 
 function getAppFooterNavItems() {
