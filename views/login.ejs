@@ -51,7 +51,19 @@
       <p class="auth-switch">Need an account? <a href="/signup">Create one</a>.</p>
     </section>
   </main>
-  <%- include('partials/site-footer') %>
+  <footer class="site-footer app-card">
+    <div>
+      <a href="/dashboard" class="site-footer-brand" aria-label="Go to FixMyHome dashboard">FixMyHome</a>
+      <p class="job-meta">Local home services, clearer bids, and safer hiring.</p>
+    </div>
+    <nav class="site-footer-links" aria-label="Site footer links">
+      <a href="/terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/about">About Us</a>
+      <a href="/contact">Contact Us</a>
+    </nav>
+    <small class="job-meta">&copy; <%= currentYear %> FixMyHome. All rights reserved.</small>
+  </footer>
   <script src="/csrf-forms.js" defer></script>
   <script src="/auth-passwords.js" defer></script>
   <script src="/auth-accessibility.js" defer></script>
