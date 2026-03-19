@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">FixMyHome favicon</title>
+  <desc id="desc">A rounded square icon with a roofline and letter F for FixMyHome.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#173042" />
+      <stop offset="55%" stop-color="#0f7d86" />
+      <stop offset="100%" stop-color="#49bfce" />
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eff8f7" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#d5f3f4" stop-opacity="0.78" />
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="84" height="84" rx="24" fill="url(#bg)" />
+  <path d="M23 39.5 48 18l25 21.5" fill="none" stroke="rgba(239,248,247,0.88)" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" />
+  <path d="M34 30h11.5c7.5 0 12.5 4.1 12.5 10.7 0 6.1-4.2 10-10.9 10H34v14.3" fill="none" stroke="url(#shine)" stroke-linecap="round" stroke-linejoin="round" stroke-width="9" />
+  <path d="M34 50.7h20.5" fill="none" stroke="url(#shine)" stroke-linecap="round" stroke-width="9" />
+</svg>
