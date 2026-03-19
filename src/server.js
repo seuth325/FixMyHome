@@ -198,6 +198,10 @@ function getLegalNavItems() {
   ];
 }
 
+function isLikelyBcryptHash(value) {
+  return typeof value === 'string' && /^\$2[aby]\$\d{2}\$/.test(value);
+}
+
 function getLoginFooterNavItems() {
   return [
     { href: '/terms', label: 'Terms' },
@@ -3876,7 +3880,9 @@ app.post('/reset-password/:token', wrap(async (req, res) => {
       });
     }
 
-    const reusingCurrentPassword = await bcrypt.compare(password, user.passwordHash);
+    const reusingCurrentPassword = isLikelyBcryptHash(user.passwordHash)
+      ? await bcrypt.compare(password, user.passwordHash)
+      : false;
     if (reusingCurrentPassword) {
       return res.render('reset-password', {
         flash: null,
@@ -3956,6 +3962,14 @@ app.post('/login', createRateLimitMiddleware({
     setFormState(req, 'login', loginFormState);
     setFormState(req, 'loginErrors', {
       email: 'This account has been suspended. Contact support if you believe this is a mistake.',
+    });
+    return res.redirect('/login');
+  }
+
+  if (!isLikelyBcryptHash(user.passwordHash)) {
+    setFormState(req, 'login', loginFormState);
+    setFormState(req, 'loginErrors', {
+      email: 'This account needs a password reset before it can be used. Use Forgot password to set a new password.',
     });
     return res.redirect('/login');
   }
