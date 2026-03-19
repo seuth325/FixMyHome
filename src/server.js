@@ -211,6 +211,16 @@ function getLoginFooterNavItems() {
   ];
 }
 
+function getAppFooterNavItems() {
+  return [
+    { href: '/terms', label: 'Terms' },
+    { href: '/privacy', label: 'Privacy' },
+    { href: '/refund-policy', label: 'Refund policy' },
+    { href: '/about', label: 'About Us' },
+    { href: '/contact', label: 'Contact Us' },
+  ];
+}
+
 function buildSupportCaseAttachmentHref(supportCaseId, attachmentId) {
   return `/admin/support-cases/${supportCaseId}/attachments/${attachmentId}/file`;
 }
@@ -2507,6 +2517,8 @@ function baseViewModel(req, user) {
     appBaseUrl: getAppBaseUrl(req),
     supportEmail: getSupportEmail(),
     legalNavItems: getLegalNavItems(),
+    footerNavItems: getAppFooterNavItems(),
+    showFooterSupportEmail: false,
     currentYear: new Date().getFullYear(),
   };
 }
