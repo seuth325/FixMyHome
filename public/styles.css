@@ -1360,6 +1360,53 @@ textarea {
   }
 }
 
+@media (max-width: 900px) {
+  .auth-body {
+    display: block;
+    min-height: 100vh;
+  }
+
+  .auth-shell,
+  .auth-shell-wide {
+    max-width: 100%;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px;
+  }
+
+  .auth-theme-toggle {
+    position: static;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+
+  .auth-theme-toggle .btn {
+    width: auto;
+    max-width: 100%;
+  }
+
+  .auth-hero,
+  .auth-card {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .auth-hero h1 {
+    font-size: clamp(2.25rem, 12vw, 4rem);
+    line-height: 0.98;
+    overflow-wrap: anywhere;
+  }
+
+  .auth-hero p,
+  .auth-hero li {
+    overflow-wrap: anywhere;
+  }
+
+  .site-footer {
+    width: 100%;
+  }
+}
+
 @media (max-width: 960px) {
   .billing-plan-grid,
   .billing-credit-row {
