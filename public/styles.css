@@ -155,13 +155,13 @@ img {
 }
 
 .site-body {
+  min-height: 100vh;
   padding: 24px;
 }
 
 .auth-body {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .auth-shell,
@@ -175,6 +175,7 @@ img {
   grid-template-columns: 1.05fr 0.95fr;
   gap: 24px;
   align-items: stretch;
+  flex: 1;
 }
 
 .auth-shell-wide {
@@ -186,6 +187,38 @@ img {
   top: 24px;
   right: 24px;
   z-index: 20;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0;
+  padding: 0.55rem 1rem 0.6rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(31, 150, 165, 0.16), rgba(19, 83, 113, 0.12));
+  border: 1px solid rgba(31, 150, 165, 0.28);
+  color: var(--teal-dark);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.brand-mark:hover,
+.brand-mark:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(31, 150, 165, 0.42);
+  box-shadow: 0 12px 28px rgba(16, 103, 121, 0.14);
+}
+
+.brand-mark-light {
+  background: rgba(191, 232, 234, 0.1);
+  border-color: rgba(191, 232, 234, 0.28);
+  color: #d7f6f6;
 }
 
 .app-card,
@@ -1995,9 +2028,26 @@ body[data-theme='dark'] select {
 
 .site-footer {
   width: min(1120px, calc(100% - 2rem));
-  margin: 0 auto 2rem;
+  margin: auto auto 2rem;
   display: grid;
   gap: 0.75rem;
+}
+
+.site-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  color: var(--ink-strong);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+
+.site-footer-brand:hover,
+.site-footer-brand:focus-visible {
+  color: var(--accent-strong);
 }
 
 .site-footer-links {
@@ -2036,4 +2086,16 @@ body[data-theme='dark'] select {
 body[data-theme='dark'] .site-footer {
   background: linear-gradient(180deg, rgba(19, 33, 43, 0.96), rgba(17, 27, 35, 0.96));
   border-color: rgba(135, 229, 234, 0.16);
+}
+
+body[data-theme='dark'] .brand-mark {
+  background: linear-gradient(135deg, rgba(72, 191, 206, 0.18), rgba(21, 63, 86, 0.26));
+  border-color: rgba(135, 229, 234, 0.22);
+  color: #d7f6f6;
+}
+
+body[data-theme='dark'] .brand-mark:hover,
+body[data-theme='dark'] .brand-mark:focus-visible {
+  border-color: rgba(135, 229, 234, 0.36);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
 }

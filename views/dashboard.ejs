@@ -14,7 +14,7 @@
   <div class="app-shell">
     <header class="app-topbar app-card">
       <div>
-        <p class="eyebrow">FixMyHome Dashboard</p>
+        <a href="/" class="brand-mark" aria-label="Go to FixMyHome home page">FixMyHome</a>
         <h1><%= user.role === 'HOMEOWNER' ? 'Manage your home projects' : 'Win your next local job' %></h1>
         <p class="topbar-copy"><%= user.name %> � <%= getRoleLabel(user.role) %><% if (user.location) { %> � <%= user.location %><% } %></p>
       </div>
