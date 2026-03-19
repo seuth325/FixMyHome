@@ -360,7 +360,7 @@
                     <h4><%= formatCurrency(job.payment.amount) %> held for this job</h4>
                     <p class="muted">Status: <span class="status-chip tone-<%= getStatusTone(job.payment.status) %>"><%= formatPaymentStatus(job.payment.status) %></span></p>
                     <% if (job.dispute) { %>
-                      <p class="muted">Dispute: <span class="status-chip tone-<%= getStatusTone(job.dispute.status === 'OPEN' ? 'DISPUTED' : job.payment.status) %>"><%= formatDisputeStatus(job.dispute.status) %></span> by <strong><%= job.dispute.openedBy.name %></strong></p>
+                      <p class="muted">Dispute: <span class="status-chip tone-<%= getStatusTone(job.dispute.status === 'OPEN' ? 'DISPUTED' : job.payment.status) %>"><%= formatDisputeStatus(job.dispute.status) %></span> by <strong><%= job.dispute.openedBy?.name || 'Unknown user' %></strong></p>
                     <% } %>
                   </div>
                   <div class="action-stack compact-actions">
@@ -441,9 +441,10 @@
                 <% if (job.bids.length > 0) { %>
                   <% const bidAmounts = job.bids.map((entry) => entry.amount); %>
                   <% const bidEtas = job.bids.map((entry) => entry.etaDays); %>
-                  <% const ratedBids = job.bids.filter((entry) => entry.handyman.handymanProfile?.ratingCount); %>
+                  <% const activeBidEntries = job.bids.filter((entry) => entry.handyman); %>
+                  <% const ratedBids = activeBidEntries.filter((entry) => entry.handyman?.handymanProfile?.ratingCount); %>
                   <% const bestRatedValue = ratedBids.length ? Math.max(...ratedBids.map((entry) => entry.handyman.handymanProfile.ratingAvg)) : null; %>
-                  <% const recommendationPool = job.bids.map((entry) => {
+                  <% const recommendationPool = activeBidEntries.map((entry) => {
                     const amountSpan = Math.max(...bidAmounts) - Math.min(...bidAmounts) || 1;
                     const etaSpan = Math.max(...bidEtas) - Math.min(...bidEtas) || 1;
                     const ratingValue = entry.handyman.handymanProfile?.ratingCount ? entry.handyman.handymanProfile.ratingAvg : 0;
@@ -490,7 +491,7 @@
                     <div class="bid-recommendation-banner">
                       <div>
                         <p class="eyebrow">Recommended pick</p>
-                        <strong><%= job.bids.find((entry) => entry.id === recommendedBid.id)?.handyman.handymanProfile?.businessName || job.bids.find((entry) => entry.id === recommendedBid.id)?.handyman.name %></strong>
+                        <strong><%= job.bids.find((entry) => entry.id === recommendedBid.id)?.handyman?.handymanProfile?.businessName || job.bids.find((entry) => entry.id === recommendedBid.id)?.handyman?.name || 'Former handyman' %></strong>
                         <p><%= recommendedReason %></p>
                       </div>
                       <span class="status-chip tone-success">Best overall fit</span>
@@ -500,12 +501,12 @@
                 <% job.bids.forEach((bid) => { %>
                   <% const lowestPrice = Math.min(...job.bids.map((entry) => entry.amount)); %>
                   <% const fastestEta = Math.min(...job.bids.map((entry) => entry.etaDays)); %>
-                  <% const ratedBidSet = job.bids.filter((entry) => entry.handyman.handymanProfile?.ratingCount); %>
+                  <% const ratedBidSet = job.bids.filter((entry) => entry.handyman?.handymanProfile?.ratingCount); %>
                   <% const topRating = ratedBidSet.length ? Math.max(...ratedBidSet.map((entry) => entry.handyman.handymanProfile.ratingAvg)) : null; %>
                   <% const isLowestPrice = bid.amount === lowestPrice; %>
                   <% const isFastest = bid.etaDays === fastestEta; %>
-                  <% const isBestRated = topRating !== null && bid.handyman.handymanProfile?.ratingCount && bid.handyman.handymanProfile.ratingAvg === topRating; %>
-                  <% const isVerified = ['APPROVED'].includes(bid.handyman.handymanProfile?.insuranceStatus || '') || ['APPROVED'].includes(bid.handyman.handymanProfile?.licenseStatus || ''); %>
+                  <% const isBestRated = topRating !== null && bid.handyman?.handymanProfile?.ratingCount && bid.handyman.handymanProfile.ratingAvg === topRating; %>
+                  <% const isVerified = ['APPROVED'].includes(bid.handyman?.handymanProfile?.insuranceStatus || '') || ['APPROVED'].includes(bid.handyman?.handymanProfile?.licenseStatus || ''); %>
                   <% const isRecommended = recommendedBid && bid.id === recommendedBid.id; %>
                   <article class="bid-card <%= bid.status === 'ACCEPTED' ? 'bid-card-accepted' : '' %> <%= isRecommended ? 'bid-card-recommended' : '' %>">
                     <div class="bid-compare-chips">
@@ -518,8 +519,8 @@
                     </div>
                     <div class="bid-header">
                       <div>
-                        <h4><%= bid.handyman.handymanProfile?.businessName || bid.handyman.name %></h4>
-                        <p class="job-meta"><%= bid.handyman.name %> ? <%= bid.handyman.location || 'Location pending' %></p>
+                        <h4><%= bid.handyman?.handymanProfile?.businessName || bid.handyman?.name || 'Former handyman' %></h4>
+                        <p class="job-meta"><%= bid.handyman?.name || 'Former handyman' %> ? <%= bid.handyman?.location || 'Location pending' %></p>
                       </div>
                       <div class="bid-numbers">
                         <strong><%= formatCurrency(bid.amount) %></strong>
@@ -538,7 +539,7 @@
                       </div>
                       <div class="mini-stat-box">
                         <strong>Rating</strong>
-                        <span><%= bid.handyman.handymanProfile?.ratingCount ? bid.handyman.handymanProfile.ratingAvg.toFixed(1) + ' stars' : 'New pro' %></span>
+                        <span><%= bid.handyman?.handymanProfile?.ratingCount ? bid.handyman.handymanProfile.ratingAvg.toFixed(1) + ' stars' : 'New pro' %></span>
                       </div>
                       <div class="mini-stat-box">
                         <strong>Trust</strong>
@@ -547,9 +548,9 @@
                     </div>
                     <p><%= bid.message %></p>
                     <div class="trust-row">
-                      <span><%= bid.handyman.handymanProfile?.ratingCount ? bid.handyman.handymanProfile.ratingAvg.toFixed(1) + ' stars' : 'New pro' %></span>
-                      <span>Insurance: <%= formatVerificationStatus(bid.handyman.handymanProfile?.insuranceStatus || 'NOT_SUBMITTED') %></span>
-                      <span>License: <%= formatVerificationStatus(bid.handyman.handymanProfile?.licenseStatus || 'NOT_SUBMITTED') %></span>
+                      <span><%= bid.handyman?.handymanProfile?.ratingCount ? bid.handyman.handymanProfile.ratingAvg.toFixed(1) + ' stars' : 'New pro' %></span>
+                      <span>Insurance: <%= formatVerificationStatus(bid.handyman?.handymanProfile?.insuranceStatus || 'NOT_SUBMITTED') %></span>
+                      <span>License: <%= formatVerificationStatus(bid.handyman?.handymanProfile?.licenseStatus || 'NOT_SUBMITTED') %></span>
                     </div>
                     <div class="action-stack inline-actions">
                       <% if (!['AWARDED', 'COMPLETED'].includes(job.status) && bid.status !== 'ACCEPTED') { %>
@@ -560,11 +561,13 @@
                           <button type="submit" class="btn btn-primary btn-small">Accept bid</button>
                         </form>
                       <% } %>
-                      <form method="POST" action="/users/<%= bid.handyman.id %>/report">
-                        <input type="hidden" name="reason" value="Bidder trust concern" />
-                        <input type="hidden" name="details" value="Homeowner reported this handyman from the bid comparison view." />
-                        <button type="submit" class="btn btn-secondary btn-small">Report user</button>
-                      </form>
+                      <% if (bid.handyman) { %>
+                        <form method="POST" action="/users/<%= bid.handyman.id %>/report">
+                          <input type="hidden" name="reason" value="Bidder trust concern" />
+                          <input type="hidden" name="details" value="Homeowner reported this handyman from the bid comparison view." />
+                          <button type="submit" class="btn btn-secondary btn-small">Report user</button>
+                        </form>
+                      <% } %>
                     </div>
                     <div class="message-thread">
                       <% if (bid.messages.length === 0) { %>
@@ -572,7 +575,7 @@
                       <% } %>
                       <% bid.messages.forEach((message) => { %>
                         <div class="message-bubble <%= message.senderId === user.id ? 'mine' : '' %>">
-                          <strong><%= message.sender.name %></strong>
+                          <strong><%= message.sender?.name || 'Former user' %></strong>
                           <span><%= new Date(message.createdAt).toLocaleString() %></span>
                           <p><%= message.body %></p>
                         </div>
@@ -883,7 +886,7 @@
                           <span class="status-chip tone-<%= getStatusTone(bid.status) %>"><%= bid.status %></span>
                         </div>
                       </div>
-                      <p class="job-meta">Homeowner: <%= bid.job.homeowner.name %> ? <%= bid.job.location %> ? Budget <%= formatCurrency(bid.job.budget) %></p>
+                      <p class="job-meta">Homeowner: <%= bid.job.homeowner?.name || 'Former homeowner' %> ? <%= bid.job.location %> ? Budget <%= formatCurrency(bid.job.budget) %></p>
                       <% if (bid.latestMessage && bid.latestMessage.senderId !== user.id) { %>
                         <div class="trust-row location-match-row">
                           <span class="status-chip tone-review"><%= bid.replyWaitingCount === 1 ? '1 new homeowner message' : bid.replyWaitingCount + ' new homeowner messages' %></span>
@@ -906,7 +909,7 @@
                         <% if (bid.job.dispute) { %>
                           <div class="dispute-mini-card">
                             <strong>Dispute <%= formatDisputeStatus(bid.job.dispute.status) %></strong>
-                            <p><%= bid.job.dispute.reason %> opened by <%= bid.job.dispute.openedBy.name %>.</p>
+                            <p><%= bid.job.dispute.reason %> opened by <%= bid.job.dispute.openedBy?.name || 'Unknown user' %>.</p>
                             <% if (bid.job.dispute.status === 'RESOLVED' && bid.job.dispute.resolutionNotes) { %>
                               <p><%= bid.job.dispute.resolutionNotes %></p>
                             <% } %>
@@ -942,7 +945,7 @@
                     <% } %>
                     <% bid.messages.forEach((message) => { %>
                       <div class="message-bubble <%= message.senderId === user.id ? 'mine' : '' %>">
-                        <strong><%= message.sender.name %></strong>
+                        <strong><%= message.sender?.name || 'Former user' %></strong>
                         <span><%= new Date(message.createdAt).toLocaleString() %></span>
                         <p><%= message.body %></p>
                       </div>

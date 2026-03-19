@@ -7674,6 +7674,14 @@ app.use((err, req, res, next) => {
     const supportCasePath = req.path.split('/attachments')[0] || req.path.split('/comments')[0] || req.path;
     return res.redirect(supportCasePath);
   }
+  if (req.path === '/dashboard' || req.path.startsWith('/dashboard/')) {
+    clearAuthSession(req);
+    return res.redirect('/login');
+  }
+  if (req.path === '/admin' || req.path.startsWith('/admin/')) {
+    clearAuthSession(req);
+    return res.redirect('/login');
+  }
   return res.redirect('/dashboard');
 });
 
