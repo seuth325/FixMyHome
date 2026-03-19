@@ -445,11 +445,52 @@ function requireAuth(req, res, next) {
   return next();
 }
 
-function requireAdmin(req, res, next) {
-  if (req.session.role !== 'ADMIN') {
-    return res.redirect('/dashboard');
+function clearAuthSession(req) {
+  if (!req.session) {
+    return;
   }
-  return next();
+  req.session.userId = null;
+  req.session.role = null;
+  req.session.userEmail = null;
+  req.session.authVersion = null;
+}
+
+function requireAdmin(req, res, next) {
+  if (!req.session.userId) {
+    return res.redirect('/login');
+  }
+  if (req.session.role === 'ADMIN') {
+    return next();
+  }
+
+  prisma.user.findUnique({
+    where: { id: req.session.userId },
+    select: {
+      email: true,
+      role: true,
+      sessionVersion: true,
+    },
+  }).then((user) => {
+    if (!user) {
+      clearAuthSession(req);
+      return res.redirect('/login');
+    }
+
+    if ((req.session.authVersion ?? 0) !== user.sessionVersion) {
+      clearAuthSession(req);
+      return res.redirect('/login');
+    }
+
+    req.session.role = user.role;
+    req.session.userEmail = user.email;
+    req.session.authVersion = user.sessionVersion;
+
+    if (user.role !== 'ADMIN') {
+      return res.redirect('/dashboard');
+    }
+
+    return next();
+  }).catch(next);
 }
 
 function formatCurrency(amount) {
@@ -2326,10 +2367,18 @@ async function currentUser(req) {
   if (!user) return null;
 
   if ((req.session.authVersion ?? 0) !== user.sessionVersion) {
-    req.session.userId = null;
-    req.session.role = null;
-    req.session.authVersion = null;
+    clearAuthSession(req);
     return null;
+  }
+
+  if (req.session.role !== user.role) {
+    req.session.role = user.role;
+  }
+  if (req.session.userEmail !== user.email) {
+    req.session.userEmail = user.email;
+  }
+  if ((req.session.authVersion ?? 0) !== user.sessionVersion) {
+    req.session.authVersion = user.sessionVersion;
   }
 
   return user;
@@ -3445,21 +3494,24 @@ async function loadDashboardData(user, filters = parseHandymanFilters()) {
   };
 }
 
-app.get('/', (req, res) => {
-  if (!req.session.userId) {
+app.get('/', wrap(async (req, res) => {
+  const user = await currentUser(req);
+  if (!user) {
+    clearAuthSession(req);
     return res.redirect('/login');
   }
-  return res.redirect('/dashboard');
-});
+  return res.redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
+}));
 
-app.get('/mockup', (req, res) => {
-  const user = currentUser(req);
+app.get('/mockup', wrap(async (req, res) => {
+  const user = await currentUser(req);
   if (user) {
-    return res.redirect('/dashboard');
+    return res.redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
   }
 
+  clearAuthSession(req);
   return res.redirect('/login');
-});
+}));
 
 app.get('/terms', (req, res) => {
   res.render('terms', {
