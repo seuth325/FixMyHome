@@ -4036,8 +4036,15 @@ app.post('/login', createRateLimitMiddleware({
     return res.redirect('/login');
   }
 
+  req.session.userId = user.id;
+  req.session.role = user.role;
+  req.session.userEmail = user.email;
+  req.session.authVersion = user.sessionVersion;
+  req.session.csrfToken = crypto.randomBytes(24).toString('hex');
+  delete req.session.formState;
+  delete req.session.flash;
   await new Promise((resolve, reject) => {
-    req.session.regenerate((error) => {
+    req.session.save((error) => {
       if (error) {
         reject(error);
         return;
@@ -4045,12 +4052,7 @@ app.post('/login', createRateLimitMiddleware({
       resolve();
     });
   });
-  req.session.userId = user.id;
-  req.session.role = user.role;
-  req.session.userEmail = user.email;
-  req.session.authVersion = user.sessionVersion;
-  req.session.csrfToken = crypto.randomBytes(24).toString('hex');
-  return res.redirect('/dashboard');
+  return res.redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
 }));
 
 app.post('/logout', (req, res) => {
