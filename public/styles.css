@@ -294,14 +294,8 @@ img {
 .auth-card-login {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 100%;
+  justify-content: flex-start;
   padding: 34px 36px;
-}
-
-.auth-shell-login .auth-hero,
-.auth-shell-login .auth-card {
-  min-height: 690px;
 }
 
 .auth-shell-login .auth-hero {
