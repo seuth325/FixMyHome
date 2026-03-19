@@ -2,6 +2,10 @@ const session = require('express-session');
 
 const DEFAULT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
+function serializeSessionData(sess) {
+  return JSON.parse(JSON.stringify(sess || {}));
+}
+
 function resolveExpiry(sess) {
   const expires = sess?.cookie?.expires ? new Date(sess.cookie.expires) : null;
   if (expires && !Number.isNaN(expires.getTime())) {
@@ -38,15 +42,16 @@ class PrismaSessionStore extends session.Store {
 
   async set(sid, sess, callback = () => {}) {
     try {
+      const serializedSession = serializeSessionData(sess);
       await this.prisma.appSession.upsert({
         where: { sid },
         create: {
           sid,
-          data: sess,
+          data: serializedSession,
           expiresAt: resolveExpiry(sess),
         },
         update: {
-          data: sess,
+          data: serializedSession,
           expiresAt: resolveExpiry(sess),
         },
       });
@@ -67,16 +72,18 @@ class PrismaSessionStore extends session.Store {
 
   async touch(sid, sess, callback = () => {}) {
     try {
+      const serializedSession = serializeSessionData(sess);
       await this.prisma.appSession.update({
         where: { sid },
         data: {
+          data: serializedSession,
           expiresAt: resolveExpiry(sess),
         },
       }).catch(async () => {
         await this.prisma.appSession.create({
           data: {
             sid,
-            data: sess,
+            data: serializedSession,
             expiresAt: resolveExpiry(sess),
           },
         });
