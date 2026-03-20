@@ -35,6 +35,27 @@ function registerDashboardAccountRoutes(app, deps) {
     });
   }));
 
+  app.get('/profile', requireAuth, wrap(async (req, res) => {
+    const user = await currentUser(req);
+    if (!user || user.isSuspended) {
+      req.session.userId = null;
+      req.session.role = null;
+      return res.redirect('/login');
+    }
+
+    if (user.role === 'ADMIN') {
+      return res.redirect('/admin');
+    }
+
+    const filters = user.role === 'HANDYMAN' ? parseHandymanFilters({}) : undefined;
+    const data = await loadDashboardData(user, filters);
+    data.roleData.accountDeletion = await getUserDeletionEligibility(user);
+
+    return res.render('profile', {
+      ...baseViewModel(req, user),
+      ...data,
+    });
+  }));
   app.post('/profile', requireAuth, wrap(async (req, res) => {
     const user = await currentUser(req);
     if (!user) {
@@ -155,3 +176,5 @@ function registerDashboardAccountRoutes(app, deps) {
 module.exports = {
   registerDashboardAccountRoutes,
 };
+
+

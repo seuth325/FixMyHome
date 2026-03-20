@@ -633,6 +633,27 @@ textarea {
   flex-wrap: wrap;
 }
 
+.topbar-copy-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.topbar-profile-btn {
+  margin-left: 8px;
+}
+
+.profile-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-span-full {
+  grid-column: 1 / -1;
+}
+
 .dashboard-grid {
   display: grid;
   gap: 18px;
@@ -1402,6 +1423,7 @@ textarea {
   .auth-shell-wide,
   .homeowner-grid,
   .handyman-grid,
+  .profile-grid,
   .two-col,
   .three-col,
   .four-col,
@@ -2213,3 +2235,4 @@ body[data-theme='dark'] .site-footer-brand:hover,
 body[data-theme='dark'] .site-footer-brand:focus-visible {
   color: #8fe6ea;
 }
+
