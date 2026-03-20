@@ -126,7 +126,7 @@ async function main() {
     assert(adminLogin.response.status === 302, `Expected admin login redirect, received ${adminLogin.response.status}`);
     assert(homeownerLogin.response.status === 302, `Expected homeowner login redirect, received ${homeownerLogin.response.status}`);
     assert(handymanLogin.response.status === 302, `Expected handyman login redirect, received ${handymanLogin.response.status}`);
-    assert((adminLogin.response.headers.get('location') || '').includes('/dashboard'), 'Expected admin login to redirect into the app.');
+    assert((adminLogin.response.headers.get('location') || '').includes('/admin'), 'Expected admin login to redirect into the admin area.');
     assert((homeownerLogin.response.headers.get('location') || '').includes('/dashboard'), 'Expected homeowner login to redirect into the app.');
     assert((handymanLogin.response.headers.get('location') || '').includes('/dashboard'), 'Expected handyman login to redirect into the app.');
 
@@ -1060,6 +1060,7 @@ main().catch((error) => {
   process.stderr.write(`\n[admin] FAILED: ${error.message}\n`);
   process.exit(1);
 });
+
 
 
 
