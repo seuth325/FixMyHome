@@ -2752,14 +2752,7 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
           },
         },
       },
-      orderBy: [
-        {
-          homeownerJobs: {
-            _count: 'desc',
-          },
-        },
-        { createdAt: 'desc' },
-      ],
+      orderBy: { createdAt: 'desc' },
       take: 8,
     }),
     prisma.user.findMany({
@@ -2783,14 +2776,7 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
           },
         },
       },
-      orderBy: [
-        {
-          bids: {
-            _count: 'desc',
-          },
-        },
-        { createdAt: 'desc' },
-      ],
+      orderBy: { createdAt: 'desc' },
       take: 8,
     }),
     prisma.job.groupBy({
@@ -3492,4 +3478,5 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
+
 
