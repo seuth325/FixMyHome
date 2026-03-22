@@ -2597,7 +2597,7 @@ async function notifySupportCaseAdmins({ actorAdminUserId, supportCaseId, title,
 
 async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters()) {
   const jobCreatedAtFilter = buildAdminJobCreatedAtFilter(filters.adminJobDateRange);
-  const [openReports, openDisputes, users, recentJobsRaw, adminUsers, auditLogs, pendingVerifications, webhookEvents, billingPlaybooksRaw, billingPlaybookHistory, supportCases, savedSupportCaseViews, autoRouteActivities, jobCategoryCounts, homeownerCount, handymanCount, homeownerList, handymanList] = await Promise.all([
+  const [openReports, openDisputes, users, recentJobsRaw, adminUsers, auditLogs, pendingVerifications, webhookEvents, billingPlaybooksRaw, billingPlaybookHistory, supportCases, savedSupportCaseViews, autoRouteActivities, homeownerCount, handymanCount, homeownerList, handymanList, jobCategoryCounts] = await Promise.all([
     prisma.moderationReport.findMany({
       where: { status: 'OPEN' },
       include: {
@@ -3478,5 +3478,6 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
+
 
 
