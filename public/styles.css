@@ -2243,3 +2243,16 @@ body[data-theme='dark'] .site-footer-brand:focus-visible {
   color: #8fe6ea;
 }
 
+
+.invite-bid-form {
+  min-width: 16rem;
+  padding: 0.35rem 0;
+}
+
+.invite-bid-form label > span {
+  font-size: 0.78rem;
+}
+
+.invite-bid-form input {
+  min-width: 14rem;
+}

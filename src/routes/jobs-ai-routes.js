@@ -4,11 +4,14 @@ function registerJobsAiRoutes(app, deps) {
     buildJobAssistSuggestion,
     createRateLimitMiddleware,
     currentUser,
+    createNotification,
     geocodeLocation,
+    getAppBaseUrl,
     parsePositiveInt,
     prisma,
     requireAuth,
     saveJobPhoto,
+    sendHandymanBidInviteEmail,
     setFlash,
     upload,
     wrap,
@@ -138,6 +141,100 @@ function registerJobsAiRoutes(app, deps) {
     return res.redirect('/dashboard');
   }));
 
+  app.post('/jobs/:id/invite', requireAuth, wrap(async (req, res) => {
+    const user = await currentUser(req);
+    if (!user || user.role !== 'HOMEOWNER') {
+      setFlash(req, 'Only homeowners can invite handymen.');
+      return res.redirect('/dashboard');
+    }
+
+    const job = await prisma.job.findUnique({
+      where: { id: req.params.id },
+      select: {
+        id: true,
+        homeownerId: true,
+        title: true,
+        location: true,
+        budget: true,
+        status: true,
+      },
+    });
+
+    if (!job || job.homeownerId !== user.id) {
+      setFlash(req, 'Job not found.');
+      return res.redirect('/dashboard');
+    }
+
+    if (!['OPEN', 'IN_REVIEW'].includes(job.status)) {
+      setFlash(req, 'Invites are only available for open or in-review jobs.');
+      return res.redirect('/dashboard');
+    }
+
+    const handymanEmail = String(req.body.handymanEmail || '').trim().toLowerCase();
+    if (!handymanEmail || !/^\S+@\S+\.\S+$/.test(handymanEmail)) {
+      setFlash(req, 'Enter a valid handyman email address.');
+      return res.redirect('/dashboard');
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: handymanEmail },
+      select: { id: true, role: true },
+    });
+
+    if (existingUser && existingUser.role !== 'HANDYMAN') {
+      setFlash(req, 'That email belongs to a non-handyman account. Use a handyman email instead.');
+      return res.redirect('/dashboard');
+    }
+
+    if (existingUser?.role === 'HANDYMAN') {
+      const existingBid = await prisma.bid.findUnique({
+        where: {
+          jobId_handymanId: {
+            jobId: job.id,
+            handymanId: existingUser.id,
+          },
+        },
+        select: { id: true },
+      });
+
+      if (existingBid) {
+        setFlash(req, 'That handyman already placed a bid on this job.');
+        return res.redirect('/dashboard');
+      }
+
+      await createNotification(
+        existingUser.id,
+        'ACCOUNT_STATUS',
+        'You were invited to bid',
+        `${user.name} invited you to bid on "${job.title}".`,
+        '/dashboard'
+      );
+    }
+
+    const inviteUrl = `${getAppBaseUrl(req)}/dashboard`;
+
+    try {
+      const delivery = await sendHandymanBidInviteEmail({
+        to: handymanEmail,
+        homeownerName: user.name,
+        jobTitle: job.title,
+        jobLocation: job.location,
+        budget: job.budget,
+        inviteUrl,
+      });
+
+      if (!delivery.delivered) {
+        console.log(`[job-invite] ${handymanEmail} -> ${inviteUrl}`);
+      }
+    } catch (error) {
+      console.error('[job-invite] failed to send handyman invite email', error);
+      setFlash(req, 'Could not send the invite email right now. Please try again.');
+      return res.redirect('/dashboard');
+    }
+
+    setFlash(req, `Invite sent to ${handymanEmail}.`);
+    return res.redirect('/dashboard');
+  }));
   app.post('/jobs/:id/edit', requireAuth, upload.array('photos', 5), wrap(async (req, res) => {
     const user = await currentUser(req);
     const job = await prisma.job.findUnique({
@@ -371,3 +468,4 @@ function registerJobsAiRoutes(app, deps) {
 module.exports = {
   registerJobsAiRoutes,
 };
+

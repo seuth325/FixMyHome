@@ -7,7 +7,7 @@ const { prisma } = require('./lib/prisma');
 const { PrismaSessionStore } = require('./lib/session-store');
 const { saveJobPhoto, saveSupportCaseAttachment, getSupportCaseAttachmentLocalPath } = require('./lib/storage');
 const { extractZip, geocodeLocation, haversineDistanceMiles, normalizeLocation } = require('./lib/geocode');
-const { sendPasswordResetEmail, sendContactMessageEmail } = require('./lib/mailer');
+const { sendPasswordResetEmail, sendContactMessageEmail, sendWelcomeEmail, sendHandymanBidInviteEmail } = require('./lib/mailer');
 const { STRIPE_PROVIDER_NAME, buildWebhookEvent, createBillingPortalSession, createCheckoutSession, getPaymentProvider, signPayload, verifyWebhookRequest } = require('./lib/payments');
 const { initializeMonitoring, setMonitoringUser, clearMonitoringUser, captureAppError } = require('./lib/monitoring');
 const {
@@ -3146,6 +3146,7 @@ registerAuthRoutes(app, {
   prisma,
   recordPasswordResetAttempt,
   sendPasswordResetEmail,
+  sendWelcomeEmail,
   setFlash,
   setFormState,
   validatePasswordPolicy,
@@ -3253,11 +3254,14 @@ registerJobsAiRoutes(app, {
   buildJobAssistSuggestion,
   createRateLimitMiddleware,
   currentUser,
+  createNotification,
   geocodeLocation,
+  getAppBaseUrl,
   parsePositiveInt,
   prisma,
   requireAuth,
   saveJobPhoto,
+  sendHandymanBidInviteEmail,
   setFlash,
   upload,
   wrap,
@@ -3423,6 +3427,7 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
+
 
 
 

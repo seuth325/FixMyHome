@@ -20,6 +20,7 @@ function registerAuthRoutes(app, deps) {
     recordPasswordResetAttempt,
     isLikelyBcryptHash,
     sendPasswordResetEmail,
+    sendWelcomeEmail,
   } = deps;
 
   app.get('/signup', (req, res) => {
@@ -123,7 +124,21 @@ function registerAuthRoutes(app, deps) {
             }
           : undefined,
       },
-    });
+        });
+
+    try {
+      const welcomeDelivery = await sendWelcomeEmail({
+        to: normalizedEmail,
+        name: String(name).trim(),
+        role,
+        loginUrl: `${getAppBaseUrl(req)}/login`,
+      });
+      if (!welcomeDelivery.delivered) {
+        console.log(`[welcome-email] ${normalizedEmail} -> SMTP unavailable`);
+      }
+    } catch (error) {
+      console.error('[welcome-email] failed to send welcome email', error);
+    }
 
     setFormState(req, 'login', { email: normalizedEmail });
     setFlash(req, 'Account created. Please log in.');
@@ -438,5 +453,7 @@ function registerAuthRoutes(app, deps) {
 module.exports = {
   registerAuthRoutes,
 };
+
+
 
 

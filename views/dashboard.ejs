@@ -239,6 +239,15 @@
                       <button type="submit" class="btn btn-secondary btn-small">Move to In Review</button>
                     </form>
                   <% } %>
+                  <% if (['OPEN', 'IN_REVIEW'].includes(job.status)) { %>
+                    <form method="POST" action="/jobs/<%= job.id %>/invite" class="stack-form invite-bid-form">
+                      <label>
+                        <span>Invite handyman by email</span>
+                        <input type="email" name="handymanEmail" placeholder="handyman@email.com" required />
+                      </label>
+                      <button type="submit" class="btn btn-secondary btn-small">Invite handyman</button>
+                    </form>
+                  <% } %>
                   <% if (job.status === 'AWARDED' && job.payment?.status === 'FUNDED') { %>
                     <form method="POST" action="/jobs/<%= job.id %>/status">
                       <input type="hidden" name="action" value="complete" />
@@ -1019,6 +1028,9 @@
   <script src="/theme-toggle.js" defer></script>
 </body>
 </html>
+
+
+
 
 
 
