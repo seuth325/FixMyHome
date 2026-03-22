@@ -2597,7 +2597,7 @@ async function notifySupportCaseAdmins({ actorAdminUserId, supportCaseId, title,
 
 async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters()) {
   const jobCreatedAtFilter = buildAdminJobCreatedAtFilter(filters.adminJobDateRange);
-  const [openReports, openDisputes, users, recentJobsRaw, adminUsers, auditLogs, pendingVerifications, webhookEvents, billingPlaybooksRaw, billingPlaybookHistory, supportCases, savedSupportCaseViews, autoRouteActivities, jobCategoryCounts] = await Promise.all([
+  const [openReports, openDisputes, users, recentJobsRaw, adminUsers, auditLogs, pendingVerifications, webhookEvents, billingPlaybooksRaw, billingPlaybookHistory, supportCases, savedSupportCaseViews, autoRouteActivities, jobCategoryCounts, homeownerCount, handymanCount, homeownerList, handymanList] = await Promise.all([
     prisma.moderationReport.findMany({
       where: { status: 'OPEN' },
       include: {
@@ -2731,6 +2731,67 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
       },
       orderBy: { createdAt: 'desc' },
       take: 200,
+    }),
+    prisma.user.count({
+      where: { role: 'HOMEOWNER' },
+    }),
+    prisma.user.count({
+      where: { role: 'HANDYMAN' },
+    }),
+    prisma.user.findMany({
+      where: { role: 'HOMEOWNER' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        location: true,
+        createdAt: true,
+        _count: {
+          select: {
+            homeownerJobs: true,
+          },
+        },
+      },
+      orderBy: [
+        {
+          homeownerJobs: {
+            _count: 'desc',
+          },
+        },
+        { createdAt: 'desc' },
+      ],
+      take: 8,
+    }),
+    prisma.user.findMany({
+      where: { role: 'HANDYMAN' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        location: true,
+        createdAt: true,
+        handymanProfile: {
+          select: {
+            businessName: true,
+            ratingAvg: true,
+            ratingCount: true,
+          },
+        },
+        _count: {
+          select: {
+            bids: true,
+          },
+        },
+      },
+      orderBy: [
+        {
+          bids: {
+            _count: 'desc',
+          },
+        },
+        { createdAt: 'desc' },
+      ],
+      take: 8,
     }),
     prisma.job.groupBy({
       where: jobCreatedAtFilter ? { createdAt: jobCreatedAtFilter } : undefined,
@@ -2961,6 +3022,10 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
       adminJobDateRange: filters.adminJobDateRange,
       adminJobStatus: filters.adminJobStatus,
       suspendedCount: users.filter((user) => user.isSuspended).length,
+      homeownerCount,
+      handymanCount,
+      homeownerList,
+      handymanList,
     },
   };
 }
@@ -3427,22 +3492,4 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

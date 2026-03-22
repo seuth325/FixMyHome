@@ -79,6 +79,53 @@
       <article class="app-card span-two">
         <div class="section-head">
           <div>
+            <p class="eyebrow">Homeowners</p>
+            <h2>Homeowner list</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.homeownerCount %> total</span>
+        </div>
+        <% if (!roleData.homeownerList || roleData.homeownerList.length === 0) { %>
+          <div class="empty-state small">No homeowner accounts yet.</div>
+        <% } else { %>
+          <div class="saved-view-list">
+            <% roleData.homeownerList.forEach((homeowner) => { %>
+              <div class="saved-view-row">
+                <div class="saved-view-meta">
+                  <a href="/admin/users/<%= homeowner.id %>" class="text-link"><strong><%= homeowner.name %></strong></a>
+                  <span class="job-meta"><%= homeowner.email %><% if (homeowner.location) { %> - <%= homeowner.location %><% } %> - <%= homeowner._count.homeownerJobs %> job<%= homeowner._count.homeownerJobs === 1 ? '' : 's' %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Handymen</p>
+            <h2>Handyman list</h2>
+          </div>
+          <span class="stat-pill"><%= roleData.handymanCount %> total</span>
+        </div>
+        <% if (!roleData.handymanList || roleData.handymanList.length === 0) { %>
+          <div class="empty-state small">No handyman accounts yet.</div>
+        <% } else { %>
+          <div class="saved-view-list">
+            <% roleData.handymanList.forEach((handyman) => { %>
+              <div class="saved-view-row">
+                <div class="saved-view-meta">
+                  <a href="/admin/users/<%= handyman.id %>" class="text-link"><strong><%= handyman.handymanProfile?.businessName || handyman.name %></strong></a>
+                  <span class="job-meta"><%= handyman.email %><% if (handyman.location) { %> - <%= handyman.location %><% } %> - <%= handyman._count.bids %> bid<%= handyman._count.bids === 1 ? '' : 's' %><% if (handyman.handymanProfile?.ratingCount) { %> - <%= handyman.handymanProfile.ratingAvg.toFixed(1) %> stars (<%= handyman.handymanProfile.ratingCount %>)<% } %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
             <p class="eyebrow">Support case ops</p>
             <h2>Tracked playbook handoffs</h2>
           </div>
@@ -1264,5 +1311,4 @@
   <script src="/theme-toggle.js" defer></script>
 </body>
 </html>
-
 
