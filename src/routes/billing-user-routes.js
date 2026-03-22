@@ -5,6 +5,7 @@ function registerBillingUserRoutes(app, deps) {
     currentUser,
     formatSubscriptionPlan,
     getPaymentProvider,
+    getStripePlanPriceId,
     PLAN_CONFIG,
     PLAN_PRICING,
     prisma,
@@ -53,6 +54,11 @@ function registerBillingUserRoutes(app, deps) {
         },
       });
       setFlash(req, 'Free plan is now active on your account.');
+      return res.redirect('/dashboard');
+    }
+
+    if (provider === STRIPE_PROVIDER_NAME && !getStripePlanPriceId(plan)) {
+      setFlash(req, 'Billing plan is not configured yet. Please contact support.');
       return res.redirect('/dashboard');
     }
 
@@ -114,7 +120,6 @@ function registerBillingUserRoutes(app, deps) {
       setFlash(req, 'Choose a valid credit pack.');
       return res.redirect('/dashboard');
     }
-
     const session = await createCheckoutSession({
       prisma,
       req,
@@ -138,3 +143,5 @@ function registerBillingUserRoutes(app, deps) {
 module.exports = {
   registerBillingUserRoutes,
 };
+
+

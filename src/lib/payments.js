@@ -80,6 +80,14 @@ function getStripePlanPriceId(planKey) {
   return null;
 }
 
+function ensureStripePlanPriceId(planKey) {
+  const priceId = getStripePlanPriceId(planKey);
+  if (!priceId) {
+    throw new Error(`Stripe plan price id is missing for ${planKey}. Set STRIPE_PRICE_${planKey}_MONTHLY.`);
+  }
+  return priceId;
+}
+
 function getPlanKeyFromStripePriceId(priceId) {
   if (!priceId) return null;
   if (priceId === getStripePlanPriceId('PLUS')) return 'PLUS';
@@ -196,14 +204,14 @@ async function createCheckoutSession({ prisma, req, userId, jobId = null, target
       planKey: planKey || '',
       creditPack: creditPack || '',
     };
-    const planPriceId = targetType === 'PLAN' ? getStripePlanPriceId(planKey) : null;
+    const planPriceId = targetType === 'PLAN' ? ensureStripePlanPriceId(planKey) : null;
 
     const stripeSession = await stripe.checkout.sessions.create({
       mode: targetType === 'PLAN' ? 'subscription' : 'payment',
       success_url: `${getBaseUrl(req)}/checkout/return?status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${getBaseUrl(req)}/checkout/return?status=cancelled&session_id={CHECKOUT_SESSION_ID}`,
       line_items: [
-        targetType === 'PLAN' && planPriceId
+        targetType === 'PLAN'
           ? {
               quantity: 1,
               price: planPriceId,
@@ -469,7 +477,10 @@ module.exports = {
   getStripeClient,
   getStripePlanPriceId,
   getStripeWebhookSecret,
+  ensureStripePlanPriceId,
   signPayload,
   verifyMockSignature,
   verifyWebhookRequest,
 };
+
+

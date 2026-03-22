@@ -8,7 +8,7 @@ const { PrismaSessionStore } = require('./lib/session-store');
 const { saveJobPhoto, saveSupportCaseAttachment, getSupportCaseAttachmentLocalPath } = require('./lib/storage');
 const { extractZip, geocodeLocation, haversineDistanceMiles, normalizeLocation } = require('./lib/geocode');
 const { sendPasswordResetEmail, sendContactMessageEmail, sendWelcomeEmail, sendHandymanBidInviteEmail } = require('./lib/mailer');
-const { STRIPE_PROVIDER_NAME, buildWebhookEvent, createBillingPortalSession, createCheckoutSession, getPaymentProvider, signPayload, verifyWebhookRequest } = require('./lib/payments');
+const { STRIPE_PROVIDER_NAME, buildWebhookEvent, createBillingPortalSession, createCheckoutSession, getPaymentProvider, getStripePlanPriceId, signPayload, verifyWebhookRequest } = require('./lib/payments');
 const { initializeMonitoring, setMonitoringUser, clearMonitoringUser, captureAppError } = require('./lib/monitoring');
 const {
   buildAdminJobCreatedAtFilter,
@@ -3360,6 +3360,7 @@ registerBillingUserRoutes(app, {
   currentUser,
   formatSubscriptionPlan,
   getPaymentProvider,
+  getStripePlanPriceId,
   PLAN_CONFIG,
   PLAN_PRICING,
   prisma,
@@ -3486,5 +3487,6 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
+
 
 
