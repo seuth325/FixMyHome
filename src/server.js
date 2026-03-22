@@ -3205,6 +3205,7 @@ registerAuthRoutes(app, {
   recordPasswordResetAttempt,
   sendPasswordResetEmail,
   sendWelcomeEmail,
+  notifyAdmins,
   setFlash,
   setFormState,
   validatePasswordPolicy,
@@ -3485,4 +3486,5 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
+
 

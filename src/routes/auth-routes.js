@@ -21,6 +21,7 @@ function registerAuthRoutes(app, deps) {
     isLikelyBcryptHash,
     sendPasswordResetEmail,
     sendWelcomeEmail,
+    notifyAdmins,
   } = deps;
 
   app.get('/signup', (req, res) => {
@@ -104,7 +105,7 @@ function registerAuthRoutes(app, deps) {
     const normalizedLocation = location ? String(location).trim() : null;
     const signupGeocode = geocodeLocation(normalizedLocation);
 
-    await prisma.user.create({
+    const createdUser = await prisma.user.create({
       data: {
         email: normalizedEmail,
         name: String(name).trim(),
@@ -125,6 +126,17 @@ function registerAuthRoutes(app, deps) {
           : undefined,
       },
         });
+
+    try {
+      await notifyAdmins(
+        'ACCOUNT_STATUS',
+        'New account created',
+        `${createdUser.name} joined as ${role === 'HANDYMAN' ? 'Handyman' : 'Homeowner'} (${normalizedEmail}).`,
+        `/admin/users/${createdUser.id}`
+      );
+    } catch (error) {
+      console.error('[admin-alert] failed to create account notification', error);
+    }
 
     try {
       const welcomeDelivery = await sendWelcomeEmail({
@@ -453,6 +465,9 @@ function registerAuthRoutes(app, deps) {
 module.exports = {
   registerAuthRoutes,
 };
+
+
+
 
 
 
