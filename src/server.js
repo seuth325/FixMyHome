@@ -2888,9 +2888,16 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
       && matchesAdminJobStatus(job, filters.adminJobStatus))
     .slice(0, 16);
   const categoryChartColors = ['#3ab9c2', '#0e7c86', '#f0a552', '#8ed081', '#f26d85', '#8b7cf6'];
-  const totalCategoryJobs = jobCategoryCounts.reduce((sum, entry) => sum + entry._count.category, 0);
+  const safeJobCategoryCounts = Array.isArray(jobCategoryCounts) ? jobCategoryCounts : [];
+  if (!Array.isArray(jobCategoryCounts)) {
+    console.error('[admin] unexpected jobCategoryCounts payload', {
+      type: typeof jobCategoryCounts,
+      value: jobCategoryCounts,
+    });
+  }
+  const totalCategoryJobs = safeJobCategoryCounts.reduce((sum, entry) => sum + (entry?._count?.category || 0), 0);
   let categoryOffset = 0;
-  const jobCategoryChart = jobCategoryCounts.map((entry, index) => {
+  const jobCategoryChart = safeJobCategoryCounts.map((entry, index) => {
     const count = entry._count.category;
     const start = totalCategoryJobs > 0 ? Math.round((categoryOffset / totalCategoryJobs) * 360) : 0;
     categoryOffset += count;
@@ -3478,6 +3485,4 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
-
-
 
