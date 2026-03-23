@@ -2,6 +2,7 @@ function registerBillingUserRoutes(app, deps) {
   const {
     completeMockCheckout,
     createNotification,
+    notifyAdmins,
     CREDIT_PACKS,
     currentUser,
     formatSubscriptionPlan,
@@ -80,6 +81,12 @@ function registerBillingUserRoutes(app, deps) {
       `We opened checkout for your ${formatSubscriptionPlan(plan)} plan update.`,
       '/dashboard'
     );
+    await notifyAdmins(
+      'ACCOUNT_STATUS',
+      'Handyman started plan checkout',
+      `${user.name || user.email} started ${formatSubscriptionPlan(plan)} plan checkout.`,
+      '/admin'
+    );
 
     if (session.provider === STRIPE_PROVIDER_NAME && session.checkoutUrl) {
       return res.redirect(session.checkoutUrl);
@@ -148,6 +155,12 @@ function registerBillingUserRoutes(app, deps) {
       'Credit purchase checkout started',
       `We opened checkout to buy ${pack.credits} lead credits.`,
       '/dashboard'
+    );
+    await notifyAdmins(
+      'ACCOUNT_STATUS',
+      'Handyman started credit checkout',
+      `${user.name || user.email} started checkout to buy ${pack.credits} lead credits.`,
+      '/admin'
     );
 
     if (session.provider === STRIPE_PROVIDER_NAME && session.checkoutUrl) {
