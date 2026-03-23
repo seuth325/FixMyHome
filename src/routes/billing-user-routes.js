@@ -1,6 +1,7 @@
 function registerBillingUserRoutes(app, deps) {
   const {
     completeMockCheckout,
+    createNotification,
     CREDIT_PACKS,
     currentUser,
     formatSubscriptionPlan,
@@ -53,6 +54,7 @@ function registerBillingUserRoutes(app, deps) {
           stripeSubscriptionId: null,
         },
       });
+      await createNotification(user.id, 'ACCOUNT_STATUS', 'Plan changed', 'Free plan is now active on your account.', '/dashboard');
       setFlash(req, 'Free plan is now active on your account.');
       return res.redirect('/dashboard');
     }
@@ -70,6 +72,14 @@ function registerBillingUserRoutes(app, deps) {
       planKey: plan,
       amount: PLAN_PRICING[plan] || 0,
     });
+
+    await createNotification(
+      user.id,
+      'ACCOUNT_STATUS',
+      'Payment checkout started',
+      `We opened checkout for your ${formatSubscriptionPlan(plan)} plan update.`,
+      '/dashboard'
+    );
 
     if (session.provider === STRIPE_PROVIDER_NAME && session.checkoutUrl) {
       return res.redirect(session.checkoutUrl);
@@ -104,6 +114,8 @@ function registerBillingUserRoutes(app, deps) {
       returnUrl: `${req.protocol}://${req.get('host')}/dashboard`,
     });
 
+    await createNotification(user.id, 'ACCOUNT_STATUS', 'Billing portal opened', 'You opened Stripe billing management.', '/dashboard');
+
     return res.redirect(portal.url);
   }));
 
@@ -120,6 +132,7 @@ function registerBillingUserRoutes(app, deps) {
       setFlash(req, 'Choose a valid credit pack.');
       return res.redirect('/dashboard');
     }
+
     const session = await createCheckoutSession({
       prisma,
       req,
@@ -128,6 +141,14 @@ function registerBillingUserRoutes(app, deps) {
       creditPack: packKey,
       amount: pack.amount,
     });
+
+    await createNotification(
+      user.id,
+      'ACCOUNT_STATUS',
+      'Credit purchase checkout started',
+      `We opened checkout to buy ${pack.credits} lead credits.`,
+      '/dashboard'
+    );
 
     if (session.provider === STRIPE_PROVIDER_NAME && session.checkoutUrl) {
       return res.redirect(session.checkoutUrl);
@@ -143,5 +164,3 @@ function registerBillingUserRoutes(app, deps) {
 module.exports = {
   registerBillingUserRoutes,
 };
-
-

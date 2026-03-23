@@ -3212,6 +3212,7 @@ registerAuthRoutes(app, {
   wrap,
 });
 registerAccountRoutes(app, {
+  createNotification,
   currentUser,
   prisma,
   requireAuth,
@@ -3354,6 +3355,7 @@ registerVerificationModerationRoutes(app, {
 
 registerBillingUserRoutes(app, {
   completeMockCheckout,
+  createNotification,
   createBillingPortalSession,
   createCheckoutSession,
   CREDIT_PACKS,
@@ -3487,6 +3489,7 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
+
 
 
 

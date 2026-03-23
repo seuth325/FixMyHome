@@ -1,5 +1,6 @@
 function registerAccountRoutes(app, deps) {
   const {
+    createNotification,
     currentUser,
     prisma,
     requireAuth,
@@ -52,6 +53,13 @@ function registerAccountRoutes(app, deps) {
       : null;
 
     if (status === 'cancelled') {
+      await createNotification(
+        user.id,
+        'ACCOUNT_STATUS',
+        'Checkout cancelled',
+        'Your payment checkout was cancelled. No billing changes were applied.',
+        '/dashboard'
+      );
       setFlash(req, 'Checkout was cancelled. No changes were applied.');
       return res.redirect('/dashboard');
     }
@@ -62,8 +70,22 @@ function registerAccountRoutes(app, deps) {
     }
 
     if (session.status === 'COMPLETED') {
+      await createNotification(
+        user.id,
+        'ACCOUNT_STATUS',
+        'Checkout completed',
+        'Your payment checkout completed successfully.',
+        '/dashboard'
+      );
       setFlash(req, 'Checkout completed successfully.');
     } else {
+      await createNotification(
+        user.id,
+        'ACCOUNT_STATUS',
+        'Checkout processing',
+        'Your payment was submitted and is still processing. We will update your account shortly.',
+        '/dashboard'
+      );
       setFlash(req, 'Checkout is still processing. Refresh in a moment if the update has not appeared yet.');
     }
 
