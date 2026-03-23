@@ -129,6 +129,10 @@ function parseAdminBillingFilters(query = {}) {
   const billingEventType = String(query.billingEventType || '').trim();
   const billingStatus = String(query.billingStatus || '').trim();
   const billingSupportStatus = String(query.billingSupportStatus || '').trim();
+  const billingUser = String(query.billingUser || '').trim();
+  const billingDateRange = ['7d', '30d', 'all'].includes(String(query.billingDateRange || '').trim().toLowerCase())
+    ? String(query.billingDateRange || '').trim().toLowerCase()
+    : 'all';
   const selectedBillingGroup = String(query.selectedBillingGroup || '').trim();
   const supportCaseSearch = String(query.supportCaseSearch || '').trim();
   const supportCaseStatus = String(query.supportCaseStatus || '').trim().toUpperCase();
@@ -152,6 +156,8 @@ function parseAdminBillingFilters(query = {}) {
     billingEventType,
     billingStatus,
     billingSupportStatus,
+    billingUser,
+    billingDateRange,
     selectedBillingGroup,
     supportCaseSearch,
     supportCaseStatus,
@@ -163,7 +169,7 @@ function parseAdminBillingFilters(query = {}) {
     adminJobDateRange,
     adminJobStatus,
     hasFilters: Boolean(
-      billingSearch || billingProvider || billingEventType || billingStatus || billingSupportStatus || selectedBillingGroup
+      billingSearch || billingProvider || billingEventType || billingStatus || billingSupportStatus || billingUser || (billingDateRange && billingDateRange !== 'all') || selectedBillingGroup
       || supportCaseSearch || supportCaseStatus || supportCaseOwner || supportCaseQueue || (adminJobView && adminJobView !== 'all')
       || adminJobCategory || (adminJobDateRange && adminJobDateRange !== 'all') || adminJobStatus
     ),
@@ -236,3 +242,4 @@ module.exports = {
   parsePositiveInt,
   validatePasswordPolicy,
 };
+

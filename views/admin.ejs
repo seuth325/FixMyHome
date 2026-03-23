@@ -615,7 +615,7 @@
           <span class="stat-pill"><%= roleData.billingEvents.length %> tracked</span>
         </div>
         <form id="billing-bulk-form" method="POST" action="/admin/billing-events/bulk-support" class="filter-panel stack-form">
-          <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" />
+          <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>&billingUser=<%= encodeURIComponent(roleData.billingFilters.billingUser || '') %>&billingDateRange=<%= roleData.billingFilters.billingDateRange || 'all' %>" />
           <% if (roleData.selectedBillingGroup) { %>
             <p class="job-meta">Group selected: <%= roleData.selectedBillingGroup.eventTypeLabel %> ? <%= roleData.selectedBillingGroup.supportStatusLabel %> ? <%= roleData.selectedBillingEventIds.length %> events preselected</p>
           <% } %>
@@ -665,7 +665,7 @@
                   <p class="job-meta"><%= entry.queueAge.label %></p>
                   <form method="POST" action="/admin/billing-events/<%= entry.id %>/support" class="stack-form quick-support-form">
                     <input type="hidden" name="supportNotes" value="<%= entry.supportNotes || '' %>" />
-                    <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" />
+                    <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>&billingUser=<%= encodeURIComponent(roleData.billingFilters.billingUser || '') %>&billingDateRange=<%= roleData.billingFilters.billingDateRange || 'all' %>" />
                     <label>
                       <span>Owner</span>
                       <select name="assignedAdminUserId">
@@ -1023,7 +1023,7 @@
               <p class="job-meta">Provider: <%= group.provider %> ? Support: <%= group.supportStatusLabel %></p>
               <p class="job-meta"><%= group.count %> related events ? Latest <%= new Date(group.latestCreatedAt).toLocaleString() %></p>
               <p class="job-meta">Sample: <%= group.samples.map((sample) => sample.summary.title).join(', ') %></p>
-              <p class="job-meta"><a href="/admin?selectedBillingGroup=<%= encodeURIComponent(group.id) %>&billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" class="text-link">Select this group</a></p>
+              <p class="job-meta"><a href="/admin?selectedBillingGroup=<%= encodeURIComponent(group.id) %>&billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>&billingUser=<%= encodeURIComponent(roleData.billingFilters.billingUser || '') %>&billingDateRange=<%= roleData.billingFilters.billingDateRange || 'all' %>" class="text-link">Select this group</a></p>
               <% if (group.playbooks.length > 0) { %>
                 <div class="inline-actions quick-support-form">
                   <% group.playbooks.forEach((playbook) => { %>
@@ -1032,7 +1032,7 @@
                       <input type="hidden" name="assignedAdminUserId" value="<%= playbook.assignToCurrentAdmin ? user.id : '' %>" />
                       <% if (playbook.isCustom) { %><input type="hidden" name="playbookId" value="<%= playbook.id %>" /><% } %>
                       <input type="hidden" name="supportStatus" value="<%= playbook.supportStatus %>" />
-                      <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" />
+                      <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>&billingUser=<%= encodeURIComponent(roleData.billingFilters.billingUser || '') %>&billingDateRange=<%= roleData.billingFilters.billingDateRange || 'all' %>" />
                       <button type="submit" class="btn btn-secondary btn-small"><%= playbook.label %></button>
                       <% if (playbook.isCustom) { %><span class="job-meta">Custom<% if (playbook.scope === 'SHARED') { %> shared<% } else { %> personal<% } %><% if (playbook.isFavorite) { %> favorite<% } %><% if (playbook.creatorName) { %> by <%= playbook.creatorName %><% } %></span><% } %>
                     </form>
@@ -1041,7 +1041,7 @@
               <% } %>
               <form method="POST" action="/admin/billing-events/bulk-support" class="stack-form quick-support-form">
                 <input type="hidden" name="eventIds" value="<%= group.eventIds.join(',') %>" />
-                <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>" />
+                <input type="hidden" name="returnTo" value="/admin?billingSupportStatus=<%= roleData.billingFilters.billingSupportStatus %>&billingSearch=<%= encodeURIComponent(roleData.billingFilters.billingSearch || '') %>&billingProvider=<%= roleData.billingFilters.billingProvider %>&billingEventType=<%= roleData.billingFilters.billingEventType %>&billingStatus=<%= roleData.billingFilters.billingStatus %>&billingUser=<%= encodeURIComponent(roleData.billingFilters.billingUser || '') %>&billingDateRange=<%= roleData.billingFilters.billingDateRange || 'all' %>" />
                 <label>
                   <span>Assign batch</span>
                   <select name="assignedAdminUserId">
@@ -1073,7 +1073,7 @@
       <article class="app-card span-two">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Billing timeline</p>
+            <p class="eyebrow">Payments audit panel</p>
             <h2>Recent checkout and webhook activity</h2>
           </div>
           <span class="stat-pill"><%= roleData.billingEvents.length %> events</span>
@@ -1121,6 +1121,18 @@
                 <option value="NEEDS_FOLLOW_UP" <%= roleData.billingFilters.billingSupportStatus === 'NEEDS_FOLLOW_UP' ? 'selected' : '' %>>Needs follow-up</option>
                 <option value="WAITING_ON_PROVIDER" <%= roleData.billingFilters.billingSupportStatus === 'WAITING_ON_PROVIDER' ? 'selected' : '' %>>Waiting on provider</option>
                 <option value="RESOLVED" <%= roleData.billingFilters.billingSupportStatus === 'RESOLVED' ? 'selected' : '' %>>Resolved</option>
+              </select>
+            </label>
+            <label>
+              <span>Triggered user</span>
+              <input type="text" name="billingUser" value="<%= roleData.billingFilters.billingUser || '' %>" placeholder="Search handyman name, email, or user ID" />
+            </label>
+            <label>
+              <span>Date range</span>
+              <select name="billingDateRange">
+                <option value="all" <%= roleData.billingFilters.billingDateRange === 'all' ? 'selected' : '' %>>All time</option>
+                <option value="30d" <%= roleData.billingFilters.billingDateRange === '30d' ? 'selected' : '' %>>Last 30 days</option>
+                <option value="7d" <%= roleData.billingFilters.billingDateRange === '7d' ? 'selected' : '' %>>Last 7 days</option>
               </select>
             </label>
           </div>

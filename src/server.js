@@ -1356,6 +1356,8 @@ function buildAdminJobViewHref(
   if (filters.billingEventType) params.set('billingEventType', filters.billingEventType);
   if (filters.billingStatus) params.set('billingStatus', filters.billingStatus);
   if (filters.billingSupportStatus) params.set('billingSupportStatus', filters.billingSupportStatus);
+  if (filters.billingUser) params.set('billingUser', filters.billingUser);
+  if (filters.billingDateRange && filters.billingDateRange !== 'all') params.set('billingDateRange', filters.billingDateRange);
   if (filters.selectedBillingGroup) params.set('selectedBillingGroup', filters.selectedBillingGroup);
   if (filters.supportCaseSearch) params.set('supportCaseSearch', filters.supportCaseSearch);
   if (filters.supportCaseStatus) params.set('supportCaseStatus', filters.supportCaseStatus);
@@ -2595,8 +2597,19 @@ async function notifySupportCaseAdmins({ actorAdminUserId, supportCaseId, title,
   });
 }
 
+function buildBillingCreatedAtFilter(billingDateRange) {
+  const now = new Date();
+  if (billingDateRange === '7d') {
+    return { gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) };
+  }
+  if (billingDateRange === '30d') {
+    return { gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) };
+  }
+  return undefined;
+}
 async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters()) {
   const jobCreatedAtFilter = buildAdminJobCreatedAtFilter(filters.adminJobDateRange);
+  const billingCreatedAtFilter = buildBillingCreatedAtFilter(filters.billingDateRange);
   const [openReports, openDisputes, users, recentJobsRaw, adminUsers, auditLogs, pendingVerifications, webhookEvents, billingPlaybooksRaw, billingPlaybookHistory, supportCases, savedSupportCaseViews, autoRouteActivities, homeownerCount, handymanCount, homeownerList, handymanList, jobCategoryCounts] = await Promise.all([
     prisma.moderationReport.findMany({
       where: { status: 'OPEN' },
@@ -2673,9 +2686,10 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
         eventType: filters.billingEventType || undefined,
         status: filters.billingStatus || undefined,
         supportStatus: filters.billingSupportStatus || undefined,
+        createdAt: billingCreatedAtFilter,
       },
       orderBy: { createdAt: 'desc' },
-      take: 40,
+      take: filters.billingUser ? 120 : 60,
       include: {
         assignedAdmin: true,
       },
@@ -2804,6 +2818,17 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
     const checkoutSession = event.checkoutSessionId ? checkoutSessionMap.get(event.checkoutSessionId) || null : null;
     return decorateBillingEvent(event, checkoutSession);
   }).filter((event) => {
+    if (filters.billingUser) {
+      const userHaystack = [
+        event.checkoutSession?.user?.name,
+        event.checkoutSession?.user?.email,
+        event.payload?.data?.metadata?.userId,
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (!userHaystack.includes(filters.billingUser.toLowerCase())) {
+        return false;
+      }
+    }
+
     if (!filters.billingSearch) {
       return true;
     }
@@ -2815,10 +2840,13 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
       event.provider,
       event.providerEventId,
       event.checkoutSession?.providerSessionId,
+      event.checkoutSession?.user?.name,
+      event.checkoutSession?.user?.email,
+      event.payload?.data?.metadata?.userId,
     ].filter(Boolean).join(' ').toLowerCase();
 
     return haystack.includes(filters.billingSearch.toLowerCase());
-  }).slice(0, 16);
+  }).slice(0, 24);
 
   const billingQueue = buildBillingQueue(billingEvents);
   const billingGroups = buildBillingGroups(billingEvents, billingPlaybooks);
@@ -3490,8 +3518,4 @@ process.on('SIGTERM', async () => {
   await prisma.$disconnect();
   process.exit(0);
 });
-
-
-
-
 
