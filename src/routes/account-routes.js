@@ -8,7 +8,22 @@ function registerAccountRoutes(app, deps) {
     wrap,
   } = deps;
 
+  function getDashboardNotificationHref(filterValue) {
+    const filter = String(filterValue || '').trim().toUpperCase();
+    if (!filter || filter === 'ALL') return '/dashboard';
+    return `/dashboard?notificationFilter=${encodeURIComponent(filter)}`;
+  }
+
+  function withNotificationFilter(href, filterValue) {
+    const filter = String(filterValue || '').trim().toUpperCase();
+    if (!filter || filter === 'ALL') return href;
+    const separator = href.includes('?') ? '&' : '?';
+    return `${href}${separator}notificationFilter=${encodeURIComponent(filter)}`;
+  }
+
   app.post('/notifications/read-all', requireAuth, wrap(async (req, res) => {
+    const notificationFilter = String(req.query.notificationFilter || '').trim().toUpperCase();
+    const dashboardHref = getDashboardNotificationHref(notificationFilter);
     const user = await currentUser(req);
     if (!user) {
       req.session.userId = null;
@@ -20,15 +35,17 @@ function registerAccountRoutes(app, deps) {
       data: { isRead: true },
     });
 
-    return res.redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
+    return res.redirect(user.role === 'ADMIN' ? '/admin' : dashboardHref);
   }));
 
   app.post('/notifications/:id/read', requireAuth, wrap(async (req, res) => {
+    const notificationFilter = String(req.query.notificationFilter || '').trim().toUpperCase();
+    const dashboardHref = getDashboardNotificationHref(notificationFilter);
     const user = await currentUser(req);
     const notification = await prisma.userNotification.findUnique({ where: { id: req.params.id } });
     if (!user || !notification || notification.userId !== user.id) {
       setFlash(req, 'Notification not found.');
-      return res.redirect(user?.role === 'ADMIN' ? '/admin' : '/dashboard');
+      return res.redirect(user?.role === 'ADMIN' ? '/admin' : dashboardHref);
     }
 
     await prisma.userNotification.update({
@@ -36,7 +53,15 @@ function registerAccountRoutes(app, deps) {
       data: { isRead: true },
     });
 
-    return res.redirect(notification.href || (user.role === 'ADMIN' ? '/admin' : '/dashboard'));
+    if (user.role === 'ADMIN') {
+      return res.redirect(notification.href || '/admin');
+    }
+
+    if (notification.href && notification.href.startsWith('/dashboard')) {
+      return res.redirect(withNotificationFilter(notification.href, notificationFilter));
+    }
+
+    return res.redirect(notification.href || dashboardHref);
   }));
 
   app.get('/checkout/return', requireAuth, wrap(async (req, res) => {

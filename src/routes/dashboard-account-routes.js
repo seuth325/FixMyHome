@@ -13,6 +13,47 @@ function registerDashboardAccountRoutes(app, deps) {
     wrap,
   } = deps;
 
+  const NOTIFICATION_FILTERS = [
+    { key: 'ALL', label: 'All' },
+    { key: 'PAYMENTS', label: 'Payments' },
+    { key: 'MESSAGES', label: 'Messages' },
+    { key: 'ADMIN', label: 'Admin' },
+    { key: 'JOBS', label: 'Jobs' },
+  ];
+
+  const NOTIFICATION_FILTER_TYPES = {
+    PAYMENTS: new Set(['ACCOUNT_STATUS', 'ESCROW_FUNDED']),
+    MESSAGES: new Set(['NEW_MESSAGE']),
+    ADMIN: new Set(['SUPPORT_CASE', 'VERIFICATION_REVIEWED']),
+    JOBS: new Set(['NEW_BID', 'BID_AWARDED', 'BID_DECLINED', 'DISPUTE_OPENED', 'DISPUTE_RESOLVED']),
+  };
+
+  function normalizeNotificationFilter(value) {
+    const key = String(value || '').trim().toUpperCase();
+    return NOTIFICATION_FILTERS.some((filter) => filter.key === key) ? key : 'ALL';
+  }
+
+  function isNotificationInFilter(notification, filterKey) {
+    if (filterKey === 'ALL') return true;
+    const allowedTypes = NOTIFICATION_FILTER_TYPES[filterKey] || new Set();
+    return allowedTypes.has(notification.type);
+  }
+
+  function buildNotificationFilterHrefs(query) {
+    const hrefs = {};
+    for (const filter of NOTIFICATION_FILTERS) {
+      const params = new URLSearchParams(query || {});
+      if (filter.key === 'ALL') {
+        params.delete('notificationFilter');
+      } else {
+        params.set('notificationFilter', filter.key);
+      }
+      const queryString = params.toString();
+      hrefs[filter.key] = queryString ? `/dashboard?${queryString}` : '/dashboard';
+    }
+    return hrefs;
+  }
+
   app.get('/dashboard', requireAuth, wrap(async (req, res) => {
     const user = await currentUser(req);
     if (!user || user.isSuspended) {
@@ -29,9 +70,23 @@ function registerDashboardAccountRoutes(app, deps) {
     const data = await loadDashboardData(user, filters);
     data.roleData.accountDeletion = await getUserDeletionEligibility(user);
 
+    const allNotifications = user.notifications || [];
+    const notificationFilter = normalizeNotificationFilter(req.query.notificationFilter);
+    const notifications = allNotifications.filter((notification) => isNotificationInFilter(notification, notificationFilter));
+    const notificationFilters = NOTIFICATION_FILTERS.map((filter) => ({
+      ...filter,
+      count: allNotifications.filter((notification) => isNotificationInFilter(notification, filter.key)).length,
+      isActive: filter.key === notificationFilter,
+    }));
+
     return res.render('dashboard', {
       ...baseViewModel(req, user),
       ...data,
+      notifications,
+      notificationFilter,
+      notificationFilters,
+      notificationFilterHrefs: buildNotificationFilterHrefs(req.query),
+      filteredUnreadNotificationCount: notifications.filter((notification) => !notification.isRead).length,
     });
   }));
 
@@ -176,5 +231,4 @@ function registerDashboardAccountRoutes(app, deps) {
 module.exports = {
   registerDashboardAccountRoutes,
 };
-
 

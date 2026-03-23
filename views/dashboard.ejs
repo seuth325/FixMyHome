@@ -43,16 +43,27 @@
           <h2>Recent alerts</h2>
         </div>
         <div class="inline-actions compact-actions">
-          <span class="stat-pill"><%= unreadNotificationCount %> unread</span>
+          <span class="stat-pill"><%= notificationFilter && notificationFilter !== 'ALL' ? filteredUnreadNotificationCount + ' unread in filter' : unreadNotificationCount + ' unread' %></span>
           <% if (notifications.length > 0) { %>
-            <form method="POST" action="/notifications/read-all">
+            <form method="POST" action="/notifications/read-all<%= notificationFilter && notificationFilter !== 'ALL' ? '?notificationFilter=' + notificationFilter : '' %>">
               <button type="submit" class="btn btn-secondary btn-small">Mark all read</button>
             </form>
           <% } %>
         </div>
       </div>
+      <% if (notificationFilters && notificationFilters.length > 0) { %>
+        <div class="inline-actions compact-actions" style="margin-bottom: 0.75rem;">
+          <% notificationFilters.forEach((item) => { %>
+            <a href="<%= notificationFilterHrefs[item.key] %>" class="btn <%= item.isActive ? 'btn-primary' : 'btn-secondary' %> btn-small">
+              <%= item.label %> (<%= item.count %>)
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
       <% if (notifications.length === 0) { %>
-        <div class="empty-state small">No notifications yet.</div>
+        <div class="empty-state small">
+          <%= notificationFilter && notificationFilter !== 'ALL' ? 'No ' + notificationFilter.toLowerCase() + ' notifications yet.' : 'No notifications yet.' %>
+        </div>
       <% } %>
       <% if (notifications.length > 0) { %>
         <div class="notification-list">
@@ -63,7 +74,7 @@
                 <p><%= notification.body %></p>
                 <small><%= new Date(notification.createdAt).toLocaleString() %></small>
               </div>
-              <form method="POST" action="/notifications/<%= notification.id %>/read" class="notification-action">
+              <form method="POST" action="/notifications/<%= notification.id %>/read<%= notificationFilter && notificationFilter !== 'ALL' ? '?notificationFilter=' + notificationFilter : '' %>" class="notification-action">
                 <button type="submit" class="btn btn-secondary btn-small"><%= notification.isRead ? 'Open' : 'Mark read' %></button>
               </form>
             </article>
@@ -1028,6 +1039,8 @@
   <script src="/theme-toggle.js" defer></script>
 </body>
 </html>
+
+
 
 
 
