@@ -1,13 +1,24 @@
 const nodemailer = require('nodemailer');
 
 const DEFAULT_SUPPORT_EMAIL = 'support@fixmyhome.pro';
+const DEFAULT_LEGAL_SENDER_NAME = 'FixMyHomePro LLC';
+
+function normalizeFromAddress(rawFrom) {
+  const value = String(rawFrom || '').trim();
+  if (!value) return '';
+  if (value.includes('<') && value.includes('>')) {
+    return value;
+  }
+  return `${DEFAULT_LEGAL_SENDER_NAME} <${value}>`;
+}
 
 function getMailerConfig() {
   const host = String(process.env.SMTP_HOST || '').trim();
   const port = Number(process.env.SMTP_PORT || 587);
   const user = String(process.env.SMTP_USER || '').trim();
   const pass = String(process.env.SMTP_PASS || '').trim();
-  const from = String(process.env.SMTP_FROM || '').trim();
+  const rawFrom = String(process.env.SMTP_FROM || '').trim();
+  const from = normalizeFromAddress(rawFrom);
 
   return {
     enabled: Boolean(host && from),
