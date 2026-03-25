@@ -108,6 +108,15 @@ body[data-theme='dark'] .onboarding-card {
   border-color: rgba(135, 229, 234, 0.16);
 }
 
+body[data-theme='dark'] .marketing-spotlight-inline figcaption {
+  color: var(--muted);
+}
+
+body[data-theme='dark'] .marketing-visual {
+  border-color: rgba(135, 229, 234, 0.2);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+}
+
 body[data-theme='dark'] .job-ai-chip {
   background: rgba(32, 52, 64, 0.94);
   border-color: var(--border);
@@ -349,6 +358,44 @@ img {
 }
 
 .auth-highlights,
+.marketing-spotlight {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.marketing-spotlight figcaption {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: rgba(247, 248, 248, 0.9);
+}
+
+.marketing-spotlight-inline {
+  margin: 0 0 16px;
+}
+
+.marketing-spotlight-inline figcaption {
+  color: var(--muted);
+}
+
+.marketing-spotlight-hero {
+  margin-top: 4px;
+}
+
+.marketing-visual {
+  width: 100%;
+  min-height: 210px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-image:
+    linear-gradient(135deg, rgba(23, 48, 66, 0.18), rgba(14, 124, 134, 0.1)),
+    var(--marketing-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 12px 26px rgba(7, 23, 37, 0.22);
+}
 .auth-role-grid {
   display: grid;
   gap: 14px;
@@ -1500,6 +1547,11 @@ textarea {
   .photo-grid,
   .compact-photo-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .marketing-visual {
+    min-height: 170px;
+    border-radius: 18px;
   }
 }
 
