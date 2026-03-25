@@ -1,4 +1,6 @@
-Place your marketing images in this folder with these exact names:
-- skilled-local-focus.jpg
-- competitive-offers.jpg
-- trust-verification.jpg
+Place your marketing images in this folder using one of these extensions:
+- skilled-local-focus.(jpg|png|jpeg|webp)
+- competitive-offers.(jpg|png|jpeg|webp)
+- trust-verification.(jpg|png|jpeg|webp)
+
+If no raster image is present, the app will show the built-in SVG placeholder.

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#123a56"/>
+      <stop offset="1" stop-color="#0c8b9a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#bg)"/>
+  <text x="70" y="180" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#ecf8fb">Trust and</text>
+  <text x="70" y="265" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#ecf8fb">Verification</text>
+  <text x="70" y="360" font-family="Arial, sans-serif" font-size="34" fill="#d7eff2">Upload trust-verification.jpg or .png to replace this placeholder.</text>
+</svg>
