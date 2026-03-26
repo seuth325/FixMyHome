@@ -200,34 +200,9 @@ img {
 }
 
 .auth-shell-login {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
   gap: 30px;
   align-items: stretch;
-  padding: 18px;
-  border-radius: 32px;
-  border: 1px solid var(--surface-border);
-  background: rgba(17, 31, 43, 0.62);
-}
-
-.auth-shell-login::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image:
-    linear-gradient(135deg, rgba(10, 24, 33, 0.74), rgba(13, 51, 63, 0.62)),
-    url('/images/marketing/login-background.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.auth-shell-login > * {
-  position: relative;
-  z-index: 1;
 }
 
 .auth-theme-toggle {
@@ -1591,11 +1566,6 @@ textarea {
     max-width: 100%;
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 16px;
-  }
-
-  .auth-shell-login {
-    padding: 14px;
-    border-radius: 24px;
   }
 
   .auth-theme-toggle {
