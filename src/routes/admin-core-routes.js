@@ -4,6 +4,10 @@ function registerAdminCoreRoutes(app, deps) {
     buildAdminJobTimeline,
     buildSupportCaseViewQuery,
     currentUser,
+    createJobCategory,
+    moveJobCategory,
+    renameJobCategory,
+    setJobCategoryActiveState,
     enrichAdminJob,
     formatCurrency,
     getStatusTone,
@@ -301,6 +305,88 @@ function registerAdminCoreRoutes(app, deps) {
       handymanMetrics,
       recentActivity,
     });
+  }));
+  app.post('/admin/categories', requireAuth, requireAdmin, wrap(async (req, res) => {
+    const user = await currentUser(req);
+    if (!user || user.isSuspended || user.role !== 'ADMIN') {
+      req.session.userId = null;
+      req.session.role = null;
+      return res.redirect('/login');
+    }
+
+    const name = String(req.body.name || '').trim();
+    if (!name) {
+      setFlash(req, 'Category name is required.');
+      return res.redirect('/admin');
+    }
+
+    const result = await createJobCategory(name);
+    setFlash(req, result.message);
+    return res.redirect('/admin');
+  }));
+
+  app.post('/admin/categories/:id/rename', requireAuth, requireAdmin, wrap(async (req, res) => {
+    const user = await currentUser(req);
+    if (!user || user.isSuspended || user.role !== 'ADMIN') {
+      req.session.userId = null;
+      req.session.role = null;
+      return res.redirect('/login');
+    }
+
+    const categoryId = Number.parseInt(String(req.params.id || ''), 10);
+    const name = String(req.body.name || '').trim();
+    if (!Number.isFinite(categoryId) || categoryId <= 0) {
+      setFlash(req, 'Category could not be updated.');
+      return res.redirect('/admin');
+    }
+    if (!name) {
+      setFlash(req, 'Updated category name is required.');
+      return res.redirect('/admin');
+    }
+
+    const result = await renameJobCategory(categoryId, name);
+    setFlash(req, result.message);
+    return res.redirect('/admin');
+  }));
+
+  app.post('/admin/categories/:id/toggle', requireAuth, requireAdmin, wrap(async (req, res) => {
+    const user = await currentUser(req);
+    if (!user || user.isSuspended || user.role !== 'ADMIN') {
+      req.session.userId = null;
+      req.session.role = null;
+      return res.redirect('/login');
+    }
+
+    const categoryId = Number.parseInt(String(req.params.id || ''), 10);
+    const nextState = String(req.body.nextState || '').trim().toLowerCase();
+    if (!Number.isFinite(categoryId) || categoryId <= 0 || !['activate', 'deactivate'].includes(nextState)) {
+      setFlash(req, 'Category status could not be changed.');
+      return res.redirect('/admin');
+    }
+
+    const result = await setJobCategoryActiveState(categoryId, nextState === 'activate');
+    setFlash(req, result.message);
+    return res.redirect('/admin');
+  }));
+
+  app.post('/admin/categories/:id/move', requireAuth, requireAdmin, wrap(async (req, res) => {
+    const user = await currentUser(req);
+    if (!user || user.isSuspended || user.role !== 'ADMIN') {
+      req.session.userId = null;
+      req.session.role = null;
+      return res.redirect('/login');
+    }
+
+    const categoryId = Number.parseInt(String(req.params.id || ''), 10);
+    const direction = String(req.body.direction || '').trim().toLowerCase();
+    if (!Number.isFinite(categoryId) || categoryId <= 0 || !['up', 'down'].includes(direction)) {
+      setFlash(req, 'Category order could not be changed.');
+      return res.redirect('/admin');
+    }
+
+    const result = await moveJobCategory(categoryId, direction);
+    setFlash(req, result.message);
+    return res.redirect('/admin');
   }));
 }
 

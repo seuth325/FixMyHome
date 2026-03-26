@@ -7,6 +7,7 @@ function registerJobsAiRoutes(app, deps) {
     createNotification,
     geocodeLocation,
     getAppBaseUrl,
+    isValidActiveJobCategory,
     parsePositiveInt,
     prisma,
     requireAuth,
@@ -107,6 +108,10 @@ function registerJobsAiRoutes(app, deps) {
 
     if (!title || !category || !description || !location || !budget) {
       setFlash(req, 'Title, category, description, location, and budget are required.');
+      return res.redirect('/dashboard');
+    }
+    if (typeof isValidActiveJobCategory === 'function' && !isValidActiveJobCategory(category)) {
+      setFlash(req, 'Select a valid active category from the list.');
       return res.redirect('/dashboard');
     }
 
@@ -269,6 +274,10 @@ function registerJobsAiRoutes(app, deps) {
 
     if (!title || !category || !description || !location || !budget) {
       setFlash(req, 'Title, category, description, location, and budget are required.');
+      return res.redirect('/dashboard');
+    }
+    if (typeof isValidActiveJobCategory === 'function' && !isValidActiveJobCategory(category)) {
+      setFlash(req, 'Select a valid active category from the list.');
       return res.redirect('/dashboard');
     }
 
@@ -468,4 +477,3 @@ function registerJobsAiRoutes(app, deps) {
 module.exports = {
   registerJobsAiRoutes,
 };
-

@@ -111,7 +111,7 @@ const REQUEST_LOG_SKIP_PREFIXES = ['/public/', '/uploads/'];
 const REQUEST_LOG_SKIP_PATHS = new Set(['/favicon.ico', '/health', '/healthz']);
 const DEFAULT_SUPPORT_EMAIL = 'support@fixmyhome.pro';
 
-const JOB_CATEGORIES = [
+const DEFAULT_JOB_CATEGORIES = [
   'General Handyman',
   'Painting',
   'Furniture Assembly',
@@ -130,6 +130,224 @@ const JOB_CATEGORIES = [
   'Repairs',
 ];
 
+let JOB_CATEGORIES = [...DEFAULT_JOB_CATEGORIES];
+
+function normalizeJobCategoryName(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+async function ensureJobCategoryConfigTable() {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS admin_job_categories (
+      id BIGSERIAL PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      sort_order INTEGER NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS admin_job_categories_sort_idx ON admin_job_categories(sort_order, id)');
+
+  const existingRows = await prisma.$queryRaw`
+    SELECT id FROM admin_job_categories ORDER BY sort_order ASC, id ASC
+  `;
+
+  if (!Array.isArray(existingRows) || existingRows.length === 0) {
+    for (let index = 0; index < DEFAULT_JOB_CATEGORIES.length; index += 1) {
+      const name = DEFAULT_JOB_CATEGORIES[index];
+      await prisma.$executeRaw`
+        INSERT INTO admin_job_categories (name, is_active, sort_order, updated_at)
+        VALUES (${name}, true, ${index + 1}, NOW())
+        ON CONFLICT (name) DO NOTHING
+      `;
+    }
+  }
+}
+
+async function loadManagedJobCategories(includeInactive = false) {
+  await ensureJobCategoryConfigTable();
+  const rows = await prisma.$queryRaw`
+    SELECT id, name, is_active AS "isActive", sort_order AS "sortOrder", created_at AS "createdAt", updated_at AS "updatedAt"
+    FROM admin_job_categories
+    ORDER BY sort_order ASC, id ASC
+  `;
+
+  const normalizedRows = Array.isArray(rows)
+    ? rows.map((row) => ({
+      id: Number(row.id),
+      name: normalizeJobCategoryName(row.name),
+      isActive: Boolean(row.isActive),
+      sortOrder: Number(row.sortOrder),
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    })).filter((row) => row.name)
+    : [];
+
+  if (includeInactive) {
+    return normalizedRows;
+  }
+  return normalizedRows.filter((row) => row.isActive);
+}
+
+async function refreshManagedJobCategories() {
+  const activeRows = await loadManagedJobCategories(false);
+  JOB_CATEGORIES = activeRows.map((row) => row.name);
+  if (!JOB_CATEGORIES.length) {
+    JOB_CATEGORIES = [...DEFAULT_JOB_CATEGORIES];
+  }
+  app.locals.jobCategories = [...JOB_CATEGORIES];
+  return JOB_CATEGORIES;
+}
+
+async function createJobCategory(name) {
+  const normalizedName = normalizeJobCategoryName(name);
+  if (!normalizedName) {
+    return { ok: false, message: 'Category name is required.' };
+  }
+  if (normalizedName.length > 64) {
+    return { ok: false, message: 'Category name must be 64 characters or fewer.' };
+  }
+
+  await ensureJobCategoryConfigTable();
+
+  const existing = await prisma.$queryRaw`
+    SELECT id, is_active AS "isActive"
+    FROM admin_job_categories
+    WHERE lower(name) = lower(${normalizedName})
+    LIMIT 1
+  `;
+
+  if (Array.isArray(existing) && existing.length > 0) {
+    const row = existing[0];
+    if (row.isActive) {
+      return { ok: false, message: 'That category already exists.' };
+    }
+    await prisma.$executeRaw`
+      UPDATE admin_job_categories
+      SET is_active = true, name = ${normalizedName}, updated_at = NOW()
+      WHERE id = ${Number(row.id)}
+    `;
+    await refreshManagedJobCategories();
+    return { ok: true, message: `${normalizedName} reactivated.` };
+  }
+
+  const maxSortRows = await prisma.$queryRaw`
+    SELECT COALESCE(MAX(sort_order), 0)::int AS "maxSortOrder"
+    FROM admin_job_categories
+  `;
+  const nextSortOrder = Number(maxSortRows?.[0]?.maxSortOrder || 0) + 1;
+
+  await prisma.$executeRaw`
+    INSERT INTO admin_job_categories (name, is_active, sort_order, updated_at)
+    VALUES (${normalizedName}, true, ${nextSortOrder}, NOW())
+  `;
+
+  await refreshManagedJobCategories();
+  return { ok: true, message: `${normalizedName} added.` };
+}
+
+async function renameJobCategory(categoryId, nextName) {
+  const normalizedName = normalizeJobCategoryName(nextName);
+  if (!normalizedName) {
+    return { ok: false, message: 'Updated category name is required.' };
+  }
+
+  await ensureJobCategoryConfigTable();
+
+  const duplicate = await prisma.$queryRaw`
+    SELECT id
+    FROM admin_job_categories
+    WHERE lower(name) = lower(${normalizedName})
+      AND id <> ${Number(categoryId)}
+    LIMIT 1
+  `;
+
+  if (Array.isArray(duplicate) && duplicate.length > 0) {
+    return { ok: false, message: 'Another category already uses that name.' };
+  }
+
+  const result = await prisma.$executeRaw`
+    UPDATE admin_job_categories
+    SET name = ${normalizedName}, updated_at = NOW()
+    WHERE id = ${Number(categoryId)}
+  `;
+
+  if (!result) {
+    return { ok: false, message: 'Category was not found.' };
+  }
+
+  await refreshManagedJobCategories();
+  return { ok: true, message: 'Category renamed.' };
+}
+
+async function setJobCategoryActiveState(categoryId, isActive) {
+  await ensureJobCategoryConfigTable();
+
+  if (!isActive) {
+    const activeCountRows = await prisma.$queryRaw`
+      SELECT COUNT(*)::int AS "activeCount"
+      FROM admin_job_categories
+      WHERE is_active = true
+    `;
+    const activeCount = Number(activeCountRows?.[0]?.activeCount || 0);
+    if (activeCount <= 1) {
+      return { ok: false, message: 'At least one category must remain active.' };
+    }
+  }
+
+  const result = await prisma.$executeRaw`
+    UPDATE admin_job_categories
+    SET is_active = ${Boolean(isActive)}, updated_at = NOW()
+    WHERE id = ${Number(categoryId)}
+  `;
+
+  if (!result) {
+    return { ok: false, message: 'Category was not found.' };
+  }
+
+  await refreshManagedJobCategories();
+  return { ok: true, message: isActive ? 'Category activated.' : 'Category deactivated.' };
+}
+
+async function moveJobCategory(categoryId, direction) {
+  await ensureJobCategoryConfigTable();
+
+  const rows = await loadManagedJobCategories(true);
+  const currentIndex = rows.findIndex((row) => row.id === Number(categoryId));
+  if (currentIndex === -1) {
+    return { ok: false, message: 'Category was not found.' };
+  }
+
+  const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+  if (targetIndex < 0 || targetIndex >= rows.length) {
+    return { ok: false, message: 'Category is already at the edge of the list.' };
+  }
+
+  const current = rows[currentIndex];
+  const target = rows[targetIndex];
+
+  await prisma.$transaction([
+    prisma.$executeRaw`
+      UPDATE admin_job_categories
+      SET sort_order = ${target.sortOrder}, updated_at = NOW()
+      WHERE id = ${current.id}
+    `,
+    prisma.$executeRaw`
+      UPDATE admin_job_categories
+      SET sort_order = ${current.sortOrder}, updated_at = NOW()
+      WHERE id = ${target.id}
+    `,
+  ]);
+
+  await refreshManagedJobCategories();
+  return { ok: true, message: 'Category order updated.' };
+}
+
+function isValidActiveJobCategory(category) {
+  return JOB_CATEGORIES.includes(String(category || '').trim());
+}
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -2842,7 +3060,6 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
           category: 'desc',
         },
       },
-      take: 6,
     }),
   ]);
 
@@ -2957,6 +3174,32 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
     .slice(0, 16);
   const categoryChartColors = ['#3ab9c2', '#0e7c86', '#f0a552', '#8ed081', '#f26d85', '#8b7cf6'];
   const safeJobCategoryCounts = Array.isArray(jobCategoryCounts) ? jobCategoryCounts : [];
+  const managedJobCategories = await loadManagedJobCategories(true);
+  const jobCountByCategory = new Map(
+    safeJobCategoryCounts.map((entry) => [
+      String(entry?.category || ''),
+      Number(entry?._count?.category || 0),
+    ])
+  );
+  const knownCategoryNames = new Set(managedJobCategories.map((entry) => entry.name));
+  const unmanagedCategories = [...jobCountByCategory.entries()]
+    .filter(([name]) => name && !knownCategoryNames.has(name))
+    .map(([name, usageCount]) => ({
+      id: null,
+      name,
+      isActive: false,
+      sortOrder: 9999,
+      usageCount,
+      unmanaged: true,
+    }));
+  const managedJobCategoryList = [
+    ...managedJobCategories.map((entry) => ({
+      ...entry,
+      usageCount: jobCountByCategory.get(entry.name) || 0,
+      unmanaged: false,
+    })),
+    ...unmanagedCategories,
+  ];
   if (!Array.isArray(jobCategoryCounts)) {
     console.error('[admin] unexpected jobCategoryCounts payload', {
       type: typeof jobCategoryCounts,
@@ -3087,6 +3330,7 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
       handymanCount,
       homeownerList,
       handymanList,
+      managedJobCategories: managedJobCategoryList,
     },
   };
 }
@@ -3293,6 +3537,10 @@ registerAdminCoreRoutes(app, {
   buildAdminJobTimeline,
   buildSupportCaseViewQuery,
   currentUser,
+  createJobCategory,
+  moveJobCategory,
+  renameJobCategory,
+  setJobCategoryActiveState,
   enrichAdminJob,
   formatCurrency,
   getStatusTone,
@@ -3385,6 +3633,7 @@ registerJobsAiRoutes(app, {
   createNotification,
   geocodeLocation,
   getAppBaseUrl,
+  isValidActiveJobCategory,
   parsePositiveInt,
   prisma,
   requireAuth,
@@ -3544,9 +3793,23 @@ app.use((err, req, res, next) => {
   return res.redirect('/dashboard');
 });
 
-app.listen(PORT, () => {
-  console.log(`FixMyHome web app running at http://localhost:${PORT}`);
-  console.log(`[monitoring] provider=${monitoringStatus.provider} enabled=${monitoringStatus.enabled}`);
+async function startServer() {
+  try {
+    await refreshManagedJobCategories();
+    console.log(`[categories] loaded ${JOB_CATEGORIES.length} active categories`);
+  } catch (error) {
+    console.error('[categories] failed to load managed categories; continuing with defaults', error);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`FixMyHome web app running at http://localhost:${PORT}`);
+    console.log(`[monitoring] provider=${monitoringStatus.provider} enabled=${monitoringStatus.enabled}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error('[startup] fatal error', error);
+  process.exit(1);
 });
 
 process.on('SIGINT', async () => {

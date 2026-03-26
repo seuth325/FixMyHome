@@ -126,6 +126,57 @@
       <article class="app-card span-two">
         <div class="section-head">
           <div>
+            <p class="eyebrow">Job categories</p>
+            <h2>Maintain category options</h2>
+          </div>
+          <span class="stat-pill"><%= (roleData.managedJobCategories || []).filter((entry) => entry.isActive).length %> active</span>
+        </div>
+        <form method="POST" action="/admin/categories" class="saved-search-form">
+          <label>
+            <span>Add category</span>
+            <input type="text" name="name" maxlength="64" placeholder="Example: Garage Door Repair" required />
+          </label>
+          <button type="submit" class="btn btn-secondary btn-small">Add</button>
+        </form>
+        <% if (!roleData.managedJobCategories || roleData.managedJobCategories.length === 0) { %>
+          <div class="empty-state small">No categories configured yet.</div>
+        <% } else { %>
+          <div class="saved-view-list">
+            <% roleData.managedJobCategories.forEach((category) => { %>
+              <div class="saved-view-row">
+                <div class="saved-view-meta">
+                  <strong><%= category.name %></strong>
+                  <span class="job-meta"><%= category.isActive ? 'Active' : 'Inactive' %> - <%= category.usageCount %> job<%= category.usageCount === 1 ? '' : 's' %><% if (category.unmanaged) { %> - legacy name in existing jobs<% } %></span>
+                </div>
+                <% if (!category.unmanaged) { %>
+                  <div class="inline-actions compact-actions wrap-actions">
+                    <form method="POST" action="/admin/categories/<%= category.id %>/move">
+                      <input type="hidden" name="direction" value="up" />
+                      <button type="submit" class="btn btn-secondary btn-small">Up</button>
+                    </form>
+                    <form method="POST" action="/admin/categories/<%= category.id %>/move">
+                      <input type="hidden" name="direction" value="down" />
+                      <button type="submit" class="btn btn-secondary btn-small">Down</button>
+                    </form>
+                    <form method="POST" action="/admin/categories/<%= category.id %>/toggle">
+                      <input type="hidden" name="nextState" value="<%= category.isActive ? 'deactivate' : 'activate' %>" />
+                      <button type="submit" class="btn btn-secondary btn-small"><%= category.isActive ? 'Deactivate' : 'Activate' %></button>
+                    </form>
+                    <form method="POST" action="/admin/categories/<%= category.id %>/rename" class="inline-actions compact-actions">
+                      <input type="text" name="name" maxlength="64" value="<%= category.name %>" required />
+                      <button type="submit" class="btn btn-secondary btn-small">Rename</button>
+                    </form>
+                  </div>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
             <p class="eyebrow">Support case ops</p>
             <h2>Tracked playbook handoffs</h2>
           </div>
