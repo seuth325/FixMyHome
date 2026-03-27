@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FixMyHome - Trusted Local Home Help</title>
+  <meta name="description" content="FixMyHome connects homeowners with trusted local handymen through clearer bids, secure payments, and verified hiring workflows." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <%- include('partials/favicon-head') %>
+</head>
+<body class="site-body landing-body">
+  <div class="auth-theme-toggle">
+    <button type="button" class="btn btn-secondary" data-theme-toggle>Dark mode</button>
+  </div>
+
+  <main class="app-shell landing-shell">
+    <header class="app-card landing-header">
+      <a href="/" class="brand-mark brand-mark-light" aria-label="Go to FixMyHome home">FixMyHome</a>
+      <nav class="landing-nav" aria-label="Main navigation">
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+        <a href="/login">Log in</a>
+        <a href="/signup" class="btn btn-primary btn-small">Get started</a>
+      </nav>
+    </header>
+
+    <% if (flash) { %><div class="flash" role="alert"><%= flash %></div><% } %>
+
+    <section class="app-card landing-hero">
+      <div class="landing-hero-copy">
+        <p class="eyebrow">Local help, made reliable</p>
+        <h1>Hire faster with local pros, competitive offers, and verified trust.</h1>
+        <p>FixMyHome helps homeowners post clear jobs and compare bids, while handymen win more work with a cleaner workflow from first message through payment.</p>
+        <div class="landing-actions">
+          <a href="/signup" class="btn btn-primary">Post a job</a>
+          <a href="/signup" class="btn btn-secondary">Find jobs</a>
+        </div>
+      </div>
+      <div class="landing-hero-media">
+        <img src="/images/marketing/skilled-local-focus.svg" alt="Skilled local handyman helping in a home" loading="eager" />
+      </div>
+    </section>
+
+    <section class="landing-value-grid" aria-label="Core value highlights">
+      <article class="app-card landing-value-card">
+        <img src="/images/marketing/skilled-local-focus.svg" alt="Skilled and local focus" loading="lazy" />
+        <div>
+          <h2>Skilled and Local Focus</h2>
+          <p>Connect with nearby professionals who understand local homes and can respond quickly.</p>
+        </div>
+      </article>
+      <article class="app-card landing-value-card">
+        <img src="/images/marketing/competitive-offers.svg" alt="Competitive offers from qualified pros" loading="lazy" />
+        <div>
+          <h2>Competitive Offers</h2>
+          <p>Collect clear bids, compare scope side by side, and choose the right pro with confidence.</p>
+        </div>
+      </article>
+      <article class="app-card landing-value-card">
+        <img src="/images/marketing/trust-verification.png" alt="Trust and verification badge" loading="lazy" />
+        <div>
+          <h2>Trust and Verification</h2>
+          <p>Hire with confidence using safer payments, verification workflows, and support when needed.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="app-card landing-steps">
+      <div>
+        <p class="eyebrow">How it works</p>
+        <h2>Simple flow for both sides of the job</h2>
+      </div>
+      <div class="landing-steps-grid">
+        <article>
+          <h3>Homeowners</h3>
+          <p>Post your project, compare bids, and hire the best fit.</p>
+        </article>
+        <article>
+          <h3>Handymen</h3>
+          <p>Find matching local jobs, submit clear offers, and get paid securely.</p>
+        </article>
+        <article>
+          <h3>Platform trust</h3>
+          <p>Verification, billing controls, and support tools keep projects moving smoothly.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="app-card landing-cta">
+      <h2>Ready to get started?</h2>
+      <p>Create your account and start posting or bidding in minutes.</p>
+      <div class="landing-actions">
+        <a href="/signup" class="btn btn-primary">Create account</a>
+        <a href="/login" class="btn btn-secondary">Log in</a>
+      </div>
+    </section>
+  </main>
+
+  <%- include('partials/site-footer', { footerNavItems: legalNavItems, showFooterSupportEmail: false }) %>
+
+  <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

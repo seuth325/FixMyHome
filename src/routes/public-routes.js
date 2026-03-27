@@ -13,11 +13,18 @@ function registerPublicRoutes(app, deps) {
 
   app.get('/', wrap(async (req, res) => {
     const user = await currentUser(req);
-    if (!user) {
-      clearAuthSession(req);
-      return res.redirect('/login');
+    if (user) {
+      return res.redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
     }
-    return res.redirect(user.role === 'ADMIN' ? '/admin' : '/dashboard');
+
+    clearAuthSession(req);
+    return res.render('landing', {
+      flash: popFlash(req),
+      supportEmail: getSupportEmail(),
+      legalNavItems: getLegalNavItems(),
+      currentYear: new Date().getFullYear(),
+      appBaseUrl: getAppBaseUrl(req),
+    });
   }));
 
   app.get('/mockup', wrap(async (req, res) => {
