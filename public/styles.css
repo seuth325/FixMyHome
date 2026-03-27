@@ -2413,7 +2413,9 @@ body[data-theme='dark'] .site-footer-brand:focus-visible {
 .landing-value-card img {
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  background: linear-gradient(160deg, rgba(23, 48, 66, 0.94), rgba(14, 124, 134, 0.72));
   border-bottom: 1px solid var(--border);
 }
 
