@@ -2342,7 +2342,7 @@ body[data-theme='dark'] .site-footer-brand:focus-visible {
 
 .landing-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.03fr) minmax(0, 0.97fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 22px;
   align-items: stretch;
   padding: 22px;
@@ -2380,20 +2380,6 @@ body[data-theme='dark'] .site-footer-brand:focus-visible {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.landing-hero-media {
-  min-height: 380px;
-  border-radius: 22px;
-  overflow: hidden;
-  border: 1px solid rgba(196, 236, 242, 0.22);
-  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.24);
-}
-
-.landing-hero-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .landing-value-grid {
@@ -2482,14 +2468,6 @@ body[data-theme='dark'] .site-footer-brand:focus-visible {
 }
 
 @media (max-width: 1080px) {
-  .landing-hero {
-    grid-template-columns: 1fr;
-  }
-
-  .landing-hero-media {
-    min-height: 320px;
-  }
-
   .landing-value-grid,
   .landing-steps-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2520,9 +2498,5 @@ body[data-theme='dark'] .site-footer-brand:focus-visible {
 
   .landing-hero-copy p {
     font-size: 1rem;
-  }
-
-  .landing-hero-media {
-    min-height: 260px;
   }
 }
