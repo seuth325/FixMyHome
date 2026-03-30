@@ -96,7 +96,8 @@
     </section>
   </main>
 
-  <%- include('partials/site-footer', { footerNavItems: legalNavItems, showFooterSupportEmail: false }) %>
+  <% const landingFooterNavItems = (legalNavItems || []).filter((item) => item.href !== '/refund-policy'); %>
+  <%- include('partials/site-footer', { footerNavItems: landingFooterNavItems, showFooterSupportEmail: false }) %>
 
   <script src="/theme-toggle.js" defer></script>
 </body>
