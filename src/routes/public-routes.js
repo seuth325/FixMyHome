@@ -37,6 +37,16 @@ function registerPublicRoutes(app, deps) {
     return res.redirect('/login');
   }));
 
+
+  app.get('/sample-app', (req, res) => {
+    res.render('sample-app', {
+      flash: popFlash(req),
+      supportEmail: getSupportEmail(),
+      legalNavItems: getLegalNavItems(),
+      currentYear: new Date().getFullYear(),
+      appBaseUrl: getAppBaseUrl(req),
+    });
+  });
   app.get('/terms', (req, res) => {
     res.render('terms', {
       flash: popFlash(req),
