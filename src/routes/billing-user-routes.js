@@ -10,6 +10,8 @@ function registerBillingUserRoutes(app, deps) {
     getStripePlanPriceId,
     PLAN_CONFIG,
     PLAN_PRICING,
+    isPlanCheckoutEnabled,
+    isCreditPackCheckoutEnabled,
     prisma,
     requireAuth,
     setFlash,
@@ -29,6 +31,11 @@ function registerBillingUserRoutes(app, deps) {
     const plan = String(req.body.plan || '').trim();
     if (!PLAN_CONFIG[plan]) {
       setFlash(req, 'Choose a valid plan.');
+      return res.redirect('/dashboard');
+    }
+
+    if (!isPlanCheckoutEnabled(plan)) {
+      setFlash(req, formatSubscriptionPlan(plan) + ' checkout is temporarily unavailable.');
       return res.redirect('/dashboard');
     }
 
@@ -137,6 +144,11 @@ function registerBillingUserRoutes(app, deps) {
     const pack = CREDIT_PACKS[packKey];
     if (!pack) {
       setFlash(req, 'Choose a valid credit pack.');
+      return res.redirect('/dashboard');
+    }
+
+    if (!isCreditPackCheckoutEnabled(packKey)) {
+      setFlash(req, pack.credits + ' credit checkout is temporarily unavailable.');
       return res.redirect('/dashboard');
     }
 

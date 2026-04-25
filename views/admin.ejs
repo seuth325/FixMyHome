@@ -177,6 +177,36 @@
       <article class="app-card span-two">
         <div class="section-head">
           <div>
+            <p class="eyebrow">Payment options</p>
+            <h2>Enable or disable checkout choices</h2>
+          </div>
+          <span class="stat-pill"><%= (roleData.paymentOptions || []).filter((entry) => entry.isEnabled).length %> enabled</span>
+        </div>
+        <% if (!roleData.paymentOptions || roleData.paymentOptions.length === 0) { %>
+          <div class="empty-state small">Payment options are not configured yet.</div>
+        <% } else { %>
+          <div class="saved-view-list">
+            <% roleData.paymentOptions.forEach((option) => { %>
+              <div class="saved-view-row">
+                <div class="saved-view-meta">
+                  <strong><%= option.label %></strong>
+                  <span class="job-meta"><%= option.description %> - <%= option.isEnabled ? 'Enabled' : 'Disabled' %></span>
+                </div>
+                <div class="inline-actions compact-actions wrap-actions">
+                  <form method="POST" action="/admin/payment-options/<%= option.key %>/toggle">
+                    <input type="hidden" name="nextState" value="<%= option.isEnabled ? 'disable' : 'enable' %>" />
+                    <button type="submit" class="btn btn-secondary btn-small"><%= option.isEnabled ? 'Disable' : 'Enable' %></button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </article>
+
+      <article class="app-card span-two">
+        <div class="section-head">
+          <div>
             <p class="eyebrow">Support case ops</p>
             <h2>Tracked playbook handoffs</h2>
           </div>
