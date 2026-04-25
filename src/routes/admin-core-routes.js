@@ -5,6 +5,7 @@ function registerAdminCoreRoutes(app, deps) {
     buildSupportCaseViewQuery,
     currentUser,
     createJobCategory,
+    emailAdminsPaymentOptionUpdated,
     moveJobCategory,
     notifyAdmins,
     renameJobCategory,
@@ -417,6 +418,19 @@ function registerAdminCoreRoutes(app, deps) {
         `${adminName} ${stateLabel} ${optionLabel}.`,
         '/admin'
       );
+      try {
+        const host = String(req.get('host') || '').trim();
+        const protocol = req.protocol || 'https';
+        const adminUrl = host ? `${protocol}://${host}/admin` : '/admin';
+        await emailAdminsPaymentOptionUpdated({
+          actorName: adminName,
+          optionLabel,
+          isEnabled: result.isEnabled,
+          adminUrl,
+        });
+      } catch (emailError) {
+        console.error('[admin-alert-email] failed to send payment option update email', emailError);
+      }
     }
     setFlash(req, result.message);
     return res.redirect('/admin');

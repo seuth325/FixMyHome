@@ -7,7 +7,13 @@ const { prisma } = require('./lib/prisma');
 const { PrismaSessionStore } = require('./lib/session-store');
 const { saveJobPhoto, saveSupportCaseAttachment, getSupportCaseAttachmentLocalPath } = require('./lib/storage');
 const { extractZip, geocodeLocation, haversineDistanceMiles, normalizeLocation } = require('./lib/geocode');
-const { sendPasswordResetEmail, sendContactMessageEmail, sendWelcomeEmail, sendHandymanBidInviteEmail } = require('./lib/mailer');
+const {
+  sendAdminPaymentOptionChangeEmail,
+  sendPasswordResetEmail,
+  sendContactMessageEmail,
+  sendWelcomeEmail,
+  sendHandymanBidInviteEmail,
+} = require('./lib/mailer');
 const { STRIPE_PROVIDER_NAME, buildWebhookEvent, createBillingPortalSession, createCheckoutSession, getPaymentProvider, getStripePlanPriceId, signPayload, verifyWebhookRequest } = require('./lib/payments');
 const { initializeMonitoring, setMonitoringUser, clearMonitoringUser, captureAppError } = require('./lib/monitoring');
 const {
@@ -3722,6 +3728,7 @@ registerAdminCoreRoutes(app, {
   buildSupportCaseViewQuery,
   currentUser,
   createJobCategory,
+  emailAdminsPaymentOptionUpdated,
   moveJobCategory,
   notifyAdmins,
   renameJobCategory,
@@ -3994,6 +4001,33 @@ async function startServer() {
   app.listen(PORT, () => {
     console.log(`FixMyHome web app running at http://localhost:${PORT}`);
     console.log(`[monitoring] provider=${monitoringStatus.provider} enabled=${monitoringStatus.enabled}`);
+  });
+}
+
+async function emailAdminsPaymentOptionUpdated({ actorName, optionLabel, isEnabled, adminUrl }) {
+  const admins = await prisma.user.findMany({
+    where: { role: 'ADMIN' },
+    select: { email: true },
+  });
+  const recipients = admins
+    .map((admin) => String(admin.email || '').trim())
+    .filter(Boolean);
+
+  if (recipients.length === 0) {
+    return {
+      delivered: false,
+      mode: 'skip',
+      reason: 'No admin email recipients found.',
+      recipientCount: 0,
+    };
+  }
+
+  return sendAdminPaymentOptionChangeEmail({
+    to: recipients,
+    actorName,
+    optionLabel,
+    isEnabled,
+    adminUrl,
   });
 }
 
