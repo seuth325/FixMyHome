@@ -237,7 +237,7 @@ async function setPaymentOptionEnabled(optionKey, isEnabled) {
   const definitionMap = getPaymentOptionDefinitionMap();
   const option = definitionMap[key];
   if (!option) {
-    return { ok: false, message: 'Payment option was not found.', option: null, isEnabled: null };
+    return { ok: false, message: 'Payment option was not found.' };
   }
 
   await ensurePaymentOptionConfigTable();
@@ -256,12 +256,7 @@ async function setPaymentOptionEnabled(optionKey, isEnabled) {
   `;
 
   await refreshPaymentOptions();
-  return {
-    ok: true,
-    message: `${option.label} ${isEnabled ? 'enabled' : 'disabled'}.`,
-    option,
-    isEnabled: Boolean(isEnabled),
-  };
+  return { ok: true, message: `${option.label} ${isEnabled ? 'enabled' : 'disabled'}.` };
 }
 
 const PASSWORD_RESET_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
@@ -3723,7 +3718,6 @@ registerAdminCoreRoutes(app, {
   currentUser,
   createJobCategory,
   moveJobCategory,
-  notifyAdmins,
   renameJobCategory,
   setJobCategoryActiveState,
   setPaymentOptionEnabled,
