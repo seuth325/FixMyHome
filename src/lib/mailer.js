@@ -235,65 +235,9 @@ async function sendHandymanBidInviteEmail({ to, homeownerName, jobTitle, jobLoca
   };
 }
 
-async function sendAdminPaymentOptionChangeEmail({ to, actorName, optionLabel, isEnabled, adminUrl }) {
-  const config = getMailerConfig();
-  const supportEmail = getSupportEmail();
-  const recipients = Array.isArray(to)
-    ? to.map((entry) => String(entry || '').trim()).filter(Boolean)
-    : [String(to || '').trim()].filter(Boolean);
-
-  if (!config.enabled) {
-    return {
-      delivered: false,
-      mode: 'log',
-      reason: 'SMTP is not configured.',
-      recipientCount: recipients.length,
-    };
-  }
-
-  if (recipients.length === 0) {
-    return {
-      delivered: false,
-      mode: 'skip',
-      reason: 'No admin email recipients found.',
-      recipientCount: 0,
-    };
-  }
-
-  const safeActorName = String(actorName || '').trim() || 'An admin';
-  const safeOptionLabel = String(optionLabel || '').trim() || 'a payment option';
-  const stateLabel = isEnabled ? 'enabled' : 'disabled';
-  const safeAdminUrl = String(adminUrl || '').trim();
-
-  await createTransport(config).sendMail({
-    from: config.from,
-    to: recipients,
-    subject: `FixMyHome admin alert: ${safeOptionLabel} ${stateLabel}`,
-    text: [
-      `${safeActorName} ${stateLabel} ${safeOptionLabel}.`,
-      '',
-      safeAdminUrl ? `Review settings: ${safeAdminUrl}` : 'Review settings in the Admin dashboard.',
-      '',
-      `Need help? Contact ${supportEmail}.`,
-    ].join('\n'),
-    html: `
-      <p>${escapeHtml(safeActorName)} <strong>${escapeHtml(stateLabel)}</strong> ${escapeHtml(safeOptionLabel)}.</p>
-      ${safeAdminUrl ? `<p><a href="${escapeHtml(safeAdminUrl)}">Review settings in Admin</a></p>` : '<p>Review settings in the Admin dashboard.</p>'}
-      <p>Need help? Contact <a href="mailto:${escapeHtml(supportEmail)}">${escapeHtml(supportEmail)}</a>.</p>
-    `,
-  });
-
-  return {
-    delivered: true,
-    mode: 'smtp',
-    recipientCount: recipients.length,
-  };
-}
-
 module.exports = {
   getMailerConfig,
   getSupportEmail,
-  sendAdminPaymentOptionChangeEmail,
   sendContactMessageEmail,
   sendHandymanBidInviteEmail,
   sendPasswordResetEmail,
