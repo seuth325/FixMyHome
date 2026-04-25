@@ -6,6 +6,7 @@ function registerAdminCoreRoutes(app, deps) {
     currentUser,
     createJobCategory,
     moveJobCategory,
+    notifyAdmins,
     renameJobCategory,
     setJobCategoryActiveState,
     setPaymentOptionEnabled,
@@ -406,6 +407,17 @@ function registerAdminCoreRoutes(app, deps) {
     }
 
     const result = await setPaymentOptionEnabled(optionKey, nextState === 'enable');
+    if (result.ok) {
+      const adminName = user.name || user.email || 'Admin user';
+      const optionLabel = result.option?.label || optionKey;
+      const stateLabel = result.isEnabled ? 'enabled' : 'disabled';
+      await notifyAdmins(
+        'ACCOUNT_STATUS',
+        'Payment option updated',
+        `${adminName} ${stateLabel} ${optionLabel}.`,
+        '/admin'
+      );
+    }
     setFlash(req, result.message);
     return res.redirect('/admin');
   }));
