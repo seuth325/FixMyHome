@@ -655,8 +655,7 @@
           </article>
         <% } %>
 
-        <article class="app-card span-two">
-          <% const paymentOptions = roleData.billing.paymentOptions || {}; %>
+<article class="app-card span-two">
           <div class="section-head">
             <div>
               <p class="eyebrow">Billing</p>
@@ -675,21 +674,14 @@
                   <button type="submit" class="btn btn-secondary btn-small">Manage billing</button>
                 </form>
               <% } %>
-              <% if (paymentOptions.CREDIT_PACK_STARTER !== false) { %>
-                <form method="POST" action="/billing/credits">
-                  <input type="hidden" name="pack" value="STARTER" />
-                  <button type="submit" class="btn btn-secondary btn-small">Buy 5 credits</button>
-                </form>
-              <% } %>
-              <% if (paymentOptions.CREDIT_PACK_GROWTH !== false) { %>
-                <form method="POST" action="/billing/credits">
-                  <input type="hidden" name="pack" value="GROWTH" />
-                  <button type="submit" class="btn btn-secondary btn-small">Buy 15 credits</button>
-                </form>
-              <% } %>
-              <% if (paymentOptions.CREDIT_PACK_STARTER === false && paymentOptions.CREDIT_PACK_GROWTH === false) { %>
-                <span class="job-meta">Credit pack checkout is disabled by admin.</span>
-              <% } %>
+              <form method="POST" action="/billing/credits">
+                <input type="hidden" name="pack" value="STARTER" />
+                <button type="submit" class="btn btn-secondary btn-small">Buy 5 credits</button>
+              </form>
+              <form method="POST" action="/billing/credits">
+                <input type="hidden" name="pack" value="GROWTH" />
+                <button type="submit" class="btn btn-secondary btn-small">Buy 15 credits</button>
+              </form>
             </div>
           </div>
           <% if (paymentProvider === 'stripe') { %>
@@ -697,19 +689,13 @@
           <% } %>
           <div class="billing-plan-grid">
             <% Object.entries(planConfig).forEach(([planKey, plan]) => { %>
-              <% const isCurrentPlan = roleData.billing.planSummary.key === planKey; %>
-              <% const isPlanEnabled = planKey === 'FREE' || (planKey === 'PLUS' ? paymentOptions.PLAN_PLUS !== false : planKey === 'PRO' ? paymentOptions.PLAN_PRO !== false : true); %>
-              <% if (!isPlanEnabled && !isCurrentPlan) { return; } %>
-              <section class="billing-plan-card <%= isCurrentPlan ? 'active' : '' %>">
+              <section class="billing-plan-card <%= roleData.billing.planSummary.key === planKey ? 'active' : '' %>">
                 <p class="eyebrow"><%= plan.name %></p>
                 <h3><%= plan.unlimitedBids ? 'Unlimited bidding' : plan.monthlyCredits + ' included credits' %></h3>
                 <p><%= planKey === 'FREE' ? 'Best for occasional side work.' : planKey === 'PLUS' ? 'Best for steady weekly bidding.' : 'Best for full-time crews who never want to pause.' %></p>
-                <% if (!isPlanEnabled && isCurrentPlan) { %>
-                  <p class="job-meta">New <%= plan.name %> checkouts are currently disabled by admin.</p>
-                <% } %>
                 <form method="POST" action="/billing/plan">
                   <input type="hidden" name="plan" value="<%= planKey %>" />
-                  <button type="submit" class="btn <%= isCurrentPlan ? 'btn-secondary' : 'btn-primary' %> btn-small" <%= !isPlanEnabled ? 'disabled' : '' %>><%= isCurrentPlan ? 'Current plan' : plan.cta %></button>
+                  <button type="submit" class="btn <%= roleData.billing.planSummary.key === planKey ? 'btn-secondary' : 'btn-primary' %> btn-small"><%= roleData.billing.planSummary.key === planKey ? 'Current plan' : plan.cta %></button>
                 </form>
               </section>
             <% }) %>

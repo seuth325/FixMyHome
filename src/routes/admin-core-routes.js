@@ -8,7 +8,6 @@ function registerAdminCoreRoutes(app, deps) {
     moveJobCategory,
     renameJobCategory,
     setJobCategoryActiveState,
-    setPaymentOptionEnabled,
     enrichAdminJob,
     formatCurrency,
     getStatusTone,
@@ -386,26 +385,6 @@ function registerAdminCoreRoutes(app, deps) {
     }
 
     const result = await moveJobCategory(categoryId, direction);
-    setFlash(req, result.message);
-    return res.redirect('/admin');
-  }));
-
-  app.post('/admin/payment-options/:key/toggle', requireAuth, requireAdmin, wrap(async (req, res) => {
-    const user = await currentUser(req);
-    if (!user || user.isSuspended || user.role !== 'ADMIN') {
-      req.session.userId = null;
-      req.session.role = null;
-      return res.redirect('/login');
-    }
-
-    const optionKey = String(req.params.key || '').trim().toUpperCase();
-    const nextState = String(req.body.nextState || '').trim().toLowerCase();
-    if (!optionKey || !['enable', 'disable'].includes(nextState)) {
-      setFlash(req, 'Payment option status could not be changed.');
-      return res.redirect('/admin');
-    }
-
-    const result = await setPaymentOptionEnabled(optionKey, nextState === 'enable');
     setFlash(req, result.message);
     return res.redirect('/admin');
   }));
