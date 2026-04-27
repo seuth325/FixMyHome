@@ -668,7 +668,7 @@ function getLoginFooterNavItems() {
 
 function getAppFooterNavItems() {
   return [
-    { href: '/terms', label: 'Terms' },
+    { href: '/terms', label: 'Terms of Service' },
     { href: '/privacy', label: 'Privacy' },
     { href: '/refund-policy', label: 'Refund policy' },
     { href: '/about', label: 'About Us' },
