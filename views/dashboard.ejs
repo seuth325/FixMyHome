@@ -1025,7 +1025,7 @@
                     </label>
                     <div class="mini-stat-box">
                       <strong><%= existingBid ? 'Bid saved' : 'No bid yet' %></strong>
-                      <span><%= existingBid ? 'You can update it until award.' : roleData.billing.planSummary.unlimitedBids ? 'Unlimited bids on your plan.' : 'New bids use 1 lead credit.' %></span>
+                      <span><%= existingBid ? 'You can update it until award.' : roleData.billing.freeOnlyMode ? 'Bids are included while free mode is active.' : roleData.billing.planSummary.unlimitedBids ? 'Unlimited bids on your plan.' : 'New bids use 1 lead credit.' %></span>
                     </div>
                   </div>
                   <label>

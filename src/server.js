@@ -3699,6 +3699,7 @@ async function loadDashboardData(user, filters = parseHandymanFilters()) {
         transactions: leadTransactions,
         paymentOptions: paymentOptionFlags,
         showBillingPanel,
+        freeOnlyMode: freePlanForAllEnabled,
       },
       savedSearches: savedSearches.map((savedSearch) => ({
         ...savedSearch,
