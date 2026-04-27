@@ -87,6 +87,14 @@ const PLAN_PRICING = {
 
 const PAYMENT_OPTION_DEFINITIONS = [
   {
+    key: 'BILLING_SELF_SERVICE',
+    type: 'PLATFORM',
+    value: 'BILLING_SELF_SERVICE',
+    label: 'Billing self-service for handymen',
+    description: 'Show or hide billing options in handyman dashboard.',
+    sortOrder: 5,
+  },
+  {
     key: 'PLAN_PLUS',
     type: 'PLAN',
     value: 'PLUS',
@@ -222,9 +230,14 @@ function isPaymentOptionEnabled(optionKey) {
   return PAYMENT_OPTION_FLAGS[key] !== false;
 }
 
+function isBillingSelfServiceEnabled() {
+  return isPaymentOptionEnabled('BILLING_SELF_SERVICE');
+}
+
 function isFreePlanForAllEnabled() {
   const value = String(process.env.FREE_PLAN_FOR_ALL || '').trim().toLowerCase();
-  return ['1', 'true', 'yes', 'on'].includes(value);
+  const envEnabled = ['1', 'true', 'yes', 'on'].includes(value);
+  return envEnabled || !isBillingSelfServiceEnabled();
 }
 
 function isPlanCheckoutEnabled(planKey) {
@@ -3671,6 +3684,7 @@ async function loadDashboardData(user, filters = parseHandymanFilters()) {
       paymentOptionFlags[optionKey] = false;
     }
   }
+  const showBillingPanel = isBillingSelfServiceEnabled() && !freePlanForAllEnabled;
 
   return {
     roleData: {
@@ -3684,6 +3698,7 @@ async function loadDashboardData(user, filters = parseHandymanFilters()) {
         planSummary: getPlanSummary(profile),
         transactions: leadTransactions,
         paymentOptions: paymentOptionFlags,
+        showBillingPanel,
       },
       savedSearches: savedSearches.map((savedSearch) => ({
         ...savedSearch,

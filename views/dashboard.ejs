@@ -655,6 +655,7 @@
           </article>
         <% } %>
 
+        <% if (roleData.billing.showBillingPanel) { %>
         <article class="app-card span-two">
           <% const paymentOptions = roleData.billing.paymentOptions || {}; %>
           <div class="section-head">
@@ -732,6 +733,7 @@
             </div>
           <% } %>
         </article>
+        <% } %>
 
         <article class="app-card span-four">
           <div class="section-head">
