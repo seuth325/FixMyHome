@@ -85,6 +85,191 @@ const PLAN_PRICING = {
   PRO: 7900,
 };
 
+const PAYMENT_OPTION_DEFINITIONS = [
+  {
+    key: 'PLAN_PLUS',
+    type: 'PLAN',
+    value: 'PLUS',
+    label: 'Plus plan checkout',
+    description: 'Allow handymen to upgrade to the Plus subscription plan.',
+    sortOrder: 10,
+  },
+  {
+    key: 'PLAN_PRO',
+    type: 'PLAN',
+    value: 'PRO',
+    label: 'Pro plan checkout',
+    description: 'Allow handymen to upgrade to the Pro subscription plan.',
+    sortOrder: 20,
+  },
+  {
+    key: 'CREDIT_PACK_STARTER',
+    type: 'CREDIT_PACK',
+    value: 'STARTER',
+    label: 'Starter credit pack (5 credits)',
+    description: 'Allow checkout for the 5-credit starter pack.',
+    sortOrder: 30,
+  },
+  {
+    key: 'CREDIT_PACK_GROWTH',
+    type: 'CREDIT_PACK',
+    value: 'GROWTH',
+    label: 'Growth credit pack (15 credits)',
+    description: 'Allow checkout for the 15-credit growth pack.',
+    sortOrder: 40,
+  },
+];
+
+const DEFAULT_PAYMENT_OPTION_FLAGS = PAYMENT_OPTION_DEFINITIONS.reduce((acc, option) => {
+  acc[option.key] = true;
+  return acc;
+}, {});
+
+let PAYMENT_OPTION_FLAGS = { ...DEFAULT_PAYMENT_OPTION_FLAGS };
+
+function normalizePaymentOptionKey(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
+function getPaymentOptionDefinitionMap() {
+  return PAYMENT_OPTION_DEFINITIONS.reduce((acc, option) => {
+    acc[option.key] = option;
+    return acc;
+  }, {});
+}
+
+async function ensurePaymentOptionConfigTable() {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS admin_payment_options (
+      id BIGSERIAL PRIMARY KEY,
+      option_key TEXT NOT NULL UNIQUE,
+      is_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+      sort_order INTEGER NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS admin_payment_options_sort_idx ON admin_payment_options(sort_order, id)');
+
+  for (const option of PAYMENT_OPTION_DEFINITIONS) {
+    await prisma.$executeRaw`
+      INSERT INTO admin_payment_options (option_key, is_enabled, sort_order, updated_at)
+      VALUES (${option.key}, true, ${option.sortOrder}, NOW())
+      ON CONFLICT (option_key) DO NOTHING
+    `;
+  }
+}
+
+async function loadPaymentOptions() {
+  const definitionMap = getPaymentOptionDefinitionMap();
+  const defaults = PAYMENT_OPTION_DEFINITIONS.map((option) => ({
+    ...option,
+    isEnabled: true,
+    updatedAt: null,
+  }));
+
+  try {
+    await ensurePaymentOptionConfigTable();
+    const rows = await prisma.$queryRaw`
+      SELECT option_key AS "optionKey", is_enabled AS "isEnabled", sort_order AS "sortOrder", updated_at AS "updatedAt"
+      FROM admin_payment_options
+      ORDER BY sort_order ASC, id ASC
+    `;
+
+    const optionsByKey = defaults.reduce((acc, option) => {
+      acc[option.key] = option;
+      return acc;
+    }, {});
+
+    if (Array.isArray(rows)) {
+      for (const row of rows) {
+        const key = normalizePaymentOptionKey(row.optionKey);
+        const definition = definitionMap[key];
+        if (!definition) continue;
+        optionsByKey[key] = {
+          ...definition,
+          isEnabled: Boolean(row.isEnabled),
+          updatedAt: row.updatedAt || null,
+        };
+      }
+    }
+
+    return PAYMENT_OPTION_DEFINITIONS
+      .map((option) => optionsByKey[option.key])
+      .filter(Boolean);
+  } catch (error) {
+    console.warn('[payments] failed to load admin payment options; using defaults', error);
+    return defaults;
+  }
+}
+
+async function refreshPaymentOptions() {
+  const options = await loadPaymentOptions();
+  const nextFlags = { ...DEFAULT_PAYMENT_OPTION_FLAGS };
+  for (const option of options) {
+    nextFlags[option.key] = Boolean(option.isEnabled);
+  }
+  PAYMENT_OPTION_FLAGS = nextFlags;
+  app.locals.paymentOptionFlags = { ...PAYMENT_OPTION_FLAGS };
+  return PAYMENT_OPTION_FLAGS;
+}
+
+function getPaymentOptionFlags() {
+  return { ...PAYMENT_OPTION_FLAGS };
+}
+
+function isPaymentOptionEnabled(optionKey) {
+  const key = normalizePaymentOptionKey(optionKey);
+  return PAYMENT_OPTION_FLAGS[key] !== false;
+}
+
+function isPlanCheckoutEnabled(planKey) {
+  const key = String(planKey || '').trim().toUpperCase();
+  if (key === 'FREE') return true;
+  if (key === 'PLUS') return isPaymentOptionEnabled('PLAN_PLUS');
+  if (key === 'PRO') return isPaymentOptionEnabled('PLAN_PRO');
+  return false;
+}
+
+function isCreditPackCheckoutEnabled(packKey) {
+  const key = String(packKey || '').trim().toUpperCase();
+  if (key === 'STARTER') return isPaymentOptionEnabled('CREDIT_PACK_STARTER');
+  if (key === 'GROWTH') return isPaymentOptionEnabled('CREDIT_PACK_GROWTH');
+  return false;
+}
+
+async function setPaymentOptionEnabled(optionKey, isEnabled) {
+  const key = normalizePaymentOptionKey(optionKey);
+  const definition = getPaymentOptionDefinitionMap()[key];
+  if (!definition) {
+    return { ok: false, message: 'Payment option was not found.', option: null, isEnabled: null };
+  }
+
+  try {
+    await ensurePaymentOptionConfigTable();
+    await prisma.$executeRaw`
+      INSERT INTO admin_payment_options (option_key, is_enabled, sort_order, updated_at)
+      VALUES (${key}, ${Boolean(isEnabled)}, ${definition.sortOrder}, NOW())
+      ON CONFLICT (option_key)
+      DO UPDATE SET is_enabled = EXCLUDED.is_enabled, updated_at = NOW()
+    `;
+    await refreshPaymentOptions();
+    return {
+      ok: true,
+      message: `${definition.label} ${isEnabled ? 'enabled' : 'disabled'}.`,
+      option: definition,
+      isEnabled: Boolean(isEnabled),
+    };
+  } catch (error) {
+    console.error('[payments] failed to update payment option', { optionKey: key, error });
+    return {
+      ok: false,
+      message: 'Payment option could not be updated right now. Please try again.',
+      option: definition,
+      isEnabled: isPaymentOptionEnabled(key),
+    };
+  }
+}
+
 const PASSWORD_RESET_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const PASSWORD_RESET_RATE_LIMIT_MAX_ATTEMPTS = 5;
 const ACTION_RATE_LIMITS = {
@@ -3175,6 +3360,7 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
   const categoryChartColors = ['#3ab9c2', '#0e7c86', '#f0a552', '#8ed081', '#f26d85', '#8b7cf6'];
   const safeJobCategoryCounts = Array.isArray(jobCategoryCounts) ? jobCategoryCounts : [];
   const managedJobCategories = await loadManagedJobCategories(true);
+  const paymentOptions = await loadPaymentOptions();
   const jobCountByCategory = new Map(
     safeJobCategoryCounts.map((entry) => [
       String(entry?.category || ''),
@@ -3331,6 +3517,7 @@ async function loadAdminData(currentAdmin, filters = parseAdminBillingFilters())
       homeownerList,
       handymanList,
       managedJobCategories: managedJobCategoryList,
+      paymentOptions,
     },
   };
 }
@@ -3468,6 +3655,7 @@ async function loadDashboardData(user, filters = parseHandymanFilters()) {
     href: buildHandymanJobsViewHref(filters, option.key),
     active: filters.myJobsView === option.key,
   }));
+  const paymentOptionFlags = getPaymentOptionFlags();
 
   return {
     roleData: {
@@ -3480,6 +3668,7 @@ async function loadDashboardData(user, filters = parseHandymanFilters()) {
       billing: {
         planSummary: getPlanSummary(profile),
         transactions: leadTransactions,
+        paymentOptions: paymentOptionFlags,
       },
       savedSearches: savedSearches.map((savedSearch) => ({
         ...savedSearch,
@@ -3541,6 +3730,7 @@ registerAdminCoreRoutes(app, {
   moveJobCategory,
   renameJobCategory,
   setJobCategoryActiveState,
+  setPaymentOptionEnabled,
   enrichAdminJob,
   formatCurrency,
   getStatusTone,
@@ -3683,6 +3873,8 @@ registerBillingUserRoutes(app, {
   getStripePlanPriceId,
   PLAN_CONFIG,
   PLAN_PRICING,
+  isPlanCheckoutEnabled,
+  isCreditPackCheckoutEnabled,
   prisma,
   requireAuth,
   setFlash,
@@ -3796,9 +3988,11 @@ app.use((err, req, res, next) => {
 async function startServer() {
   try {
     await refreshManagedJobCategories();
+    await refreshPaymentOptions();
     console.log(`[categories] loaded ${JOB_CATEGORIES.length} active categories`);
+    console.log(`[payments] loaded ${Object.values(PAYMENT_OPTION_FLAGS).filter(Boolean).length}/${Object.keys(PAYMENT_OPTION_FLAGS).length} enabled payment options`);
   } catch (error) {
-    console.error('[categories] failed to load managed categories; continuing with defaults', error);
+    console.error('[startup] failed to load managed categories or payment options; continuing with defaults', error);
   }
 
   app.listen(PORT, () => {
