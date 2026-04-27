@@ -12,6 +12,7 @@ function registerBillingUserRoutes(app, deps) {
     PLAN_PRICING,
     isPlanCheckoutEnabled,
     isCreditPackCheckoutEnabled,
+    isFreePlanForAllEnabled,
     prisma,
     requireAuth,
     setFlash,
@@ -31,6 +32,10 @@ function registerBillingUserRoutes(app, deps) {
     const plan = String(req.body.plan || '').trim();
     if (!PLAN_CONFIG[plan]) {
       setFlash(req, 'Choose a valid plan.');
+      return res.redirect('/dashboard');
+    }
+    if (isFreePlanForAllEnabled() && plan !== 'FREE') {
+      setFlash(req, 'Paid plans are disabled while Free plan for all is enabled.');
       return res.redirect('/dashboard');
     }
     if (!isPlanCheckoutEnabled(plan)) {
@@ -143,6 +148,10 @@ function registerBillingUserRoutes(app, deps) {
     const pack = CREDIT_PACKS[packKey];
     if (!pack) {
       setFlash(req, 'Choose a valid credit pack.');
+      return res.redirect('/dashboard');
+    }
+    if (isFreePlanForAllEnabled()) {
+      setFlash(req, 'Lead credit purchases are disabled while Free plan for all is enabled.');
       return res.redirect('/dashboard');
     }
     if (!isCreditPackCheckoutEnabled(packKey)) {

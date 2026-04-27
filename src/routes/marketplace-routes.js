@@ -5,6 +5,7 @@ function registerMarketplaceRoutes(app, deps) {
     createNotification,
     createRateLimitMiddleware,
     currentUser,
+    isFreePlanForAllEnabled,
     logLeadCreditTransaction,
     notifyAdmins,
     parsePositiveInt,
@@ -39,6 +40,7 @@ function registerMarketplaceRoutes(app, deps) {
     const etaDays = parsePositiveInt(req.body.etaDays);
     const message = String(req.body.message || '').trim();
     const profile = await prisma.handymanProfile.findUnique({ where: { userId: user.id } });
+    const freePlanForAllEnabled = isFreePlanForAllEnabled();
 
     if (!profile) {
       setFlash(req, 'Create your handyman profile before bidding.');
@@ -59,7 +61,7 @@ function registerMarketplaceRoutes(app, deps) {
       },
     });
 
-    if (!existingBid && profile.subscriptionPlan !== 'PRO' && profile.leadCredits <= 0) {
+    if (!existingBid && !freePlanForAllEnabled && profile.subscriptionPlan !== 'PRO' && profile.leadCredits <= 0) {
       setFlash(req, 'You are out of lead credits. Buy a pack or upgrade your plan to keep bidding.');
       return res.redirect('/dashboard');
     }
@@ -92,7 +94,7 @@ function registerMarketplaceRoutes(app, deps) {
       },
     });
 
-    if (!existingBid && profile.subscriptionPlan !== 'PRO') {
+    if (!existingBid && !freePlanForAllEnabled && profile.subscriptionPlan !== 'PRO') {
       const updatedProfile = await prisma.handymanProfile.update({
         where: { userId: user.id },
         data: { leadCredits: { decrement: 1 } },
@@ -117,6 +119,8 @@ function registerMarketplaceRoutes(app, deps) {
 
     const bidFlash = existingBid
       ? 'Bid updated. You can keep refining it until the homeowner awards the job.'
+      : freePlanForAllEnabled
+        ? 'Bid saved. Free plan for all is active.'
       : profile.subscriptionPlan === 'PRO'
         ? 'Bid saved on your Pro plan.'
         : 'Bid saved and 1 lead credit was used.';

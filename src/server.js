@@ -222,8 +222,14 @@ function isPaymentOptionEnabled(optionKey) {
   return PAYMENT_OPTION_FLAGS[key] !== false;
 }
 
+function isFreePlanForAllEnabled() {
+  const value = String(process.env.FREE_PLAN_FOR_ALL || '').trim().toLowerCase();
+  return ['1', 'true', 'yes', 'on'].includes(value);
+}
+
 function isPlanCheckoutEnabled(planKey) {
   const key = String(planKey || '').trim().toUpperCase();
+  if (isFreePlanForAllEnabled() && key !== 'FREE') return false;
   if (key === 'FREE') return true;
   if (key === 'PLUS') return isPaymentOptionEnabled('PLAN_PLUS');
   if (key === 'PRO') return isPaymentOptionEnabled('PLAN_PRO');
@@ -231,6 +237,7 @@ function isPlanCheckoutEnabled(planKey) {
 }
 
 function isCreditPackCheckoutEnabled(packKey) {
+  if (isFreePlanForAllEnabled()) return false;
   const key = String(packKey || '').trim().toUpperCase();
   if (key === 'STARTER') return isPaymentOptionEnabled('CREDIT_PACK_STARTER');
   if (key === 'GROWTH') return isPaymentOptionEnabled('CREDIT_PACK_GROWTH');
@@ -1327,20 +1334,22 @@ function buildBillingGroups(billingEvents, customPlaybooks = []) {
 }
 
 function getPlanSummary(profile) {
-  const plan = PLAN_CONFIG[profile?.subscriptionPlan || 'FREE'] || PLAN_CONFIG.FREE;
+  const freePlanForAllEnabled = isFreePlanForAllEnabled();
+  const planKey = freePlanForAllEnabled ? 'FREE' : (profile?.subscriptionPlan || 'FREE');
+  const plan = PLAN_CONFIG[planKey] || PLAN_CONFIG.FREE;
   return {
-    key: profile?.subscriptionPlan || 'FREE',
+    key: planKey,
     name: plan.name,
     monthlyCredits: plan.monthlyCredits,
-    unlimitedBids: plan.unlimitedBids,
-    cta: plan.cta,
+    unlimitedBids: freePlanForAllEnabled ? true : plan.unlimitedBids,
+    cta: freePlanForAllEnabled ? 'Included for everyone' : plan.cta,
     leadCredits: profile?.leadCredits || 0,
-    renewsAt: profile?.subscriptionRenewsAt || null,
-    billingStatus: profile?.billingStatus || 'INACTIVE',
-    billingPeriodEndsAt: profile?.billingPeriodEndsAt || null,
-    billingQuantity: profile?.billingQuantity || 1,
-    hasCustomer: Boolean(profile?.stripeCustomerId),
-    hasSubscription: Boolean(profile?.stripeSubscriptionId),
+    renewsAt: freePlanForAllEnabled ? null : (profile?.subscriptionRenewsAt || null),
+    billingStatus: freePlanForAllEnabled ? 'ACTIVE' : (profile?.billingStatus || 'INACTIVE'),
+    billingPeriodEndsAt: freePlanForAllEnabled ? null : (profile?.billingPeriodEndsAt || null),
+    billingQuantity: 1,
+    hasCustomer: freePlanForAllEnabled ? false : Boolean(profile?.stripeCustomerId),
+    hasSubscription: freePlanForAllEnabled ? false : Boolean(profile?.stripeSubscriptionId),
   };
 }
 
@@ -3656,6 +3665,12 @@ async function loadDashboardData(user, filters = parseHandymanFilters()) {
     active: filters.myJobsView === option.key,
   }));
   const paymentOptionFlags = getPaymentOptionFlags();
+  const freePlanForAllEnabled = isFreePlanForAllEnabled();
+  if (freePlanForAllEnabled) {
+    for (const optionKey of Object.keys(paymentOptionFlags)) {
+      paymentOptionFlags[optionKey] = false;
+    }
+  }
 
   return {
     roleData: {
@@ -3875,6 +3890,7 @@ registerBillingUserRoutes(app, {
   PLAN_PRICING,
   isPlanCheckoutEnabled,
   isCreditPackCheckoutEnabled,
+  isFreePlanForAllEnabled,
   prisma,
   requireAuth,
   setFlash,
@@ -3888,6 +3904,7 @@ registerMarketplaceRoutes(app, {
   createNotification,
   createRateLimitMiddleware,
   currentUser,
+  isFreePlanForAllEnabled,
   logLeadCreditTransaction,
   notifyAdmins,
   parsePositiveInt,
