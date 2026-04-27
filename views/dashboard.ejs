@@ -739,25 +739,22 @@
           <div class="section-head">
             <div>
               <p class="eyebrow">Your jobs</p>
-              <h2>See funded work first, then pending, then completed</h2>
+              <h2>Track pending and completed work in one place</h2>
             </div>
           </div>
           <div class="billing-credit-row handyman-summary-row">
             <div class="mini-stat-box wide-stat-box">
-              <strong><%= roleData.handymanJobSummary?.activeFunded || 0 %> active funded</strong>
-              <span>Jobs with funded escrow and work ready to move.</span>
-            </div>
-            <div class="mini-stat-box wide-stat-box">
               <strong><%= roleData.handymanJobSummary?.pending || 0 %> pending</strong>
-              <span>Bids still waiting on homeowner review or funding.</span>
+              <span>Bids still waiting on homeowner review or award.</span>
             </div>
             <div class="mini-stat-box wide-stat-box">
               <strong><%= roleData.handymanJobSummary?.completed || 0 %> completed</strong>
-              <span>Finished jobs with released payments or reviews.</span>
+              <span>Finished jobs with reviews and closeout updates.</span>
             </div>
           </div>
           <div class="saved-search-list jobs-filter-chip-row">
             <% roleData.handymanJobsViewOptions?.forEach((option) => { %>
+              <% if (option.key === 'activeFunded') { return; } %>
               <a href="<%= option.href %>" class="saved-search-chip <%= option.active ? 'saved-search-chip-active' : '' %>">
                 <%= option.label %> (<%= option.count %>)
               </a>
@@ -772,7 +769,7 @@
           <% if (roleData.myBids.length > 0 && (!roleData.handymanBidSections || roleData.handymanBidSections.length === 0)) { %>
             <div class="empty-state empty-state-rich">
               <strong>No jobs match this view</strong>
-              <p>Try another quick filter to jump back to funded, pending, unread, or completed work.</p>
+              <p>Try another quick filter to jump back to pending, unread, or completed work.</p>
             </div>
           <% } %>
           <% (roleData.handymanBidSections || []).forEach((section) => { %>
