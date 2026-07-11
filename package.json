@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "prebuild": "node scripts/fix-permissions.js",
+    "build": "cross-env RAYON_NUM_THREADS=1 next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
@@ -39,6 +40,7 @@
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "^7.4.1",
