@@ -52,13 +52,18 @@ export default function SignInPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label htmlFor="password">Password</Label>
+                <Button asChild variant="link" size="sm" className="h-auto p-0 text-sm">
+                  <Link href="/forgot-password">Forgot password?</Link>
+                </Button>
+              </div>
               <Input id="password" type="password" autoComplete="current-password" {...register('password')} disabled={isLoading} />
               {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in…' : 'Sign In'}
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 
