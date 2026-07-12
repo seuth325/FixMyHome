@@ -1,211 +1,369 @@
-# FixMyHome Web App
+# FixMyHome - Homeowner-Handyman Marketplace
 
-A server-rendered marketplace MVP for homeowners who need home services and local handymen who want qualified leads.
+A two-sided marketplace platform connecting Florida homeowners with local handymen for home repair jobs.
 
-## What is working
-- Email/password authentication
-- Role-based signup for homeowner or handyman
-- Homeowner profile editing
-- Handyman trust profile editing with insurance and license verification submission
-- Job posting with category, budget, location, preferred date window, and up to 5 photo uploads
-- Storage abstraction for local filesystem or S3-compatible object storage
-- Handyman feed of open and in-review jobs, including attached job photos
-- Handyman feed filters for search, category, budget range, photo-only jobs, sort order, and true radius-based near-me matching
-- Saved searches for handymen to reopen favorite lead views
-- One bid per handyman per job, with updates before award and lead-credit enforcement for new bids
-- Homeowner short-listing and accepting a bid
-- Job lifecycle transitions: Open, In Review, Awarded, Completed
-- Threaded messages per bid plus in-app notifications for bids, awards, messages, escrow, disputes, and admin trust actions
-- Escrow-style payment flow: accepted jobs create escrow, homeowners fund it through provider-backed checkout, and release after completion
-- Dispute center: either side can open a payment hold while escrow is funded
-- Admin moderation queue for reports, dispute resolution, account suspension, assignment, audit history, and insurance/license reviews
-- Admin billing support queue with related event groups, bulk actions, scoped personal/shared playbooks, favorites, usage analytics, stale cleanup, bulk cleanup actions, archive reasons, archive actor attribution, playbook cleanup history, paginated per-playbook activity detail pages with date filters, copyable handoff summaries with TXT and JSON exports, tracked internal support cases with detail pages, search/filter views, assignment queues with SLA aging, admin notifications for case changes, ownership, notes, editable internal comments, current-answer markers, evidence attachments with notes and archive/delete controls, downloadable TXT/JSON handoff packages, and activity logs, and managed custom billing playbooks
-- Handyman monetization with Free, Plus, and Pro plans plus credit-pack purchases
-- Recurring Stripe Billing support for handyman plans, including hosted checkout return handling and customer portal access
-- Review submission after completion with rating rollup on handyman profiles
-- Product mockup at `/mockup`
-- Automated smoke test for the core marketplace journey
-- Automated guard test for role protections and declined-bid behavior
-- Automated filter test for handyman feed search and sorting
-- GitHub Actions CI for schema setup, seeding, and automated checks
+## Overview
 
-## Launch planning
-- Go-live checklist: [GO_LIVE_CHECKLIST.md](./GO_LIVE_CHECKLIST.md)
-- Production deploy checklist for your live domain: [PRODUCTION_DEPLOY_FIXMYHOME_PRO.md](./PRODUCTION_DEPLOY_FIXMYHOME_PRO.md)
-- Production env template for your live domain: [.env.production.fixmyhome.pro.example](./.env.production.fixmyhome.pro.example)
-- Combined launch handoff: [LAUNCH_HANDOFF_FIXMYHOME_PRO.md](./LAUNCH_HANDOFF_FIXMYHOME_PRO.md)
+FixMyHome allows:
+- **Homeowners** to post jobs with budgets and receive competitive bids
+- **Handymen** to browse local jobs and submit quotes to win work
+- Both parties to message, complete jobs, and leave reviews
 
-## Local setup
-1. Confirm PostgreSQL is running locally.
-2. Copy `.env.example` to `.env` and update `DATABASE_URL` if needed.
-3. Generate the Prisma client and sync the schema.
-4. Seed demo data if you want sample accounts.
+## Tech Stack
 
-```powershell
-cd ap
-npm.cmd install
-npm.cmd run prisma:generate
-npm.cmd run db:push
-npm.cmd run seed
+- **Framework:** Next.js 14+ (App Router, React Server Components)
+- **Language:** TypeScript
+- **Database:** MySQL (Hostinger-managed) with Prisma ORM (`@prisma/adapter-mariadb`)
+- **Authentication:** Auth.js (self-hosted, email/password via Credentials provider)
+- **File Storage:** Uploadthing
+- **Styling:** Tailwind CSS + shadcn/ui
+- **State Management:** TanStack Query + Zustand
+- **Deployment:** Hostinger hPanel Node.js hosting (Git auto-deploy). `Dockerfile`/`docker-compose.yml` are kept for local Docker-based dev but are not used in production.
+
+## Project Status
+
+✅ **Completed:**
+- Next.js project initialization with TypeScript and Tailwind CSS
+- Database schema design (Users, Jobs, Bids, Messages, Reviews)
+- Core dependencies installed
+- Prisma configuration
+- Utility files and constants
+
+🚧 **In Progress:**
+- Database setup (requires Hostinger MySQL connection)
+- shadcn/ui component setup
+
+📋 **Upcoming (Week 1):**
+- Authentication flow (sign-in, sign-up, role selection)
+- Onboarding forms (homeowner & handyman)
+- Layout components (header, navigation, footer)
+
+## Production Deployment
+
+The production target is `fixmyhome.pro` on a Hostinger VPS with the GitHub repository `seuth325/FixMyHome`.
+
+Deployment files live in `deploy/`:
+
+- `deploy/hostinger-vps.md` - full VPS setup and deployment runbook
+- `deploy/production.env.example` - production environment template
+- `deploy/nginx/fixmyhome.conf` - Nginx reverse proxy config
+- `.github/workflows/deploy-hostinger.yml` - GitHub Actions SSH deploy workflow
+
+The app exposes `GET /api/health` for container and deployment health checks.
+
+## Setup Instructions
+
+### 1. Set Up Database (Hostinger-managed MySQL)
+
+The app runs against MySQL via `@prisma/adapter-mariadb` (compatible with both MySQL and MariaDB servers).
+
+1. In hPanel, go to Databases → MySQL Databases and create a database + user.
+2. Create `.env` file in the project root:
+
+```bash
+# Copy .env.example to .env
+cp .env.example .env
 ```
 
-## Run
-```powershell
-npm.cmd start
+3. Set `DATABASE_URL` in `.env` using the host/user/password/db name from hPanel, e.g. `mysql://user:password@localhost:3306/dbname`.
+
+### 2. Apply the Database Schema
+
+There's no `prisma/migrations` history in this repo (the Hostinger MySQL user doesn't have the shadow-database privileges `prisma migrate dev`/`deploy` require), so the schema is applied directly:
+
+```bash
+npx prisma db push
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+This creates all tables (User, Job, Bid, Message, Review, etc.) with proper indexes.
 
-## Production branding
-For your live deployment, set:
-- `APP_BASE_URL=https://fixmyhome.pro`
-- `SUPPORT_EMAIL=support@fixmyhome.pro`
-- `SMTP_FROM=support@fixmyhome.pro`
+### 3. Set Up Authentication
 
-The app uses these values for password reset links, support contact links, and legal/footer branding.
+Auth is self-hosted via [Auth.js](https://authjs.dev) (Credentials provider — email/password against the `User` table) — no external dashboard or account needed.
 
-## Ops and health
-- Health checks:
-  - [http://localhost:3000/health](http://localhost:3000/health)
-  - [http://localhost:3000/healthz](http://localhost:3000/healthz)
-- Request logging:
-  - the server now logs one structured JSON line per completed request
-  - each response includes an `X-Request-Id` header for easier troubleshooting
-  - API/server failures include the request id in the error response when available
-- Error monitoring:
-  - optional Sentry wiring is now built in
-  - set `SENTRY_DSN` to enable it
-  - add `@sentry/node` in production before enabling the DSN
-  - optional tuning: `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`, `SENTRY_TRACES_SAMPLE_RATE`
+1. Generate a secret and add it to `.env`:
 
-## Security and session hardening
-- Sessions now use a database-backed store instead of in-memory storage.
-- CSRF protection is enabled for state-changing requests by default.
-- Lightweight rate limiting now protects:
-  - login
-  - signup
-  - homeowner job posting
-  - handyman bid submission
-  - admin POST actions
-- Production deployments should set:
-  - `SESSION_SECRET`
-  - `SESSION_COOKIE_NAME`
-  - `SESSION_COOKIE_SECURE=true`
-  - `SESSION_COOKIE_MAX_AGE_MS`
-  - `TRUST_PROXY`
-- Test scripts disable CSRF automatically so local automation stays stable.
-
-## Photo storage
-Default mode uses local storage:
-- `STORAGE_DRIVER=local`
-- files are written to `public/uploads`
-
-S3-compatible mode is supported too:
-- `STORAGE_DRIVER=s3`
-- required: `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`
-- optional: `S3_REGION`, `S3_PUBLIC_BASE_URL`, `S3_UPLOAD_PREFIX`, `S3_FORCE_PATH_STYLE`
-
-Notes:
-- Homeowners can attach up to 5 images per job.
-- The upload limit is 5MB per file.
-- If `S3_PUBLIC_BASE_URL` is omitted, the app falls back to building a path-style URL from `S3_ENDPOINT` and `S3_BUCKET`.
-- Support-case evidence attachments are now routed through an authenticated admin download path, and new local support attachments are stored outside `public`.
-
-## Handyman filters
-The handyman dashboard supports server-backed filtering for:
-- text search across title, description, and location
-- category
-- minimum and maximum budget
-- photo-only jobs
-- near-me filtering based on stored geocoded coordinates and handyman service radius
-- newest, budget low-to-high, and budget high-to-low sorting
-
-Saved searches let handymen keep and reopen favorite filter combinations directly from the dashboard.
-
-## Automated tests
-Run these after seeding demo data. `test:all` now reseeds automatically first:
-
-```powershell
-npm.cmd run test:smoke
-npm.cmd run test:guards
-npm.cmd run test:filters
-npm.cmd run test:geolocation
-npm.cmd run test:monetization
-npm.cmd run test:notifications
-npm.cmd run test:webhooks
-npm.cmd run test:checkout-config
-npm.cmd run test:saved-searches
-npm.cmd run test:payments
-npm.cmd run test:disputes
-npm.cmd run test:verification
-npm.cmd run test:admin
-npm.cmd run test:all
+```bash
+npx auth secret
 ```
 
-What they cover:
-- `test:smoke`: logs in as both roles, creates a job with a real image upload, bids, messages, awards, funds escrow, completes, releases payment, and reviews.
-- `test:guards`: verifies a handyman cannot post a job, a homeowner cannot bid, and accepting one bid declines the other competing bids.
-- `test:filters`: verifies handyman search, category filters, budget filters, and sorting preserve the expected job set.
-- `test:geolocation`: verifies jobs store coordinates, near-me uses service-radius distance checks, and tightening the radius removes farther jobs.
-- `test:monetization`: verifies lead credits are consumed on first bid, zero-credit handymen are blocked, credit purchases restore access, and Pro bidding stays unlimited.
-- `test:notifications`: verifies in-app notifications are created for bids, awards, messages, escrow funding, disputes, and read state updates.
-- `test:webhooks`: verifies Stripe-style signed webhook delivery completes plan purchases and escrow funding, refreshes monthly credits on `invoice.paid`, and keeps subscription lifecycle state idempotent across updates, payment failures, and cancellations.
-- `test:checkout-config`: verifies `/billing/plan` uses saved Stripe Price IDs for subscriptions while one-time credit packs stay on inline payment pricing.
-- `test:saved-searches`: verifies near-me location matching plus saved-search create and delete flows.
-- `test:payments`: verifies completion is blocked before escrow funding and reviews are blocked until payment release.
-- `test:disputes`: verifies disputes hold payment, block release/completion, and can resolve to a homeowner refund.
-- `test:verification`: verifies handymen can submit insurance and license details, admins can review them, and trust statuses update with notes.
-- `test:admin`: verifies reports and disputes can be assigned, admins can suspend users, disputes can be resolved centrally, custom billing playbooks can be created, scoped as personal or shared, marked as favorites, tracked with usage analytics, archived/restored individually or in bulk with cleanup reasons and actor attribution, tracked through a cleanup history timeline, paginated per-playbook detail view with date filters, exported as copyable handoff summaries in TXT and JSON formats, converted into tracked support cases with detail pages, search/filter views, assignment queues with SLA aging, admin notifications for case changes, ownership, notes, editable internal comments, current-answer markers, evidence attachments with notes and archive/delete controls, downloadable TXT/JSON handoff packages, and activity logs, edited, deleted, and reused from related billing groups, and audit logs are recorded.
-- `test:all`: reseeds and runs all checks in sequence, with verification coverage before admin suspension coverage.
+2. On any deployment that isn't Vercel (i.e. Hostinger), also set:
 
-## Location matching
-Jobs and user profiles now store geocoded coordinates when the app recognizes a ZIP or city/state pair. Near-me filtering uses actual distance from the handyman's saved location and service radius, with text-based fallback only when coordinates are missing.
+```
+AUTH_TRUST_HOST="true"
+AUTH_URL="https://fixmyhome.pro"
+```
 
-## Provider-backed billing
-Plan upgrades, lead-credit purchases, and escrow funding now create checkout sessions and complete through provider-backed webhooks. `PAYMENT_PROVIDER=mockpay` keeps local development instant, while Stripe mode uses hosted Checkout sessions, recurring monthly plan subscriptions, customer portal redirects, optional saved Stripe Price IDs (`STRIPE_PRICE_PLUS_MONTHLY`, `STRIPE_PRICE_PRO_MONTHLY`), and real webhook signature verification when `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are configured. Portal-driven subscription changes now sync local plan and quantity state from Stripe price ids too.
+Sign-in/sign-up/redirect routes are fixed in code (`/sign-in`, `/sign-up`, `/role-selection`) — no dashboard configuration required.
 
-## Notifications
-The app now includes an in-app notification center for homeowners, handymen, and admins. It tracks new bids, award outcomes, new messages, funded escrow, disputes, verification reviews, and account status changes, with mark-read support built into the dashboard and admin area.
+### 4. Set Up Uploadthing (for photo uploads)
 
-## Monetization
-Handymen now have a Free, Plus, or Pro plan on their profile. New bids consume lead credits unless the handyman is on Pro, and the dashboard includes plan switching, recurring Stripe-backed subscriptions for paid plans, customer portal access, credit-pack purchases, and recent credit activity.
+1. Create account at [Uploadthing](https://uploadthing.com)
+2. Create a new app
+3. Copy your secret and app ID to `.env`:
 
-## Trust and verification
-Handymen can now submit insurance and license details from the dashboard for admin review. Admins can approve or reject each submission with notes, and those statuses appear in the bid comparison experience for homeowners.
+```
+UPLOADTHING_SECRET="sk_live_..."
+UPLOADTHING_APP_ID="..."
+```
 
-## CI
-GitHub Actions workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml)
+### 5. Install shadcn/ui Components
 
-It runs on pushes to `main` and `master`, plus pull requests, and will:
-- start PostgreSQL 16
-- install dependencies with `npm ci`
-- generate the Prisma client
-- push the schema
-- seed demo data
-- run `npm run test:all`
+```bash
+npx shadcn@latest init
+```
 
-## Demo accounts
-After `npm run seed`:
-- `admin@example.com` / `password123`
-- `homeowner@example.com` / `password123`
-- `alex@example.com` / `password123`
-- `mia@example.com` / `password123`
+When prompted:
+- **Style:** Default
+- **Base color:** Slate
+- **CSS variables:** Yes
 
-## Current stack
-- Express + EJS
-- Prisma ORM
-- PostgreSQL
-- bcryptjs session auth
-- Multer for uploads
-- AWS SDK S3 client for object storage
+Then install base components:
 
-## Next logical milestones
-- Add presigned/private object access or signed upload flows
-- Add a larger offline geocoder or API-backed geocoding for broader national coverage
-- Add email, SMS, or push delivery on top of the in-app notification event stream
-- Add stricter document handling for verification evidence
+```bash
+npx shadcn@latest add button input textarea select card badge dialog dropdown-menu form label avatar separator skeleton toast
+```
 
+### 6. Run the Development Server
 
+```bash
+npm run dev
+```
 
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- Admin ops now includes bulk support-case assignment and status updates from the filtered queue.
+## Database Schema
+
+### Core Models
+
+- **User** - Authentication & role management (HOMEOWNER | HANDYMAN)
+- **HandymanProfile** - Extended profile for handymen (skills, radius, ratings)
+- **Job** - Posted jobs with budget, location, category
+- **JobPhoto** - Photos attached to jobs (up to 5)
+- **Bid** - Handyman quotes on jobs
+- **Message** - Thread-based messaging per bid
+- **Review** - 1-5 star ratings after job completion
+
+### Relationships
+
+- One User can post many Jobs (homeowner)
+- One User can submit many Bids (handyman)
+- One Job has many Bids
+- One Bid has many Messages
+- One Job has one Review
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/         # Auth routes
+│   ├── (homeowner)/    # Homeowner dashboard, jobs
+│   ├── (handyman)/     # Handyman browse, bids, profile
+│   ├── (public)/       # Landing page
+│   ├── api/            # API routes
+│   └── layout.tsx
+├── components/
+│   ├── ui/             # shadcn/ui components
+│   ├── jobs/           # Job-related components
+│   ├── bids/           # Bid components
+│   ├── messaging/      # Message components
+│   └── layout/         # Header, nav, footer
+├── lib/
+│   ├── db.ts           # Prisma client
+│   ├── utils.ts        # Utility functions
+│   ├── constants.ts    # App constants
+│   ├── validations/    # Zod schemas
+│   ├── actions/        # Server Actions
+│   └── queries/        # Database queries
+└── types/              # TypeScript types
+```
+
+## Development Workflow
+
+### Week 1: Foundation ✅
+- [x] Initialize project
+- [x] Set up database schema
+- [x] Build authentication flow (Auth.js, email/password)
+- [ ] Install shadcn/ui components
+- [ ] Create onboarding forms
+- [ ] Implement layouts
+
+### Week 2: Job Management
+- [ ] Job posting form with photo upload
+- [ ] Job list/feed
+- [ ] Job detail page
+- [ ] Job browsing for handymen
+- [ ] Job filters (category, location, budget)
+
+### Week 3: Bidding System
+- [ ] Bid submission form
+- [ ] Bid list on jobs
+- [ ] Bid comparison UI
+- [ ] Accept bid flow
+- [ ] My Bids page
+
+### Week 4: Messaging
+- [ ] Message thread component
+- [ ] Polling for real-time updates
+- [ ] Conversation list
+- [ ] Unread indicators
+
+### Week 5: Completion & Reviews
+- [ ] Mark job complete
+- [ ] Review form (star rating + text)
+- [ ] Display reviews on profiles
+- [ ] Update handyman ratings
+
+### Week 6: AI Recommendations
+- [ ] Bid scoring algorithm
+- [ ] Recommendation API
+- [ ] Recommendation UI
+- [ ] Claude API integration (optional)
+
+### Week 7: Polish & Launch
+- [ ] Role-based middleware
+- [ ] Rate limiting
+- [ ] Error handling
+- [ ] Mobile responsiveness
+- [ ] E2E testing
+- [ ] Deploy to Vercel
+
+## Key Features
+
+### Homeowner Features
+- Post jobs with photos, budget, and preferred dates
+- Receive and compare bids from local handymen
+- View AI-recommended bids (best value)
+- Message handymen before awarding
+- Award job to best bid (auto-declines others)
+- Mark job complete
+- Rate and review handymen
+
+### Handyman Features
+- Create profile with skills, service radius, hourly rate
+- Browse open jobs with filters
+- Submit competitive bids with quotes
+- Message homeowners
+- Receive notifications when bid is accepted
+- Build reputation through ratings
+
+### Platform Features
+- **Role-based access** - Homeowners and handymen see different dashboards
+- **AI bid recommendations** - Weighted scoring (price, rating, timeline, capacity)
+- **Messaging** - Threaded conversations per bid
+- **Reviews** - 1-5 star ratings update handyman averages
+- **Security** - Server-side validation, rate limiting, SQL injection prevention
+
+## Environment Variables
+
+See `.env.example` for all required environment variables:
+
+- `DATABASE_URL` - MySQL connection string (Hostinger-managed)
+- `AUTH_SECRET` - Auth.js session signing secret (generate with `npx auth secret`)
+- `AUTH_TRUST_HOST` / `AUTH_URL` - required in production on non-Vercel hosts
+- `UPLOADTHING_SECRET` - Uploadthing secret
+- `UPLOADTHING_APP_ID` - Uploadthing app ID
+- `ANTHROPIC_API_KEY` - (Optional) For AI bid explanations
+
+## Scripts
+
+```bash
+# Development
+npm run dev          # Start dev server
+npm run build        # Build for production
+npm run start        # Start production server
+
+# Database
+npx prisma db push           # Apply schema changes (no migration history in this repo)
+npx prisma generate          # Generate Prisma client
+npx prisma studio            # Open Prisma Studio GUI
+
+# Code Quality
+npm run lint         # Run ESLint
+npm run format       # Format with Prettier (if configured)
+```
+
+## Testing
+
+### Manual Testing Checklist
+
+**Homeowner Flow:**
+1. Sign up → Select homeowner role
+2. Complete onboarding (location)
+3. Post job with photos and budget
+4. View job detail page
+5. Compare bids from handymen
+6. Accept best bid
+7. Message handyman
+8. Mark job complete
+9. Leave review
+
+**Handyman Flow:**
+1. Sign up → Select handyman role
+2. Complete profile (skills, radius, rate)
+3. Browse open jobs with filters
+4. Submit bid with quote
+5. Message homeowner
+6. Receive bid acceptance
+7. View review on profile
+
+## Deployment
+
+### Deploy via Hostinger hPanel (Node.js auto-deploy)
+
+Production deploys through hPanel's Git-connected Node.js hosting — it pulls the repo, runs `npm install` (which triggers `prisma generate` via `postinstall`) and `npm run build`, then starts the app itself. No Docker is involved in production.
+
+Domain: **fixmyhome.pro**
+
+1. In hPanel → Websites → Node.js, connect this repo (`https://github.com/seuth325/MyHomeProjects.git`) and set:
+   - **Node version:** 22.x
+   - **Application startup file:** `.next/standalone/server.js` (required because `next.config.ts` sets `output: "standalone"`)
+   - **Environment variables:** `DATABASE_URL` (Hostinger MySQL connection string), `AUTH_SECRET`, `AUTH_TRUST_HOST=true`, `AUTH_URL=https://fixmyhome.pro`, Uploadthing keys, `NEXT_PUBLIC_APP_URL=https://fixmyhome.pro`, `NODE_ENV=production` — see `.env.example` for the full list.
+2. Apply the schema once, via hPanel's terminal or SSH, from the app's build directory:
+
+```bash
+npx prisma db push
+```
+
+3. Trigger Deploy/Redeploy from hPanel. TLS is handled by Hostinger's own certificate management for the domain.
+
+Re-deploy after pushing new code by hitting hPanel's Deploy button (or pushing to the connected branch, if auto-deploy-on-push is enabled), then re-run `npx prisma db push` if the schema changed.
+
+If the build ever fails with a stale/corrupted checkout (e.g. permission errors under `.builds/source`), delete `~/domains/fixmyhome.pro/public_html/.builds` via SSH and redeploy to force a clean clone.
+
+### Alternative: Docker (local dev only)
+
+The repo also ships a multi-stage `Dockerfile` and `docker-compose.yml` (app + MySQL) for local development or a self-managed VPS instead of hPanel:
+
+```bash
+cp .env.example .env   # set MYSQL_PASSWORD and DATABASE_URL=mysql://fixmyhome:<pw>@db:3306/fixmyhome
+docker compose up -d --build
+docker compose run --rm migrate
+```
+
+This is not the path used for the fixmyhome.pro production deploy.
+
+### Database Schema Changes
+
+```bash
+npx prisma db push
+```
+
+Inside Docker, use `docker compose run --rm migrate` instead.
+
+## Support & Resources
+
+- **Next.js Docs:** https://nextjs.org/docs
+- **Prisma Docs:** https://www.prisma.io/docs
+- **Auth.js Docs:** https://authjs.dev
+- **shadcn/ui:** https://ui.shadcn.com
+- **Uploadthing:** https://docs.uploadthing.com
+
+## License
+
+Private project - All rights reserved
+
+---
+
+Built with ❤️ using Next.js, Prisma, and Auth.js

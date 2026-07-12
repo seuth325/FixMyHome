@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FixMyHome App Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#dashboard" aria-label="FixMyHome mockup home">
+          <span class="brand-mark">FH</span>
+          <span>
+            <strong>FixMyHome</strong>
+            <small>fixmyhome.pro</small>
+          </span>
+        </a>
+
+        <nav class="nav" aria-label="Mockup screens">
+          <button class="nav-item active" data-screen="dashboard">
+            <span>⌂</span>
+            Homeowner
+          </button>
+          <button class="nav-item" data-screen="post">
+            <span>＋</span>
+            Post Job
+          </button>
+          <button class="nav-item" data-screen="bids">
+            <span>◇</span>
+            Compare Bids
+          </button>
+          <button class="nav-item" data-screen="handyman">
+            <span>⚒</span>
+            Handyman
+          </button>
+          <button class="nav-item" data-screen="messages">
+            <span>✉</span>
+            Messages
+          </button>
+        </nav>
+
+        <div class="sidebar-card">
+          <p class="eyebrow">Prototype Focus</p>
+          <p>Show the core marketplace loop: post a repair, receive bids, compare confidence signals, hire, and coordinate the job.</p>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Review Mockup</p>
+            <h1 id="screen-title">Homeowner Dashboard</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="icon-button" aria-label="Notifications">🔔<span class="dot"></span></button>
+            <button class="avatar-button" aria-label="Profile">MC</button>
+          </div>
+        </header>
+
+        <section id="dashboard" class="screen active">
+          <div class="hero-band">
+            <div>
+              <p class="eyebrow">Miami, FL · 33139</p>
+              <h2>Get reliable home repairs without chasing quotes.</h2>
+              <p class="hero-copy">Post once, compare local handyman bids, and choose with budget, ratings, response time, and AI value guidance in one place.</p>
+              <div class="button-row">
+                <button class="primary" data-screen-target="post">Post a Job</button>
+                <button class="secondary" data-screen-target="bids">Review Bids</button>
+              </div>
+            </div>
+            <div class="repair-card">
+              <div class="repair-photo">
+                <span>Before photo</span>
+              </div>
+              <div class="repair-details">
+                <strong>Kitchen faucet leak</strong>
+                <span>4 bids · best value ready</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric">
+              <span>Active Jobs</span>
+              <strong>3</strong>
+              <small>2 open, 1 awarded</small>
+            </article>
+            <article class="metric">
+              <span>Total Bids</span>
+              <strong>11</strong>
+              <small>Across open jobs</small>
+            </article>
+            <article class="metric">
+              <span>Avg. Response</span>
+              <strong>42m</strong>
+              <small>From local handymen</small>
+            </article>
+            <article class="metric">
+              <span>Completed</span>
+              <strong>8</strong>
+              <small>4.9 average rating</small>
+            </article>
+          </div>
+
+          <div class="content-grid">
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Your Jobs</p>
+                  <h3>Repair Pipeline</h3>
+                </div>
+                <button class="ghost">View All</button>
+              </div>
+              <div class="job-list">
+                <article class="job-row">
+                  <div class="status open"></div>
+                  <div>
+                    <strong>Patch drywall and repaint hallway</strong>
+                    <span>Open · $450 budget · 33131</span>
+                  </div>
+                  <button class="small">3 bids</button>
+                </article>
+                <article class="job-row">
+                  <div class="status review"></div>
+                  <div>
+                    <strong>Replace bathroom vanity light</strong>
+                    <span>In review · $180 budget · 33139</span>
+                  </div>
+                  <button class="small">Compare</button>
+                </article>
+                <article class="job-row">
+                  <div class="status awarded"></div>
+                  <div>
+                    <strong>Repair loose patio screen door</strong>
+                    <span>Awarded · starts Friday · 33140</span>
+                  </div>
+                  <button class="small secondary-small">Message</button>
+                </article>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">AI Assist</p>
+                  <h3>Best Next Action</h3>
+                </div>
+              </div>
+              <div class="insight-card">
+                <strong>Review bids for bathroom light.</strong>
+                <p>One bid is 18% under budget with a 4.9 rating and same-day availability.</p>
+                <button class="primary full" data-screen-target="bids">Open Comparison</button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="post" class="screen">
+          <div class="content-grid">
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Homeowner Flow</p>
+                  <h3>Post a New Job</h3>
+                </div>
+                <span class="badge">Step 2 of 4</span>
+              </div>
+              <form class="mock-form">
+                <label>
+                  Job title
+                  <input value="Fix leaky kitchen faucet" />
+                </label>
+                <label>
+                  Category
+                  <select>
+                    <option>Plumbing</option>
+                    <option>Electrical</option>
+                    <option>Drywall</option>
+                  </select>
+                </label>
+                <label class="span-form">
+                  Description
+                  <textarea>Kitchen faucet drips from the base and leaves water under the sink after use. Please inspect the faucet, tighten or replace needed parts, and check the shutoff valves.</textarea>
+                </label>
+                <div class="form-row">
+                  <label>
+                    ZIP code
+                    <input value="33139" />
+                  </label>
+                  <label>
+                    Budget
+                    <input value="$250" />
+                  </label>
+                  <label>
+                    Preferred date
+                    <input value="This week" />
+                  </label>
+                </div>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Photos</p>
+                  <h3>Scope Preview</h3>
+                </div>
+              </div>
+              <div class="photo-grid">
+                <div class="photo-tile">Leak</div>
+                <div class="photo-tile">Under sink</div>
+                <button class="photo-add">＋</button>
+              </div>
+              <div class="ai-note">
+                <strong>AI draft suggestion</strong>
+                <p>Add the faucet brand if visible and mention whether replacement parts are already purchased.</p>
+              </div>
+              <button class="primary full" data-screen-target="bids">Preview Matching Bids</button>
+            </section>
+          </div>
+        </section>
+
+        <section id="bids" class="screen">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Bathroom Vanity Light</p>
+                <h3>Compare Bids</h3>
+              </div>
+              <div class="segmented" role="group" aria-label="Sort bids">
+                <button class="active">Best Value</button>
+                <button>Lowest</button>
+                <button>Soonest</button>
+              </div>
+            </div>
+            <div class="bid-grid">
+              <article class="bid-card recommended">
+                <span class="badge">AI recommended</span>
+                <div class="bid-top">
+                  <div class="pro-avatar">MR</div>
+                  <div>
+                    <strong>Miami Repair Co.</strong>
+                    <span>4.9 ★ · 126 jobs · 2.1 mi</span>
+                  </div>
+                </div>
+                <div class="price">$155</div>
+                <p>Can replace fixture, check wiring, and clean up old mount. Available today after 4 PM.</p>
+                <div class="scorebar"><span style="width: 92%"></span></div>
+                <small>92% fit · licensed electrical experience</small>
+                <button class="primary full">Accept Bid</button>
+              </article>
+              <article class="bid-card">
+                <div class="bid-top">
+                  <div class="pro-avatar blue">JS</div>
+                  <div>
+                    <strong>Javier Services</strong>
+                    <span>4.8 ★ · 84 jobs · 4.8 mi</span>
+                  </div>
+                </div>
+                <div class="price">$135</div>
+                <p>Lowest bid. Can complete tomorrow morning if homeowner supplies the fixture.</p>
+                <div class="scorebar"><span style="width: 78%"></span></div>
+                <small>78% fit · fast response</small>
+                <button class="secondary full">Message</button>
+              </article>
+              <article class="bid-card">
+                <div class="bid-top">
+                  <div class="pro-avatar green">AP</div>
+                  <div>
+                    <strong>All Pro Handyman</strong>
+                    <span>5.0 ★ · 31 jobs · 7.6 mi</span>
+                  </div>
+                </div>
+                <div class="price">$190</div>
+                <p>Includes fixture pickup and same-day disposal of the old unit.</p>
+                <div class="scorebar"><span style="width: 84%"></span></div>
+                <small>84% fit · includes materials run</small>
+                <button class="secondary full">Message</button>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="handyman" class="screen">
+          <div class="content-grid">
+            <section class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Handyman Flow</p>
+                  <h3>Available Jobs Near You</h3>
+                </div>
+                <button class="ghost">Filters</button>
+              </div>
+              <div class="job-list">
+                <article class="job-row expanded">
+                  <div>
+                    <strong>Install ceiling fan in guest room</strong>
+                    <span>Electrical · $220 budget · 3.4 mi · 5 bids</span>
+                    <p>Homeowner has fan and mounting kit. Needs existing light replaced.</p>
+                  </div>
+                  <button class="primary">Bid $195</button>
+                </article>
+                <article class="job-row expanded">
+                  <div>
+                    <strong>Repair cabinet door hinges</strong>
+                    <span>Carpentry · $120 budget · 1.2 mi · 1 bid</span>
+                    <p>Three kitchen cabinet doors sagging after recent move-in.</p>
+                  </div>
+                  <button class="secondary">View</button>
+                </article>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Profile</p>
+                  <h3>Work Snapshot</h3>
+                </div>
+              </div>
+              <div class="profile-summary">
+                <div class="pro-avatar large">MR</div>
+                <strong>Miami Repair Co.</strong>
+                <span>Available · 25 mile radius</span>
+                <div class="tag-row">
+                  <span>Plumbing</span>
+                  <span>Electrical</span>
+                  <span>Drywall</span>
+                </div>
+              </div>
+              <div class="metric mini">
+                <span>Win Rate</span>
+                <strong>38%</strong>
+                <small>Higher on same-day bids</small>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="messages" class="screen">
+          <div class="message-layout panel">
+            <aside class="thread-list">
+              <button class="thread active">
+                <strong>Miami Repair Co.</strong>
+                <span>Bathroom vanity light</span>
+              </button>
+              <button class="thread">
+                <strong>All Pro Handyman</strong>
+                <span>Kitchen faucet leak</span>
+              </button>
+              <button class="thread">
+                <strong>Javier Services</strong>
+                <span>Drywall hallway</span>
+              </button>
+            </aside>
+            <section class="chat">
+              <div class="chat-header">
+                <div>
+                  <strong>Miami Repair Co.</strong>
+                  <span>Bid accepted · scheduled today at 4 PM</span>
+                </div>
+                <button class="secondary">Job Details</button>
+              </div>
+              <div class="bubble theirs">Hi Maria, I can arrive around 4:15. Do you already have the new light fixture?</div>
+              <div class="bubble ours">Yes, the fixture is here. I can send a photo of the box too.</div>
+              <div class="bubble theirs">Perfect. Please turn off the breaker if you know which one controls the bathroom.</div>
+              <div class="composer">
+                <input value="Thanks, I’ll have that ready." aria-label="Message draft" />
+                <button class="primary">Send</button>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

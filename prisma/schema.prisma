@@ -1,416 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
 }
 
 model User {
-  id              String            @id @default(uuid())
+  id              String            @id @default(cuid())
   email           String            @unique
-  name            String
   passwordHash    String
-  sessionVersion  Int               @default(0)
-  role            UserRole
+  name            String
+  role            Role              @default(HOMEOWNER)
   location        String?
-  locationLat     Float?
-  locationLng     Float?
-  isSuspended     Boolean           @default(false)
+  phone           String?
+  photoUrl        String?
+  isAvailable     Boolean           @default(true)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  homeownerJobs   Job[]             @relation("HomeownerJobs")
+
   handymanProfile HandymanProfile?
-  bids            Bid[]
-  messages        Message[]
-  reviewsWritten  Review[]          @relation("ReviewerReviews")
-  reviewsReceived Review[]          @relation("HandymanReviews")
-  savedSearches   SavedSearch[]
-  savedSupportCaseViews SavedSupportCaseView[]
-  routedSupportCaseViews SavedSupportCaseView[] @relation("SupportCaseViewAutoAssignAdmin")
-  disputesOpened  Dispute[]          @relation("DisputeOpenedBy")
-  reportsFiled     ModerationReport[]   @relation("ReportFiledBy")
-  reportsAgainst   ModerationReport[]   @relation("ReportAgainstUser")
-  assignedReports      ModerationReport[]    @relation("ReportAssignedAdmin")
-  assignedDisputes     Dispute[]             @relation("DisputeAssignedAdmin")
-  assignedBillingEvents PaymentWebhookEvent[] @relation("BillingEventAssignedAdmin")
-  billingPlaybooks     BillingSupportPlaybook[] @relation("BillingPlaybookCreator")
-  archivedBillingPlaybooks BillingSupportPlaybook[] @relation("BillingPlaybookArchivedBy")
-  billingPlaybookHistory BillingPlaybookHistory[] @relation("BillingPlaybookHistoryActor")
-  auditLogs            ModerationAuditLog[]  @relation("AdminAuditActor")
-  supportCasesCreated  SupportCase[]         @relation("SupportCaseCreator")
-  assignedSupportCases SupportCase[]         @relation("SupportCaseAssignedAdmin")
-  supportCaseActivities SupportCaseActivity[]  @relation("SupportCaseActivityActor")
-  supportCaseComments   SupportCaseComment[]   @relation("SupportCaseCommentAuthor")
-  uploadedSupportCaseAttachments SupportCaseAttachment[] @relation("SupportCaseAttachmentUploader")
-  archivedSupportCaseAttachments SupportCaseAttachment[] @relation("SupportCaseAttachmentArchiver")
-  notifications        UserNotification[]
-  checkoutSessions     CheckoutSession[]
-  passwordResetTokens  PasswordResetToken[]
+  jobsPosted      Job[]             @relation("JobsPosted")
+  bidsSubmitted   Bid[]
+  messagesSent    Message[]
+  reviewsGiven    Review[]          @relation("ReviewsGiven")
+  reviewsReceived Review[]          @relation("ReviewsReceived")
+  notifications   Notification[]
 }
 
-model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String
-  token     String   @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, expiresAt])
+enum Role {
+  HOMEOWNER
+  HANDYMAN
 }
-
-model AppSession {
-  sid       String   @id
-  data      Json
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([expiresAt])
-  @@map("app_sessions")
-}
-
 
 model HandymanProfile {
-  id                    String                    @id @default(uuid())
-  userId                String                    @unique
-  businessName          String?
-  skills                String[]
-  bio                   String?
-  serviceRadius         Int                       @default(15)
-  hourlyGuideline       Int?
-  ratingAvg             Float                     @default(0)
-  ratingCount           Int                       @default(0)
-  subscriptionPlan      SubscriptionPlan          @default(FREE)
-  leadCredits           Int                       @default(3)
-  subscriptionRenewsAt  DateTime?
-  stripeCustomerId      String?                   @unique
-  stripeSubscriptionId  String?                   @unique
-  billingStatus         BillingStatus             @default(INACTIVE)
-  billingPeriodEndsAt   DateTime?
-  billingQuantity       Int                       @default(1)
-  insuranceVerified     Boolean                   @default(false)
-  insuranceStatus       VerificationStatus        @default(NOT_SUBMITTED)
-  insuranceProofDetails String?
-  insuranceSubmittedAt  DateTime?
-  insuranceAdminNotes   String?
-  licenseVerified       Boolean                   @default(false)
-  licenseStatus         VerificationStatus        @default(NOT_SUBMITTED)
-  licenseProofDetails   String?
-  licenseSubmittedAt    DateTime?
-  licenseAdminNotes     String?
-  createdAt             DateTime                  @default(now())
-  updatedAt             DateTime                  @updatedAt
-  user                  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  creditTransactions    LeadCreditTransaction[]
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName  String?
+  skills        Json     @default("[]")
+  bio           String?  @db.Text
+  serviceRadius Int      // miles
+  hourlyRate    Decimal?
+  ratingAvg     Decimal  @default(0)
+  ratingCount   Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Job {
-  id                String      @id @default(uuid())
-  homeownerId       String
-  title             String
-  category          String
-  description       String
-  location          String
-  locationLat       Float?
-  locationLng       Float?
-  budget            Int
-  preferredDate     String?
-  status            JobStatus   @default(OPEN)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  awardedAt         DateTime?
-  completedAt       DateTime?
-  acceptedBidId     String?     @unique
-  homeowner         User        @relation("HomeownerJobs", fields: [homeownerId], references: [id], onDelete: Cascade)
-  bids              Bid[]
-  messages          Message[]
-  photos            JobPhoto[]
-  review            Review?
-  payment           Payment?
-  checkoutSessions  CheckoutSession[]
-  dispute           Dispute?
-  reports           ModerationReport[]
-  acceptedBid       Bid?        @relation("AcceptedBid", fields: [acceptedBidId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id            String     @id @default(cuid())
+  homeownerId   String
+  homeowner     User       @relation("JobsPosted", fields: [homeownerId], references: [id], onDelete: Cascade)
+  title         String
+  description   String     @db.Text
+  category      String
+  location      String
+  budget        Decimal
+  preferredDate DateTime?
+  status        JobStatus  @default(OPEN)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  awardedAt     DateTime?
+  completedAt   DateTime?
 
-  @@index([homeownerId, createdAt])
+  photos        JobPhoto[]
+  bids          Bid[]
+  messages      Message[]
+  reviews       Review[]
+
+  @@index([homeownerId])
+  @@index([status])
+  @@index([category])
+  @@index([location])
   @@index([status, createdAt])
-}
-
-model JobPhoto {
-  id        String   @id @default(uuid())
-  jobId      String
-  url        String
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  @@index([jobId, sortOrder])
-}
-
-model Bid {
-  id           String     @id @default(uuid())
-  jobId        String
-  handymanId   String
-  amount       Int
-  message      String
-  etaDays      Int
-  status       BidStatus  @default(PENDING)
-  shortlisted  Boolean    @default(false)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  job          Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  handyman     User       @relation(fields: [handymanId], references: [id], onDelete: Cascade)
-  messages     Message[]
-  acceptedFor  Job?       @relation("AcceptedBid")
-
-  @@unique([jobId, handymanId])
-  @@index([handymanId, status])
-  @@index([jobId, status])
-}
-
-model Message {
-  id         String   @id @default(uuid())
-  jobId      String
-  bidId      String
-  senderId   String
-  body       String
-  createdAt  DateTime @default(now())
-  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  bid        Bid      @relation(fields: [bidId], references: [id], onDelete: Cascade)
-  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
-
-  @@index([jobId, createdAt])
-  @@index([bidId, createdAt])
-}
-
-model Review {
-  id         String   @id @default(uuid())
-  jobId      String   @unique
-  reviewerId String
-  handymanId String
-  stars      Int
-  text       String
-  createdAt  DateTime @default(now())
-  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  reviewer   User     @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
-  handyman   User     @relation("HandymanReviews", fields: [handymanId], references: [id], onDelete: Cascade)
-
-  @@index([handymanId, createdAt])
-}
-
-model SavedSearch {
-  id         String   @id @default(uuid())
-  userId     String
-  name       String
-  search     String?
-  category   String?
-  minBudget  Int?
-  maxBudget  Int?
-  sort       String   @default("newest")
-  photosOnly Boolean  @default(false)
-  nearMeOnly Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-}
-
-model SavedSupportCaseView {
-  id                String               @id @default(uuid())
-  userId            String
-  name              String
-  scope             SupportCaseViewScope @default(PERSONAL)
-  isPinned          Boolean              @default(false)
-  isDefaultLanding  Boolean              @default(false)
-  autoApplyOnCreate Boolean              @default(false)
-  autoAssignAdminUserId String?
-  supportCaseSearch String?
-  supportCaseStatus String?
-  supportCaseOwner  String?
-  supportCaseQueue  String?
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  autoAssignAdmin   User?                @relation("SupportCaseViewAutoAssignAdmin", fields: [autoAssignAdminUserId], references: [id], onDelete: SetNull)
-
-  @@index([userId, createdAt])
-  @@index([scope, createdAt])
-  @@index([isPinned, createdAt])
-  @@index([isDefaultLanding, createdAt])
-  @@index([autoApplyOnCreate, createdAt])
-  @@index([autoAssignAdminUserId, createdAt])
-}
-
-model Payment {
-  id         String        @id @default(uuid())
-  jobId      String        @unique
-  amount     Int
-  status     PaymentStatus @default(PENDING_FUNDING)
-  fundedAt   DateTime?
-  releasedAt DateTime?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  job        Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  @@index([status, createdAt])
-}
-
-model ModerationReport {
-  id                  String                 @id @default(uuid())
-  filedByUserId       String
-  reportedUserId      String?
-  assignedAdminUserId String?
-  jobId               String?
-  disputeId           String?
-  subjectType         ModerationSubjectType
-  reason              String
-  details             String
-  status              ModerationReportStatus @default(OPEN)
-  resolutionNotes     String?
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
-  resolvedAt          DateTime?
-  filedBy             User                   @relation("ReportFiledBy", fields: [filedByUserId], references: [id], onDelete: Cascade)
-  reportedUser        User?                  @relation("ReportAgainstUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
-  assignedAdmin       User?                  @relation("ReportAssignedAdmin", fields: [assignedAdminUserId], references: [id], onDelete: SetNull)
-  job                 Job?                   @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  dispute             Dispute?               @relation(fields: [disputeId], references: [id], onDelete: Cascade)
-  auditLogs           ModerationAuditLog[]
-
-  @@index([status, createdAt])
-  @@index([subjectType, createdAt])
-  @@index([reportedUserId, createdAt])
-  @@index([assignedAdminUserId, createdAt])
-}
-
-model Dispute {
-  id                  String               @id @default(uuid())
-  jobId               String               @unique
-  openedByUserId      String
-  assignedAdminUserId String?
-  reason              String
-  details             String
-  status              DisputeStatus        @default(OPEN)
-  resolution          String?
-  resolutionNotes     String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  resolvedAt          DateTime?
-  job                 Job                  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  openedBy            User                 @relation("DisputeOpenedBy", fields: [openedByUserId], references: [id], onDelete: Cascade)
-  assignedAdmin       User?                @relation("DisputeAssignedAdmin", fields: [assignedAdminUserId], references: [id], onDelete: SetNull)
-  reports             ModerationReport[]
-  auditLogs           ModerationAuditLog[]
-
-  @@index([status, createdAt])
-  @@index([openedByUserId, createdAt])
-  @@index([assignedAdminUserId, createdAt])
-}
-
-model ModerationAuditLog {
-  id                 String              @id @default(uuid())
-  actorAdminUserId   String
-  moderationReportId String?
-  disputeId          String?
-  targetUserId       String?
-  action             ModerationAuditAction
-  notes              String?
-  createdAt          DateTime            @default(now())
-  actorAdmin         User                @relation("AdminAuditActor", fields: [actorAdminUserId], references: [id], onDelete: Cascade)
-  moderationReport   ModerationReport?   @relation(fields: [moderationReportId], references: [id], onDelete: Cascade)
-  dispute            Dispute?            @relation(fields: [disputeId], references: [id], onDelete: Cascade)
-
-  @@index([createdAt])
-  @@index([actorAdminUserId, createdAt])
-  @@index([moderationReportId, createdAt])
-  @@index([disputeId, createdAt])
-}
-
-model SupportCase {
-  id                   String            @id @default(uuid())
-  title                String
-  summaryText          String
-  summaryJson          String
-  notes                String?
-  notesUpdatedAt       DateTime?
-  status               SupportCaseStatus @default(OPEN)
-  sourcePlaybookId     String?
-  sourcePlaybookName   String
-  createdByAdminUserId String
-  assignedAdminUserId  String?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  createdByAdmin       User              @relation("SupportCaseCreator", fields: [createdByAdminUserId], references: [id], onDelete: Cascade)
-  assignedAdmin        User?             @relation("SupportCaseAssignedAdmin", fields: [assignedAdminUserId], references: [id], onDelete: SetNull)
-  activities           SupportCaseActivity[]
-  comments             SupportCaseComment[]
-  attachments          SupportCaseAttachment[]
-
-  @@index([createdByAdminUserId, createdAt])
-  @@index([assignedAdminUserId, createdAt])
-  @@index([status, createdAt])
-  @@index([sourcePlaybookId, createdAt])
-}
-
-model SupportCaseActivity {
-  id               String                  @id @default(uuid())
-  supportCaseId    String
-  actorAdminUserId String
-  type             SupportCaseActivityType
-  message          String
-  createdAt        DateTime                @default(now())
-  supportCase      SupportCase             @relation(fields: [supportCaseId], references: [id], onDelete: Cascade)
-  actorAdmin       User                    @relation("SupportCaseActivityActor", fields: [actorAdminUserId], references: [id], onDelete: Cascade)
-
-  @@index([supportCaseId, createdAt])
-  @@index([actorAdminUserId, createdAt])
-}
-
-model SupportCaseComment {
-  id               String      @id @default(uuid())
-  supportCaseId    String
-  authorAdminUserId String
-  body             String
-  isResolution     Boolean     @default(false)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  supportCase      SupportCase @relation(fields: [supportCaseId], references: [id], onDelete: Cascade)
-  authorAdmin      User        @relation("SupportCaseCommentAuthor", fields: [authorAdminUserId], references: [id], onDelete: Cascade)
-
-  @@index([supportCaseId, isResolution, createdAt])
-  @@index([authorAdminUserId, createdAt])
-}
-
-model SupportCaseAttachment {
-  id                   String      @id @default(uuid())
-  supportCaseId        String
-  uploadedByAdminUserId String
-  url                  String
-  filename             String
-  mimeType             String
-  sizeBytes            Int
-  note                 String?
-  archivedAt           DateTime?
-  archivedByAdminUserId String?
-  createdAt            DateTime    @default(now())
-  supportCase          SupportCase @relation(fields: [supportCaseId], references: [id], onDelete: Cascade)
-  uploadedByAdmin      User        @relation("SupportCaseAttachmentUploader", fields: [uploadedByAdminUserId], references: [id], onDelete: Cascade)
-  archivedByAdmin      User?       @relation("SupportCaseAttachmentArchiver", fields: [archivedByAdminUserId], references: [id], onDelete: SetNull)
-
-  @@index([supportCaseId, archivedAt, createdAt])
-  @@index([uploadedByAdminUserId, createdAt])
-  @@index([archivedByAdminUserId, createdAt])
-}
-
-enum UserRole {
-  HOMEOWNER
-  HANDYMAN
-  ADMIN
 }
 
 enum JobStatus {
@@ -418,277 +84,97 @@ enum JobStatus {
   IN_REVIEW
   AWARDED
   COMPLETED
+  CANCELLED
+}
+
+model JobPhoto {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
+}
+
+model Bid {
+  id         String    @id @default(cuid())
+  jobId      String
+  job        Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  handymanId String
+  handyman   User      @relation(fields: [handymanId], references: [id], onDelete: Cascade)
+  amount     Decimal
+  message    String    @db.Text
+  etaDays    Int
+  status     BidStatus @default(PENDING)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  messages      Message[]
+  isRecommended Boolean   @default(false)
+
+  @@unique([jobId, handymanId])
+  @@index([jobId])
+  @@index([handymanId])
+  @@index([status])
 }
 
 enum BidStatus {
   PENDING
-  SHORTLISTED
   ACCEPTED
   DECLINED
+  WITHDRAWN
 }
 
+model Message {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  bidId     String?
+  bid       Bid?     @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body      String   @db.Text
+  createdAt DateTime @default(now())
 
-enum SupportCaseViewScope {
-  PERSONAL
-  SHARED
+  @@index([jobId])
+  @@index([bidId])
+  @@index([bidId, createdAt])
 }
 
-enum PaymentStatus {
-  PENDING_FUNDING
-  FUNDED
-  DISPUTED
-  RELEASED
-  REFUNDED
+model Review {
+  id         String   @id @default(cuid())
+  jobId      String   @unique
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  handymanId String
+  handyman   User     @relation("ReviewsReceived", fields: [handymanId], references: [id], onDelete: Cascade)
+  stars      Int      // 1-5
+  text       String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([handymanId])
 }
 
-enum DisputeStatus {
-  OPEN
-  RESOLVED
-}
-
-
-enum ModerationSubjectType {
-  JOB
-  USER
-  DISPUTE
-}
-
-enum ModerationReportStatus {
-  OPEN
-  RESOLVED
-}
-
-
-enum ModerationAuditAction {
-  ASSIGNED_REPORT
-  RESOLVED_REPORT
-  ASSIGNED_DISPUTE
-  RESOLVED_DISPUTE
-  SUSPENDED_USER
-  RESTORED_USER
-}
-
-
-enum VerificationStatus {
-  NOT_SUBMITTED
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum SupportCaseStatus {
-  OPEN
-  CLOSED
-}
-
-enum SupportCaseActivityType {
-  CREATED
-  UPDATED_NOTES
-  REASSIGNED
-  STATUS_CHANGED
-  COMMENTED
-  COMMENT_EDITED
-  COMMENT_MARKED
-  ATTACHMENT_UPLOADED
-  ATTACHMENT_UPDATED
-  ATTACHMENT_ARCHIVED
-  ATTACHMENT_DELETED
-}
-
-
-model LeadCreditTransaction {
-  id                String                    @id @default(uuid())
-  handymanProfileId String
-  amount            Int
-  type              LeadCreditTransactionType
-  note              String
-  createdAt         DateTime                  @default(now())
-  handymanProfile   HandymanProfile           @relation(fields: [handymanProfileId], references: [id], onDelete: Cascade)
-
-  @@index([handymanProfileId, createdAt])
-}
-
-
-enum SubscriptionPlan {
-  FREE
-  PLUS
-  PRO
-}
-
-enum BillingStatus {
-  INACTIVE
-  ACTIVE
-  PAST_DUE
-  CANCELED
-}
-
-enum LeadCreditTransactionType {
-  PLAN_GRANT
-  CREDIT_PURCHASE
-  BID_UNLOCK
-  MANUAL_ADJUSTMENT
-}
-
-
-model UserNotification {
-  id        String           @id @default(uuid())
+model Notification {
+  id        String           @id @default(cuid())
   userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      NotificationType
   title     String
-  body      String
-  href      String?
-  isRead    Boolean          @default(false)
+  body      String   @db.Text
+  linkPath  String
+  read      Boolean          @default(false)
   createdAt DateTime         @default(now())
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, createdAt])
-  @@index([userId, isRead, createdAt])
+  @@index([userId])
+  @@index([userId, read])
 }
-
 
 enum NotificationType {
   NEW_BID
-  BID_AWARDED
+  BID_ACCEPTED
   BID_DECLINED
+  JOB_COMPLETED
   NEW_MESSAGE
-  ESCROW_FUNDED
-  DISPUTE_OPENED
-  DISPUTE_RESOLVED
-  VERIFICATION_REVIEWED
-  ACCOUNT_STATUS
-  SUPPORT_CASE
-}
-
-
-model CheckoutSession {
-  id             String                @id @default(uuid())
-  providerSessionId String             @unique
-  userId         String
-  jobId          String?
-  targetType     CheckoutTargetType
-  status         CheckoutSessionStatus @default(PENDING)
-  planKey        String?
-  creditPack     String?
-  amount         Int
-  currency       String                @default("USD")
-  provider       String                @default("mockpay")
-  completedAt    DateTime?
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
-  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job            Job?                  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@index([jobId, createdAt])
-  @@index([status, createdAt])
-}
-
-enum CheckoutTargetType {
-  PLAN
-  CREDIT_PACK
-  ESCROW_FUNDING
-}
-
-enum CheckoutSessionStatus {
-  PENDING
-  COMPLETED
-  FAILED
-}
-
-
-model PaymentWebhookEvent {
-  id                    String                      @id @default(uuid())
-  provider              String
-  providerEventId       String                      @unique
-  eventType             String
-  checkoutSessionId     String?
-  assignedAdminUserId   String?
-  status                PaymentWebhookEventStatus   @default(RECEIVED)
-  supportStatus         BillingEventSupportStatus   @default(NEW)
-  payloadJson           String
-  supportNotes          String?
-  supportNotesUpdatedAt DateTime?
-  createdAt             DateTime                    @default(now())
-  processedAt           DateTime?
-  assignedAdmin         User?                       @relation("BillingEventAssignedAdmin", fields: [assignedAdminUserId], references: [id], onDelete: SetNull)
-
-  @@index([provider, createdAt])
-  @@index([status, createdAt])
-  @@index([supportStatus, createdAt])
-  @@index([assignedAdminUserId, createdAt])
-}
-
-enum PaymentWebhookEventStatus {
-  RECEIVED
-  PROCESSED
-  IGNORED
-  FAILED
-}
-
-enum BillingEventSupportStatus {
-  NEW
-  NEEDS_FOLLOW_UP
-  WAITING_ON_PROVIDER
-  RESOLVED
-}
-
-enum BillingPlaybookScope {
-  PERSONAL
-  SHARED
-}
-
-enum BillingPlaybookStatus {
-  ACTIVE
-  ARCHIVED
-}
-
-enum BillingPlaybookHistoryAction {
-  CREATED
-  UPDATED
-  ARCHIVED
-  RESTORED
-  DELETED
-}
-
-model BillingSupportPlaybook {
-  id                  String                    @id @default(uuid())
-  createdByAdminUserId String
-  archivedByAdminUserId String?
-  name                String
-  provider            String?
-  eventType           String?
-  targetType          String?
-  supportStatus       BillingEventSupportStatus
-  scope               BillingPlaybookScope      @default(PERSONAL)
-  status              BillingPlaybookStatus     @default(ACTIVE)
-  isFavorite          Boolean                   @default(false)
-  usageCount          Int                       @default(0)
-  lastUsedAt          DateTime?
-  archivedAt          DateTime?
-  cleanupReason       String?
-  assignToCreator     Boolean                   @default(true)
-  createdAt           DateTime                  @default(now())
-  createdByAdmin      User                      @relation("BillingPlaybookCreator", fields: [createdByAdminUserId], references: [id], onDelete: Cascade)
-  archivedByAdmin     User?                     @relation("BillingPlaybookArchivedBy", fields: [archivedByAdminUserId], references: [id], onDelete: SetNull)
-
-  @@index([createdByAdminUserId, createdAt])
-  @@index([archivedByAdminUserId, archivedAt])
-  @@index([provider, eventType, targetType])
-}
-
-
-
-model BillingPlaybookHistory {
-  id               String                     @id @default(uuid())
-  actorAdminUserId String
-  playbookId       String?
-  playbookName     String
-  action           BillingPlaybookHistoryAction
-  notes            String?
-  createdAt        DateTime                   @default(now())
-  actorAdmin       User                       @relation("BillingPlaybookHistoryActor", fields: [actorAdminUserId], references: [id], onDelete: Cascade)
-
-  @@index([actorAdminUserId, createdAt])
-  @@index([playbookId, createdAt])
-  @@index([createdAt])
+  JOB_STATUS
 }
