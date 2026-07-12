@@ -7,8 +7,11 @@ import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, MessageSquare, Star, Users } from 'lucide-react';
+import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, MessageSquare, Search, Star, Trash2, Users } from 'lucide-react';
+
+type AdminSearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 async function requireAdmin() {
   const session = await auth();
@@ -61,6 +64,60 @@ async function updateUserAvailability(formData: FormData) {
   revalidatePath('/admin');
 }
 
+async function deleteJob(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+  await db.job.delete({ where: { id } });
+  revalidatePath('/admin');
+}
+
+async function deleteMessage(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+  await db.message.delete({ where: { id } });
+  revalidatePath('/admin');
+}
+
+async function deleteReview(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+  await db.review.delete({ where: { id } });
+  revalidatePath('/admin');
+}
+
+async function deleteNotification(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+  await db.notification.delete({ where: { id } });
+  revalidatePath('/admin');
+}
+
+async function expireResetToken(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+  await db.passwordResetToken.update({ where: { id }, data: { usedAt: new Date() } });
+  revalidatePath('/admin');
+}
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? '' : value ?? '';
+}
+
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(value);
 }
@@ -94,8 +151,45 @@ function roleBadge(role: string) {
   return <Badge className={colors[role] ?? ''}>{role}</Badge>;
 }
 
-export default async function AdminPage() {
+function DeleteButton({ label = 'Delete' }: { label?: string }) {
+  return (
+    <Button type="submit" size="sm" variant="destructive" className="gap-1">
+      <Trash2 className="size-3" />
+      {label}
+    </Button>
+  );
+}
+
+export default async function AdminPage({ searchParams }: { searchParams?: AdminSearchParams }) {
   const session = await requireAdmin();
+  const params = searchParams ? await searchParams : {};
+  const q = firstParam(params.q).trim();
+  const role = firstParam(params.role);
+  const status = firstParam(params.status);
+
+  const userWhere: Record<string, unknown> = {};
+  if (q) {
+    userWhere.OR = [
+      { name: { contains: q } },
+      { email: { contains: q } },
+      { location: { contains: q } },
+      { phone: { contains: q } },
+    ];
+  }
+  if (['HOMEOWNER', 'HANDYMAN', 'ADMIN'].includes(role)) userWhere.role = role;
+  if (status === 'active') userWhere.isAvailable = true;
+  if (status === 'suspended') userWhere.isAvailable = false;
+
+  const contentWhere = q
+    ? {
+        OR: [
+          { title: { contains: q } },
+          { description: { contains: q } },
+          { category: { contains: q } },
+          { location: { contains: q } },
+        ],
+      }
+    : undefined;
 
   const [
     users,
@@ -108,38 +202,45 @@ export default async function AdminPage() {
     counts,
   ] = await Promise.all([
     db.user.findMany({
+      where: userWhere,
       orderBy: { createdAt: 'desc' },
-      take: 25,
+      take: 50,
       include: { _count: { select: { jobsPosted: true, bidsSubmitted: true, messagesSent: true } } },
     }),
     db.job.findMany({
+      where: contentWhere,
       orderBy: { createdAt: 'desc' },
-      take: 20,
+      take: 30,
       include: { homeowner: { select: { name: true, email: true } }, _count: { select: { bids: true, messages: true, photos: true } } },
     }),
     db.bid.findMany({
+      where: q ? { OR: [{ message: { contains: q } }, { job: { title: { contains: q } } }, { handyman: { email: { contains: q } } }, { handyman: { name: { contains: q } } }] } : undefined,
       orderBy: { createdAt: 'desc' },
-      take: 20,
+      take: 30,
       include: { handyman: { select: { name: true, email: true } }, job: { select: { title: true } } },
     }),
     db.message.findMany({
+      where: q ? { OR: [{ body: { contains: q } }, { job: { title: { contains: q } } }, { sender: { email: { contains: q } } }, { sender: { name: { contains: q } } }] } : undefined,
       orderBy: { createdAt: 'desc' },
-      take: 20,
+      take: 30,
       include: { sender: { select: { name: true, email: true } }, job: { select: { title: true } } },
     }),
     db.review.findMany({
+      where: q ? { OR: [{ text: { contains: q } }, { job: { title: { contains: q } } }, { reviewer: { email: { contains: q } } }, { handyman: { email: { contains: q } } }] } : undefined,
       orderBy: { createdAt: 'desc' },
-      take: 20,
+      take: 30,
       include: { reviewer: { select: { name: true, email: true } }, handyman: { select: { name: true, email: true } }, job: { select: { title: true } } },
     }),
     db.notification.findMany({
+      where: q ? { OR: [{ title: { contains: q } }, { body: { contains: q } }, { user: { email: { contains: q } } }] } : undefined,
       orderBy: { createdAt: 'desc' },
-      take: 20,
+      take: 30,
       include: { user: { select: { name: true, email: true } } },
     }),
     db.passwordResetToken.findMany({
+      where: q ? { user: { email: { contains: q } } } : undefined,
       orderBy: { createdAt: 'desc' },
-      take: 20,
+      take: 30,
       include: { user: { select: { name: true, email: true } } },
     }),
     Promise.all([
@@ -184,7 +285,7 @@ export default async function AdminPage() {
       <main className="container mx-auto px-4 py-8 space-y-8">
         <section>
           <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Maintain users, marketplace activity, content, and account security.</p>
+          <p className="text-muted-foreground mt-2">Search, moderate, and maintain marketplace activity from one place.</p>
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
@@ -203,6 +304,34 @@ export default async function AdminPage() {
             </Card>
           ))}
         </section>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Search & Filters</CardTitle>
+            <CardDescription>Filter users and recent marketplace content by keyword, role, or account status.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action="/admin" className="grid gap-3 md:grid-cols-[1fr_180px_180px_auto_auto]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input name="q" defaultValue={q} placeholder="Search name, email, job, message..." className="pl-9" />
+              </div>
+              <select name="role" defaultValue={role} className="h-9 rounded-md border bg-background px-3 text-sm">
+                <option value="">All roles</option>
+                <option value="HOMEOWNER">Homeowners</option>
+                <option value="HANDYMAN">Handymen</option>
+                <option value="ADMIN">Admins</option>
+              </select>
+              <select name="status" defaultValue={status} className="h-9 rounded-md border bg-background px-3 text-sm">
+                <option value="">All statuses</option>
+                <option value="active">Active users</option>
+                <option value="suspended">Suspended users</option>
+              </select>
+              <Button type="submit">Apply</Button>
+              <Button asChild type="button" variant="outline"><Link href="/admin">Clear</Link></Button>
+            </form>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -233,7 +362,7 @@ export default async function AdminPage() {
                       {user.isAvailable ? <Badge className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"><CheckCircle2 className="size-3" /> Active</Badge> : <Badge className="bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"><Ban className="size-3" /> Suspended</Badge>}
                     </td>
                     <td className="py-4 pr-4 text-muted-foreground">
-                      {user._count.jobsPosted} jobs Â· {user._count.bidsSubmitted} bids Â· {user._count.messagesSent} messages
+                      {user._count.jobsPosted} jobs / {user._count.bidsSubmitted} bids / {user._count.messagesSent} messages
                     </td>
                     <td className="py-4 pr-4 text-muted-foreground">{formatDate(user.createdAt)}</td>
                     <td className="py-4">
@@ -265,15 +394,16 @@ export default async function AdminPage() {
 
         <div className="grid gap-8 xl:grid-cols-2">
           <Card>
-            <CardHeader><CardTitle>Recent Jobs</CardTitle><CardDescription>Latest homeowner job posts.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>Recent Jobs</CardTitle><CardDescription>Delete inappropriate or duplicate job posts.</CardDescription></CardHeader>
             <CardContent className="space-y-4">
               {jobs.map((job) => (
                 <div key={job.id} className="rounded-md border p-4">
-                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{job.title}</div><div className="text-sm text-muted-foreground">{job.homeowner.name} Â· {job.location} Â· {money(job.budget)}</div></div>{statusBadge(job.status)}</div>
-                  <div className="mt-2 text-xs text-muted-foreground">{job._count.bids} bids Â· {job._count.messages} messages Â· {job._count.photos} photos Â· {formatDate(job.createdAt)}</div>
+                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{job.title}</div><div className="text-sm text-muted-foreground">{job.homeowner.name} / {job.location} / {money(job.budget)}</div></div>{statusBadge(job.status)}</div>
+                  <div className="mt-2 text-xs text-muted-foreground">{job._count.bids} bids / {job._count.messages} messages / {job._count.photos} photos / {formatDate(job.createdAt)}</div>
+                  <form action={deleteJob} className="mt-3"><input type="hidden" name="id" value={job.id} /><DeleteButton /></form>
                 </div>
               ))}
-              {jobs.length === 0 && <p className="text-sm text-muted-foreground">No jobs yet.</p>}
+              {jobs.length === 0 && <p className="text-sm text-muted-foreground">No jobs found.</p>}
             </CardContent>
           </Card>
 
@@ -282,66 +412,70 @@ export default async function AdminPage() {
             <CardContent className="space-y-4">
               {bids.map((bid) => (
                 <div key={bid.id} className="rounded-md border p-4">
-                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{bid.job.title}</div><div className="text-sm text-muted-foreground">{bid.handyman.name} Â· {money(bid.amount)} Â· ETA {bid.etaDays} days</div></div>{statusBadge(bid.status)}</div>
+                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{bid.job.title}</div><div className="text-sm text-muted-foreground">{bid.handyman.name} / {money(bid.amount)} / ETA {bid.etaDays} days</div></div>{statusBadge(bid.status)}</div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{bid.message}</p>
                 </div>
               ))}
-              {bids.length === 0 && <p className="text-sm text-muted-foreground">No bids yet.</p>}
+              {bids.length === 0 && <p className="text-sm text-muted-foreground">No bids found.</p>}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Recent Messages</CardTitle><CardDescription>Latest user communication.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>Recent Messages</CardTitle><CardDescription>Remove inappropriate user communication.</CardDescription></CardHeader>
             <CardContent className="space-y-4">
               {messages.map((message) => (
                 <div key={message.id} className="rounded-md border p-4">
                   <div className="font-medium">{message.sender.name}</div>
-                  <div className="text-xs text-muted-foreground">{message.job.title} Â· {formatDate(message.createdAt)}</div>
+                  <div className="text-xs text-muted-foreground">{message.job.title} / {formatDate(message.createdAt)}</div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{message.body}</p>
+                  <form action={deleteMessage} className="mt-3"><input type="hidden" name="id" value={message.id} /><DeleteButton /></form>
                 </div>
               ))}
-              {messages.length === 0 && <p className="text-sm text-muted-foreground">No messages yet.</p>}
+              {messages.length === 0 && <p className="text-sm text-muted-foreground">No messages found.</p>}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Recent Reviews</CardTitle><CardDescription>Feedback left after completed jobs.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>Recent Reviews</CardTitle><CardDescription>Remove abusive or mistaken reviews.</CardDescription></CardHeader>
             <CardContent className="space-y-4">
               {reviews.map((review) => (
                 <div key={review.id} className="rounded-md border p-4">
                   <div className="font-medium">{review.stars} stars for {review.handyman.name}</div>
-                  <div className="text-xs text-muted-foreground">From {review.reviewer.name} Â· {review.job.title}</div>
+                  <div className="text-xs text-muted-foreground">From {review.reviewer.name} / {review.job.title}</div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{review.text || 'No written review.'}</p>
+                  <form action={deleteReview} className="mt-3"><input type="hidden" name="id" value={review.id} /><DeleteButton /></form>
                 </div>
               ))}
-              {reviews.length === 0 && <p className="text-sm text-muted-foreground">No reviews yet.</p>}
+              {reviews.length === 0 && <p className="text-sm text-muted-foreground">No reviews found.</p>}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Notifications</CardTitle><CardDescription>Most recent platform notifications.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>Notifications</CardTitle><CardDescription>Clean up stale platform notifications.</CardDescription></CardHeader>
             <CardContent className="space-y-4">
               {notifications.map((notification) => (
                 <div key={notification.id} className="rounded-md border p-4">
                   <div className="flex items-center justify-between gap-3"><div className="font-medium">{notification.title}</div>{notification.read ? <Badge variant="outline">Read</Badge> : <Badge>Unread</Badge>}</div>
-                  <div className="text-xs text-muted-foreground">{notification.user.email} Â· {notification.type} Â· {formatDate(notification.createdAt)}</div>
+                  <div className="text-xs text-muted-foreground">{notification.user.email} / {notification.type} / {formatDate(notification.createdAt)}</div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{notification.body}</p>
+                  <form action={deleteNotification} className="mt-3"><input type="hidden" name="id" value={notification.id} /><DeleteButton /></form>
                 </div>
               ))}
-              {notifications.length === 0 && <p className="text-sm text-muted-foreground">No notifications yet.</p>}
+              {notifications.length === 0 && <p className="text-sm text-muted-foreground">No notifications found.</p>}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Password Reset Links</CardTitle><CardDescription>Recent account recovery activity.</CardDescription></CardHeader>
+            <CardHeader><CardTitle>Password Reset Links</CardTitle><CardDescription>Expire active account recovery links.</CardDescription></CardHeader>
             <CardContent className="space-y-4">
               {resetTokens.map((token) => (
                 <div key={token.id} className="rounded-md border p-4">
                   <div className="flex items-center justify-between gap-3"><div className="font-medium">{token.user.email}</div>{token.usedAt ? <Badge variant="outline">Used</Badge> : token.expiresAt < new Date() ? <Badge className="bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200">Expired</Badge> : <Badge className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200">Active</Badge>}</div>
-                  <div className="text-xs text-muted-foreground">Created {formatDate(token.createdAt)} Â· Expires {formatDate(token.expiresAt)}</div>
+                  <div className="text-xs text-muted-foreground">Created {formatDate(token.createdAt)} / Expires {formatDate(token.expiresAt)}</div>
+                  {!token.usedAt && token.expiresAt >= new Date() && <form action={expireResetToken} className="mt-3"><input type="hidden" name="id" value={token.id} /><Button type="submit" size="sm" variant="outline">Expire Link</Button></form>}
                 </div>
               ))}
-              {resetTokens.length === 0 && <p className="text-sm text-muted-foreground">No reset links yet.</p>}
+              {resetTokens.length === 0 && <p className="text-sm text-muted-foreground">No reset links found.</p>}
             </CardContent>
           </Card>
         </div>
