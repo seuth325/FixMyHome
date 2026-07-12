@@ -1,0 +1,331 @@
+import Link from 'next/link';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { Role } from '@prisma/client';
+import { auth } from '@/auth';
+import { db } from '@/lib/db';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, MessageSquare, Star, Users } from 'lucide-react';
+
+async function requireAdmin() {
+  const session = await auth();
+  if (!session?.user) redirect('/sign-in');
+  if (session.user.role !== 'ADMIN') redirect('/role-selection');
+  return session;
+}
+
+async function updateUserRole(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const userId = String(formData.get('userId') ?? '');
+  const role = String(formData.get('role') ?? '') as Role;
+
+  if (!userId || !['HOMEOWNER', 'HANDYMAN', 'ADMIN'].includes(role)) return;
+  await db.user.update({ where: { id: userId }, data: { role } });
+  revalidatePath('/admin');
+}
+
+async function updateUserAvailability(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const userId = String(formData.get('userId') ?? '');
+  const isAvailable = String(formData.get('isAvailable')) === 'true';
+
+  if (!userId) return;
+  await db.user.update({ where: { id: userId }, data: { isAvailable } });
+  revalidatePath('/admin');
+}
+
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(value);
+}
+
+function money(value: unknown) {
+  const amount = typeof value === 'object' && value && 'toString' in value ? Number(value.toString()) : Number(value ?? 0);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+}
+
+function statusBadge(status: string) {
+  const colors: Record<string, string> = {
+    OPEN: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200',
+    IN_REVIEW: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
+    AWARDED: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    COMPLETED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+    CANCELLED: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
+    PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
+    ACCEPTED: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    DECLINED: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
+    WITHDRAWN: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+  };
+  return <Badge className={colors[status] ?? ''}>{status.replace('_', ' ')}</Badge>;
+}
+
+function roleBadge(role: string) {
+  const colors: Record<string, string> = {
+    ADMIN: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-200',
+    HANDYMAN: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    HOMEOWNER: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200',
+  };
+  return <Badge className={colors[role] ?? ''}>{role}</Badge>;
+}
+
+export default async function AdminPage() {
+  const session = await requireAdmin();
+
+  const [
+    users,
+    jobs,
+    bids,
+    messages,
+    reviews,
+    notifications,
+    resetTokens,
+    counts,
+  ] = await Promise.all([
+    db.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 25,
+      include: { _count: { select: { jobsPosted: true, bidsSubmitted: true, messagesSent: true } } },
+    }),
+    db.job.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      include: { homeowner: { select: { name: true, email: true } }, _count: { select: { bids: true, messages: true, photos: true } } },
+    }),
+    db.bid.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      include: { handyman: { select: { name: true, email: true } }, job: { select: { title: true } } },
+    }),
+    db.message.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      include: { sender: { select: { name: true, email: true } }, job: { select: { title: true } } },
+    }),
+    db.review.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      include: { reviewer: { select: { name: true, email: true } }, handyman: { select: { name: true, email: true } }, job: { select: { title: true } } },
+    }),
+    db.notification.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      include: { user: { select: { name: true, email: true } } },
+    }),
+    db.passwordResetToken.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      include: { user: { select: { name: true, email: true } } },
+    }),
+    Promise.all([
+      db.user.count(),
+      db.job.count(),
+      db.bid.count(),
+      db.message.count(),
+      db.review.count(),
+      db.notification.count({ where: { read: false } }),
+      db.passwordResetToken.count({ where: { usedAt: null, expiresAt: { gt: new Date() } } }),
+      db.job.aggregate({ _sum: { budget: true } }),
+    ]),
+  ]);
+
+  const [userCount, jobCount, bidCount, messageCount, reviewCount, unreadNotifications, activeResets, budgetTotal] = counts;
+  const stats = [
+    { label: 'Users', value: userCount, detail: 'Registered accounts', icon: Users },
+    { label: 'Jobs', value: jobCount, detail: `${money(budgetTotal._sum.budget)} posted budget`, icon: Briefcase },
+    { label: 'Bids', value: bidCount, detail: 'Submitted proposals', icon: DollarSign },
+    { label: 'Messages', value: messageCount, detail: 'User conversations', icon: MessageSquare },
+    { label: 'Reviews', value: reviewCount, detail: 'Completed feedback', icon: Star },
+    { label: 'Unread Alerts', value: unreadNotifications, detail: 'Open notifications', icon: Activity },
+    { label: 'Reset Links', value: activeResets, detail: 'Active password resets', icon: KeyRound },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="border-b bg-white dark:bg-gray-800 dark:border-gray-700">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div>
+            <Link href="/" className="text-2xl font-bold text-primary">FixMyHome</Link>
+            <p className="text-sm text-muted-foreground">Admin Console</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline text-sm text-muted-foreground">{session.user.email}</span>
+            <ThemeToggle />
+            <Button asChild variant="outline" size="sm"><Link href="/api/auth/signout">Sign Out</Link></Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        <section>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Maintain users, marketplace activity, content, and account security.</p>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          {stats.map(({ label, value, detail, icon: Icon }) => (
+            <Card key={label}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+                  <Icon className="size-4 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                <p className="text-xs text-muted-foreground mt-1">{detail}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>User Management</CardTitle>
+            <CardDescription>Change roles, suspend availability, and inspect account activity.</CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full min-w-[920px] text-sm">
+              <thead className="text-left text-muted-foreground border-b">
+                <tr>
+                  <th className="py-3 pr-4 font-medium">User</th>
+                  <th className="py-3 pr-4 font-medium">Role</th>
+                  <th className="py-3 pr-4 font-medium">Status</th>
+                  <th className="py-3 pr-4 font-medium">Activity</th>
+                  <th className="py-3 pr-4 font-medium">Joined</th>
+                  <th className="py-3 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {users.map((user) => (
+                  <tr key={user.id} className="align-top">
+                    <td className="py-4 pr-4">
+                      <div className="font-medium">{user.name}</div>
+                      <div className="text-muted-foreground">{user.email}</div>
+                    </td>
+                    <td className="py-4 pr-4">{roleBadge(user.role)}</td>
+                    <td className="py-4 pr-4">
+                      {user.isAvailable ? <Badge className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"><CheckCircle2 className="size-3" /> Active</Badge> : <Badge className="bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"><Ban className="size-3" /> Suspended</Badge>}
+                    </td>
+                    <td className="py-4 pr-4 text-muted-foreground">
+                      {user._count.jobsPosted} jobs · {user._count.bidsSubmitted} bids · {user._count.messagesSent} messages
+                    </td>
+                    <td className="py-4 pr-4 text-muted-foreground">{formatDate(user.createdAt)}</td>
+                    <td className="py-4">
+                      <div className="flex flex-wrap gap-2">
+                        <form action={updateUserRole} className="flex gap-2">
+                          <input type="hidden" name="userId" value={user.id} />
+                          <select name="role" defaultValue={user.role} className="h-9 rounded-md border bg-background px-2 text-sm">
+                            <option value="HOMEOWNER">Homeowner</option>
+                            <option value="HANDYMAN">Handyman</option>
+                            <option value="ADMIN">Admin</option>
+                          </select>
+                          <Button type="submit" size="sm" variant="outline">Save</Button>
+                        </form>
+                        <form action={updateUserAvailability}>
+                          <input type="hidden" name="userId" value={user.id} />
+                          <input type="hidden" name="isAvailable" value={String(!user.isAvailable)} />
+                          <Button type="submit" size="sm" variant={user.isAvailable ? 'destructive' : 'outline'}>
+                            {user.isAvailable ? 'Suspend' : 'Reactivate'}
+                          </Button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-8 xl:grid-cols-2">
+          <Card>
+            <CardHeader><CardTitle>Recent Jobs</CardTitle><CardDescription>Latest homeowner job posts.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {jobs.map((job) => (
+                <div key={job.id} className="rounded-md border p-4">
+                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{job.title}</div><div className="text-sm text-muted-foreground">{job.homeowner.name} · {job.location} · {money(job.budget)}</div></div>{statusBadge(job.status)}</div>
+                  <div className="mt-2 text-xs text-muted-foreground">{job._count.bids} bids · {job._count.messages} messages · {job._count.photos} photos · {formatDate(job.createdAt)}</div>
+                </div>
+              ))}
+              {jobs.length === 0 && <p className="text-sm text-muted-foreground">No jobs yet.</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Recent Bids</CardTitle><CardDescription>Latest proposals from handymen.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {bids.map((bid) => (
+                <div key={bid.id} className="rounded-md border p-4">
+                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{bid.job.title}</div><div className="text-sm text-muted-foreground">{bid.handyman.name} · {money(bid.amount)} · ETA {bid.etaDays} days</div></div>{statusBadge(bid.status)}</div>
+                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{bid.message}</p>
+                </div>
+              ))}
+              {bids.length === 0 && <p className="text-sm text-muted-foreground">No bids yet.</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Recent Messages</CardTitle><CardDescription>Latest user communication.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {messages.map((message) => (
+                <div key={message.id} className="rounded-md border p-4">
+                  <div className="font-medium">{message.sender.name}</div>
+                  <div className="text-xs text-muted-foreground">{message.job.title} · {formatDate(message.createdAt)}</div>
+                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{message.body}</p>
+                </div>
+              ))}
+              {messages.length === 0 && <p className="text-sm text-muted-foreground">No messages yet.</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Recent Reviews</CardTitle><CardDescription>Feedback left after completed jobs.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="rounded-md border p-4">
+                  <div className="font-medium">{review.stars} stars for {review.handyman.name}</div>
+                  <div className="text-xs text-muted-foreground">From {review.reviewer.name} · {review.job.title}</div>
+                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{review.text || 'No written review.'}</p>
+                </div>
+              ))}
+              {reviews.length === 0 && <p className="text-sm text-muted-foreground">No reviews yet.</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Notifications</CardTitle><CardDescription>Most recent platform notifications.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {notifications.map((notification) => (
+                <div key={notification.id} className="rounded-md border p-4">
+                  <div className="flex items-center justify-between gap-3"><div className="font-medium">{notification.title}</div>{notification.read ? <Badge variant="outline">Read</Badge> : <Badge>Unread</Badge>}</div>
+                  <div className="text-xs text-muted-foreground">{notification.user.email} · {notification.type} · {formatDate(notification.createdAt)}</div>
+                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{notification.body}</p>
+                </div>
+              ))}
+              {notifications.length === 0 && <p className="text-sm text-muted-foreground">No notifications yet.</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Password Reset Links</CardTitle><CardDescription>Recent account recovery activity.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {resetTokens.map((token) => (
+                <div key={token.id} className="rounded-md border p-4">
+                  <div className="flex items-center justify-between gap-3"><div className="font-medium">{token.user.email}</div>{token.usedAt ? <Badge variant="outline">Used</Badge> : token.expiresAt < new Date() ? <Badge className="bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200">Expired</Badge> : <Badge className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200">Active</Badge>}</div>
+                  <div className="text-xs text-muted-foreground">Created {formatDate(token.createdAt)} · Expires {formatDate(token.expiresAt)}</div>
+                </div>
+              ))}
+              {resetTokens.length === 0 && <p className="text-sm text-muted-foreground">No reset links yet.</p>}
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    </div>
+  );
+}

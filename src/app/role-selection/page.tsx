@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 export default function RoleSelectionPage() {
   const router = useRouter();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const isLoaded = status !== 'loading';
   const isSignedIn = status === 'authenticated';
   const [selecting, setSelecting] = useState<'HOMEOWNER' | 'HANDYMAN' | null>(null);
@@ -41,6 +41,11 @@ export default function RoleSelectionPage() {
     return null;
   }
 
+  if (session?.user.role === 'ADMIN') {
+    router.push('/admin');
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <div className="w-full max-w-4xl">
@@ -62,11 +67,11 @@ export default function RoleSelectionPage() {
             <CardContent>
               <ul className="space-y-2 text-sm text-muted-foreground mb-6">
                 {['Post jobs with your budget', 'Receive competitive bids from local handymen', 'Message and hire with confidence', 'Rate and review after completion'].map(f => (
-                  <li key={f} className="flex items-start"><span className="mr-2">✓</span><span>{f}</span></li>
+                  <li key={f} className="flex items-start"><span className="mr-2">âœ“</span><span>{f}</span></li>
                 ))}
               </ul>
               <Button onClick={() => handleRoleSelection('HOMEOWNER')} className="w-full" size="lg" disabled={!!selecting}>
-                {selecting === 'HOMEOWNER' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Setting up…</> : 'Continue as Homeowner'}
+                {selecting === 'HOMEOWNER' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Setting upâ€¦</> : 'Continue as Homeowner'}
               </Button>
             </CardContent>
           </Card>
@@ -83,11 +88,11 @@ export default function RoleSelectionPage() {
             <CardContent>
               <ul className="space-y-2 text-sm text-muted-foreground mb-6">
                 {['Browse local jobs matching your skills', 'Submit competitive bids to win work', 'Message homeowners directly', 'Build your reputation through ratings'].map(f => (
-                  <li key={f} className="flex items-start"><span className="mr-2">✓</span><span>{f}</span></li>
+                  <li key={f} className="flex items-start"><span className="mr-2">âœ“</span><span>{f}</span></li>
                 ))}
               </ul>
               <Button onClick={() => handleRoleSelection('HANDYMAN')} className="w-full" size="lg" disabled={!!selecting}>
-                {selecting === 'HANDYMAN' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Setting up…</> : 'Continue as Handyman'}
+                {selecting === 'HANDYMAN' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Setting upâ€¦</> : 'Continue as Handyman'}
               </Button>
             </CardContent>
           </Card>
