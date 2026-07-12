@@ -39,6 +39,19 @@ For Hostinger-managed MySQL from the same hosting account, prefer `127.0.0.1` as
 
 If the database password contains reserved URL characters, encode them in `DATABASE_URL`; for example `@` becomes `%40`.
 
+Password reset email is sent from `noreply@fixmyhome.pro`. For Hostinger Email SMTP, use:
+
+```text
+MAIL_FROM="FixMyHome <noreply@fixmyhome.pro>"
+SMTP_HOST=smtp.hostinger.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=noreply@fixmyhome.pro
+SMTP_PASSWORD=<noreply mailbox password from hPanel>
+```
+
+If `SMTP_PASSWORD` is empty, the app falls back to Hostinger sendmail with the same `MAIL_FROM` address.
+
 ## 2. Connect GitHub Deployment
 
 In hPanel for `fixmyhome.pro`, open **Deployments** and connect:
