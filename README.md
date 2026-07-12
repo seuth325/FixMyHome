@@ -38,6 +38,19 @@ FixMyHome allows:
 - Onboarding forms (homeowner & handyman)
 - Layout components (header, navigation, footer)
 
+## Production Deployment
+
+The production target is `fixmyhome.pro` on a Hostinger VPS with the GitHub repository `seuth325/FixMyHome`.
+
+Deployment files live in `deploy/`:
+
+- `deploy/hostinger-vps.md` - full VPS setup and deployment runbook
+- `deploy/production.env.example` - production environment template
+- `deploy/nginx/fixmyhome.conf` - Nginx reverse proxy config
+- `.github/workflows/deploy-hostinger.yml` - GitHub Actions SSH deploy workflow
+
+The app exposes `GET /api/health` for container and deployment health checks.
+
 ## Setup Instructions
 
 ### 1. Set Up Database (Hostinger-managed MySQL)
