@@ -13,8 +13,28 @@ import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, MessageSq
 async function requireAdmin() {
   const session = await auth();
   if (!session?.user) redirect('/sign-in');
-  if (session.user.role !== 'ADMIN') redirect('/role-selection');
-  return session;
+
+  const currentUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: session.user.id },
+        ...(session.user.email ? [{ email: session.user.email }] : []),
+      ],
+    },
+    select: { id: true, email: true, role: true },
+  });
+
+  if (currentUser?.role !== 'ADMIN') redirect('/role-selection');
+
+  return {
+    ...session,
+    user: {
+      ...session.user,
+      id: currentUser.id,
+      email: currentUser.email,
+      role: currentUser.role,
+    },
+  };
 }
 
 async function updateUserRole(formData: FormData) {
@@ -213,7 +233,7 @@ export default async function AdminPage() {
                       {user.isAvailable ? <Badge className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"><CheckCircle2 className="size-3" /> Active</Badge> : <Badge className="bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"><Ban className="size-3" /> Suspended</Badge>}
                     </td>
                     <td className="py-4 pr-4 text-muted-foreground">
-                      {user._count.jobsPosted} jobs · {user._count.bidsSubmitted} bids · {user._count.messagesSent} messages
+                      {user._count.jobsPosted} jobs Â· {user._count.bidsSubmitted} bids Â· {user._count.messagesSent} messages
                     </td>
                     <td className="py-4 pr-4 text-muted-foreground">{formatDate(user.createdAt)}</td>
                     <td className="py-4">
@@ -249,8 +269,8 @@ export default async function AdminPage() {
             <CardContent className="space-y-4">
               {jobs.map((job) => (
                 <div key={job.id} className="rounded-md border p-4">
-                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{job.title}</div><div className="text-sm text-muted-foreground">{job.homeowner.name} · {job.location} · {money(job.budget)}</div></div>{statusBadge(job.status)}</div>
-                  <div className="mt-2 text-xs text-muted-foreground">{job._count.bids} bids · {job._count.messages} messages · {job._count.photos} photos · {formatDate(job.createdAt)}</div>
+                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{job.title}</div><div className="text-sm text-muted-foreground">{job.homeowner.name} Â· {job.location} Â· {money(job.budget)}</div></div>{statusBadge(job.status)}</div>
+                  <div className="mt-2 text-xs text-muted-foreground">{job._count.bids} bids Â· {job._count.messages} messages Â· {job._count.photos} photos Â· {formatDate(job.createdAt)}</div>
                 </div>
               ))}
               {jobs.length === 0 && <p className="text-sm text-muted-foreground">No jobs yet.</p>}
@@ -262,7 +282,7 @@ export default async function AdminPage() {
             <CardContent className="space-y-4">
               {bids.map((bid) => (
                 <div key={bid.id} className="rounded-md border p-4">
-                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{bid.job.title}</div><div className="text-sm text-muted-foreground">{bid.handyman.name} · {money(bid.amount)} · ETA {bid.etaDays} days</div></div>{statusBadge(bid.status)}</div>
+                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{bid.job.title}</div><div className="text-sm text-muted-foreground">{bid.handyman.name} Â· {money(bid.amount)} Â· ETA {bid.etaDays} days</div></div>{statusBadge(bid.status)}</div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{bid.message}</p>
                 </div>
               ))}
@@ -276,7 +296,7 @@ export default async function AdminPage() {
               {messages.map((message) => (
                 <div key={message.id} className="rounded-md border p-4">
                   <div className="font-medium">{message.sender.name}</div>
-                  <div className="text-xs text-muted-foreground">{message.job.title} · {formatDate(message.createdAt)}</div>
+                  <div className="text-xs text-muted-foreground">{message.job.title} Â· {formatDate(message.createdAt)}</div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{message.body}</p>
                 </div>
               ))}
@@ -290,7 +310,7 @@ export default async function AdminPage() {
               {reviews.map((review) => (
                 <div key={review.id} className="rounded-md border p-4">
                   <div className="font-medium">{review.stars} stars for {review.handyman.name}</div>
-                  <div className="text-xs text-muted-foreground">From {review.reviewer.name} · {review.job.title}</div>
+                  <div className="text-xs text-muted-foreground">From {review.reviewer.name} Â· {review.job.title}</div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{review.text || 'No written review.'}</p>
                 </div>
               ))}
@@ -304,7 +324,7 @@ export default async function AdminPage() {
               {notifications.map((notification) => (
                 <div key={notification.id} className="rounded-md border p-4">
                   <div className="flex items-center justify-between gap-3"><div className="font-medium">{notification.title}</div>{notification.read ? <Badge variant="outline">Read</Badge> : <Badge>Unread</Badge>}</div>
-                  <div className="text-xs text-muted-foreground">{notification.user.email} · {notification.type} · {formatDate(notification.createdAt)}</div>
+                  <div className="text-xs text-muted-foreground">{notification.user.email} Â· {notification.type} Â· {formatDate(notification.createdAt)}</div>
                   <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{notification.body}</p>
                 </div>
               ))}
@@ -318,7 +338,7 @@ export default async function AdminPage() {
               {resetTokens.map((token) => (
                 <div key={token.id} className="rounded-md border p-4">
                   <div className="flex items-center justify-between gap-3"><div className="font-medium">{token.user.email}</div>{token.usedAt ? <Badge variant="outline">Used</Badge> : token.expiresAt < new Date() ? <Badge className="bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200">Expired</Badge> : <Badge className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200">Active</Badge>}</div>
-                  <div className="text-xs text-muted-foreground">Created {formatDate(token.createdAt)} · Expires {formatDate(token.expiresAt)}</div>
+                  <div className="text-xs text-muted-foreground">Created {formatDate(token.createdAt)} Â· Expires {formatDate(token.expiresAt)}</div>
                 </div>
               ))}
               {resetTokens.length === 0 && <p className="text-sm text-muted-foreground">No reset links yet.</p>}
