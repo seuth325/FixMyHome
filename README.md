@@ -45,6 +45,7 @@ The production target is `fixmyhome.pro` on a Hostinger VPS with the GitHub repo
 Deployment files live in `deploy/`:
 
 - `deploy/hostinger-vps.md` - full VPS setup and deployment runbook
+- `deploy/hostinger-node-hosting.md` - Hostinger managed Node.js hosting fallback
 - `deploy/production.env.example` - production environment template
 - `deploy/nginx/fixmyhome.conf` - Nginx reverse proxy config
 - `.github/workflows/deploy-hostinger.yml` - GitHub Actions SSH deploy workflow
