@@ -9,6 +9,7 @@ const PUBLIC_ROUTES = [
   /^\/sign-up(\/.*)?$/,
   /^\/profile(\/.*)?$/,
   /^\/api\/auth(\/.*)?$/, // NextAuth's own handlers + our /api/auth/register
+  /^\/api\/health$/,
 ];
 
 export const authConfig = {
