@@ -35,7 +35,9 @@ UPLOADTHING_APP_ID=<uploadthing app id>
 ANTHROPIC_API_KEY=
 ```
 
-For Hostinger-managed MySQL, use the database host, name, username, and password from hPanel **Databases**.
+For Hostinger-managed MySQL from the same hosting account, prefer `127.0.0.1` as the database host if Node.js cannot connect to the hPanel hostname or `localhost`. Node may resolve `localhost` to IPv6 `::1`, which Hostinger MySQL can reject even when the command-line MySQL client works.
+
+If the database password contains reserved URL characters, encode them in `DATABASE_URL`; for example `@` becomes `%40`.
 
 ## 2. Connect GitHub Deployment
 
@@ -85,6 +87,8 @@ npm run start
 ```
 
 For a persistent production process, prefer the Hostinger hPanel app runtime/deployment settings instead of leaving `npm run start` in an SSH terminal.
+
+When using Passenger on Hostinger managed hosting, copy `deploy/passenger-server.js` to `public_html/server.js`. It loads `.builds/config/.env`, lets that file override stale injected environment values, and starts the standalone Next.js server.
 
 ## 4. Verify
 
