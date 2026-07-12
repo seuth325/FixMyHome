@@ -1,38 +1,20 @@
-name: Deploy to Hostinger VPS
+name: Deploy to Hostinger
 
 on:
-  push:
-    branches:
-      - main
+  # Hostinger for fixmyhome.pro is managed Node.js hosting, not a Docker VPS.
+  # Production deploys are currently done by uploading a locally built Next.js
+  # standalone bundle over SSH. Keep this workflow manual-only so normal pushes
+  # do not run the obsolete Docker deployment and send failure emails.
   workflow_dispatch:
-
-concurrency:
-  group: hostinger-production
-  cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Deploy production
+    name: Deployment notice
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.HOSTINGER_SSH_HOST }}
-          username: ${{ secrets.HOSTINGER_SSH_USER }}
-          key: ${{ secrets.HOSTINGER_SSH_KEY }}
-          port: ${{ secrets.HOSTINGER_SSH_PORT || 22 }}
-          script_stop: true
-          script: |
-            cd "${{ secrets.HOSTINGER_DEPLOY_PATH }}"
-            git fetch origin main
-            git reset --hard origin/main
-            docker compose build app migrate
-            docker compose run --rm migrate
-            docker compose up -d app
-            docker compose ps
-            curl --fail http://127.0.0.1:3000/api/health
+      - name: Explain deployment path
+        run: |
+          echo "Automatic GitHub Actions deployment is disabled for fixmyhome.pro."
+          echo "Hostinger is managed Node.js hosting, not a Docker VPS."
+          echo "Deploy from Codex/local build by uploading the Next.js standalone bundle over SSH."
