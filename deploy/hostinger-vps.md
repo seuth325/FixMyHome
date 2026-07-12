@@ -22,6 +22,20 @@ If the repository is private, make sure the VPS can pull it. The cleanest path i
 
 ## 2. Prepare the VPS
 
+Fast path: after Docker is installed, this repo includes helper scripts:
+
+```bash
+bash deploy/bootstrap-hostinger.sh
+```
+
+For later deploys:
+
+```bash
+bash deploy/redeploy.sh
+```
+
+The manual steps below show exactly what those scripts do.
+
 Install base packages:
 
 ```bash
