@@ -29,6 +29,7 @@ model User {
   reviewsGiven    Review[]          @relation("ReviewsGiven")
   reviewsReceived Review[]          @relation("ReviewsReceived")
   notifications   Notification[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 enum Role {
@@ -177,4 +178,17 @@ enum NotificationType {
   JOB_COMPLETED
   NEW_MESSAGE
   JOB_STATUS
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }

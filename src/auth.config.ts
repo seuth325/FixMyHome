@@ -8,6 +8,7 @@ const PUBLIC_ROUTES = [
   /^\/sign-in(\/.*)?$/,
   /^\/sign-up(\/.*)?$/,
   /^\/forgot-password(\/.*)?$/,
+  /^\/reset-password(\/.*)?$/,
   /^\/profile(\/.*)?$/,
   /^\/api\/auth(\/.*)?$/, // NextAuth's own handlers + our /api/auth/register
   /^\/api\/health$/,
