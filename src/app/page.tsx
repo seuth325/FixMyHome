@@ -19,8 +19,7 @@ export default function LandingPage() {
     }
   }, [isLoaded, user, router]);
 
-  // Always show loading on initial render to prevent hydration mismatch
-  if (!isLoaded || (user && user.role)) {
+  if (isLoaded && user && user.role) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
