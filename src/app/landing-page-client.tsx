@@ -47,7 +47,7 @@ export default function LandingPageClient() {
                 src="/fixmyhome-mark.png"
                 alt=""
                 aria-hidden="true"
-                className="h-10 w-auto shrink-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] sm:h-12"
+                className="h-11 w-auto shrink-0 rounded-sm bg-white p-1 shadow-lg sm:h-12"
               />
               <span className="text-2xl font-bold tracking-tight">FixMyHome</span>
             </Link>
