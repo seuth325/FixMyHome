@@ -466,7 +466,7 @@ export default function HandymanDashboard() {
                         </>
                       ) : (
                         <>
-                          <Link href={`/jobs/${job.id}/bid`}><Button size="sm">Submit Bid</Button></Link>
+                          <Button asChild size="sm"><a href={`/jobs/${job.id}/bid`}>Submit Bid</a></Button>
                           <Link href={`/jobs/${job.id}`}><Button variant="outline" size="sm">View Details</Button></Link>
                         </>
                       )}

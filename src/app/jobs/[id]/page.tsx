@@ -494,14 +494,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                         <div className="text-sm text-center p-2 rounded-md bg-green-50 dark:bg-green-950 text-green-800 dark:text-green-200">
                           You bid <strong>{formatCurrency(job.myBid.amount)}</strong>
                         </div>
-                        <Link href={`/jobs/${id}/bid`}>
-                          <Button className="w-full" variant="outline">Update Bid</Button>
-                        </Link>
+                        <Button asChild className="w-full" variant="outline"><a href={`/jobs/${id}/bid`}>Update Bid</a></Button>
                       </div>
                     ) : (
-                      <Link href={`/jobs/${id}/bid`}>
-                        <Button className="w-full">Submit Bid</Button>
-                      </Link>
+                      <Button asChild className="w-full"><a href={`/jobs/${id}/bid`}>Submit Bid</a></Button>
                     )}
                   </>
                 )}

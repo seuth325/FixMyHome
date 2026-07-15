@@ -260,9 +260,7 @@ export default function MyBidsPage() {
                     </Link>
                     {bid.status === 'PENDING' && (
                       <>
-                        <Link href={`/jobs/${bid.job.id}/bid`}>
-                          <Button variant="outline" size="sm">Update Bid</Button>
-                        </Link>
+                        <Button asChild variant="outline" size="sm"><a href={`/jobs/${bid.job.id}/bid`}>Update Bid</a></Button>
                         <Button
                           variant="ghost"
                           size="sm"

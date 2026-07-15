@@ -346,9 +346,7 @@ export default function BrowseJobsPage() {
                               </Button>
                             </Link>
                           ) : (
-                            <Link href={`/jobs/${job.id}/bid`}>
-                              <Button size="sm">Submit Bid</Button>
-                            </Link>
+                            <Button asChild size="sm"><a href={`/jobs/${job.id}/bid`}>Submit Bid</a></Button>
                           )}
                         </div>
                       </CardContent>
