@@ -44,7 +44,7 @@ export default function LandingPageClient() {
           <header className="flex items-center justify-between gap-4 text-white">
             <Link href="/" className="flex items-center gap-3 text-white">
               <img
-                src="/fixmyhome-mark.png"
+                src="/fixmyhome-logo-white.png"
                 alt=""
                 aria-hidden="true"
                 className="h-11 w-auto shrink-0 rounded-sm bg-white p-1 shadow-lg sm:h-12"
