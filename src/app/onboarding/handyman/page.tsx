@@ -75,15 +75,15 @@ export default function HandymanOnboardingPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle>Complete Your Handyman Profile</CardTitle>
+          <CardTitle>Set up your handyman profile</CardTitle>
           <CardDescription>
-            Tell homeowners about your services and expertise
+            Add the details homeowners need before inviting you to bid.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="businessName">Business Name (Optional)</Label>
+              <Label htmlFor="businessName">Business name (optional)</Label>
               <Input
                 id="businessName"
                 type="text"
@@ -95,9 +95,9 @@ export default function HandymanOnboardingPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Skills & Services</Label>
+              <Label>Skills and services</Label>
               <p className="text-sm text-muted-foreground mb-3">
-                Select all that apply (at least one required)
+                Select every category you want to receive jobs for.
               </p>
               <div className="flex flex-wrap gap-2">
                 {JOB_CATEGORIES.map((category) => (
@@ -169,15 +169,15 @@ export default function HandymanOnboardingPage() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  This is just a guideline for homeowners
+                  This helps homeowners understand your usual pricing.
                 </p>
               </div>
             </div>
 
             <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
               {isLoading
-                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving…</>
-                : 'Complete Profile & Start Browsing Jobs'}
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                : 'Complete Profile and Browse Jobs'}
             </Button>
           </form>
         </CardContent>

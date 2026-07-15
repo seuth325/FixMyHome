@@ -45,8 +45,8 @@ export default function HomeownerOnboardingPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Complete Your Homeowner Profile</CardTitle>
-          <CardDescription>Just a few more details to get you started</CardDescription>
+          <CardTitle>Set up your homeowner profile</CardTitle>
+          <CardDescription>Tell us where the work will happen so we can organize local jobs and pros.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -64,13 +64,13 @@ export default function HomeownerOnboardingPage() {
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground">
-                We'll use this to show you local handymen in your area
+                We use this to show relevant local handymen and jobs.
               </p>
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading
-                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving…</>
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
                 : 'Complete Profile'}
             </Button>
           </form>

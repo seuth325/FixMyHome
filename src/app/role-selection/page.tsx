@@ -1,12 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, Wrench, Loader2 } from 'lucide-react';
+import { CheckCircle, Home, Loader2, Wrench } from 'lucide-react';
 import { toast } from 'sonner';
+
+const homeownerFeatures = [
+  'Post jobs with budget, photos, and timing',
+  'Receive bids from local handymen',
+  'Message before hiring',
+  'Review the work after completion',
+];
+
+const handymanFeatures = [
+  'Browse local jobs matching your skills',
+  'Submit bids and win work',
+  'Message homeowners directly',
+  'Build your reputation with reviews',
+];
 
 export default function RoleSelectionPage() {
   const router = useRouter();
@@ -14,6 +28,12 @@ export default function RoleSelectionPage() {
   const isLoaded = status !== 'loading';
   const isSignedIn = status === 'authenticated';
   const [selecting, setSelecting] = useState<'HOMEOWNER' | 'HANDYMAN' | null>(null);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) router.push('/sign-in');
+    if (session?.user.role === 'ADMIN') router.push('/admin');
+  }, [isLoaded, isSignedIn, session?.user.role, router]);
 
   const handleRoleSelection = async (role: 'HOMEOWNER' | 'HANDYMAN') => {
     setSelecting(role);
@@ -24,7 +44,7 @@ export default function RoleSelectionPage() {
         body: JSON.stringify({ role }),
       });
       if (!res.ok) throw new Error('Failed to set role');
-      toast.success(`Welcome! You're signed up as a ${role === 'HOMEOWNER' ? 'homeowner' : 'handyman'}.`);
+      toast.success(`Welcome! You are signed up as a ${role === 'HOMEOWNER' ? 'homeowner' : 'handyman'}.`);
       router.push(`/onboarding/${role.toLowerCase()}`);
     } catch {
       toast.error('Something went wrong. Please try again.');
@@ -32,72 +52,61 @@ export default function RoleSelectionPage() {
     }
   };
 
-  if (!isLoaded) {
+  if (!isLoaded || !isSignedIn || session?.user.role === 'ADMIN') {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  if (!isSignedIn) {
-    router.push('/sign-in');
-    return null;
-  }
-
-  if (session?.user.role === 'ADMIN') {
-    router.push('/admin');
-    return null;
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-4xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome to FixMyHome!</h1>
-          <p className="text-muted-foreground">Choose your role to get started</p>
+    <main className="min-h-screen bg-slate-50 px-4 py-12 dark:bg-gray-950">
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="mb-8 text-center">
+          <p className="text-sm font-medium text-emerald-600">One quick choice</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">How will you use FixMyHome?</h1>
+          <p className="mt-3 text-muted-foreground">Choose the role that fits you today. Admins can adjust accounts later if needed.</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Homeowner Card */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary">
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="border-2 transition-shadow hover:border-blue-400 hover:shadow-lg">
             <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-4">
-                <Home className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                <Home className="size-6" />
               </div>
               <CardTitle>I'm a Homeowner</CardTitle>
-              <CardDescription>I need help with home repairs and improvements</CardDescription>
+              <CardDescription>I need help with repairs, improvements, or remodels.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground mb-6">
-                {['Post jobs with your budget', 'Receive competitive bids from local handymen', 'Message and hire with confidence', 'Rate and review after completion'].map(f => (
-                  <li key={f} className="flex items-start"><span className="mr-2">âœ“</span><span>{f}</span></li>
+              <ul className="mb-6 space-y-3 text-sm text-muted-foreground">
+                {homeownerFeatures.map((feature) => (
+                  <li key={feature} className="flex gap-2"><CheckCircle className="mt-0.5 size-4 text-emerald-600" />{feature}</li>
                 ))}
               </ul>
               <Button onClick={() => handleRoleSelection('HOMEOWNER')} className="w-full" size="lg" disabled={!!selecting}>
-                {selecting === 'HOMEOWNER' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Setting upâ€¦</> : 'Continue as Homeowner'}
+                {selecting === 'HOMEOWNER' ? <><Loader2 className="mr-2 size-4 animate-spin" />Setting up...</> : 'Continue as Homeowner'}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Handyman Card */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary">
+          <Card className="border-2 transition-shadow hover:border-emerald-400 hover:shadow-lg">
             <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-4">
-                <Wrench className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                <Wrench className="size-6" />
               </div>
               <CardTitle>I'm a Handyman</CardTitle>
-              <CardDescription>I provide home repair and improvement services</CardDescription>
+              <CardDescription>I provide home repair and improvement services.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground mb-6">
-                {['Browse local jobs matching your skills', 'Submit competitive bids to win work', 'Message homeowners directly', 'Build your reputation through ratings'].map(f => (
-                  <li key={f} className="flex items-start"><span className="mr-2">âœ“</span><span>{f}</span></li>
+              <ul className="mb-6 space-y-3 text-sm text-muted-foreground">
+                {handymanFeatures.map((feature) => (
+                  <li key={feature} className="flex gap-2"><CheckCircle className="mt-0.5 size-4 text-emerald-600" />{feature}</li>
                 ))}
               </ul>
               <Button onClick={() => handleRoleSelection('HANDYMAN')} className="w-full" size="lg" disabled={!!selecting}>
-                {selecting === 'HANDYMAN' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Setting upâ€¦</> : 'Continue as Handyman'}
+                {selecting === 'HANDYMAN' ? <><Loader2 className="mr-2 size-4 animate-spin" />Setting up...</> : 'Continue as Handyman'}
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
