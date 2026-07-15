@@ -1,12 +1,11 @@
 'use client';
 
-import { use, useEffect } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { useSubmitBid } from '@/lib/hooks/use-bids';
 import { createBidSchema, type CreateBidInput } from '@/lib/validations/bid';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,13 +42,15 @@ async function fetchJob(id: string): Promise<JobForBid> {
 export default function SubmitBidPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { data: job, isPending } = useQuery({
     queryKey: ['job', id],
     queryFn: () => fetchJob(id),
     staleTime: 20_000,
   });
 
-  const submitBid = useSubmitBid(id);
   const existingBid = job?.myBid;
 
   const {
@@ -74,16 +75,23 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
   const messageLength = watch('message')?.length ?? 0;
 
   const onSubmit = async (data: CreateBidInput) => {
+    setIsSubmitting(true);
     try {
-      await submitBid.mutateAsync(data);
-      toast.success(existingBid ? 'Bid updated!' : 'Bid submitted!', {
-        description: existingBid
-          ? 'Your bid has been updated.'
-          : 'The homeowner will be notified of your bid.',
+      const res = await fetch(`/api/jobs/${id}/bids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-      window.location.assign('/bids');
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error ?? 'Failed to submit bid');
+      }
+
+      window.location.href = '/bids';
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to submit bid. Please try again.');
+      setIsSubmitting(false);
     }
   };
 
@@ -207,7 +215,7 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
                         placeholder="0"
                         className="pl-7"
                         {...register('amount', { valueAsNumber: true })}
-                        disabled={submitBid.isPending}
+                        disabled={isSubmitting}
                       />
                     </div>
                     {errors.amount && <p className="text-sm text-red-500">{errors.amount.message}</p>}
@@ -231,7 +239,7 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
                         min={1}
                         max={90}
                         {...register('etaDays', { valueAsNumber: true })}
-                        disabled={submitBid.isPending}
+                        disabled={isSubmitting}
                       />
                       <span className="text-muted-foreground text-sm">days after award</span>
                     </div>
@@ -245,7 +253,7 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
                       placeholder="Introduce yourself, describe your approach, mention relevant experience, and explain why you're the best fit for this job..."
                       rows={6}
                       {...register('message')}
-                      disabled={submitBid.isPending}
+                      disabled={isSubmitting}
                     />
                     {errors.message && <p className="text-sm text-red-500">{errors.message.message}</p>}
                     <div className="flex justify-between text-xs text-muted-foreground">
@@ -261,13 +269,13 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
                       type="button"
                       variant="outline"
                       onClick={() => router.back()}
-                      disabled={submitBid.isPending}
+                      disabled={isSubmitting}
                       className="flex-1"
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={submitBid.isPending} className="flex-1">
-                      {submitBid.isPending
+                    <Button type="submit" disabled={isSubmitting} className="flex-1">
+                      {isSubmitting
                         ? (existingBid ? 'Updating...' : 'Submitting...')
                         : (existingBid ? 'Update Bid' : 'Submit Bid')}
                     </Button>

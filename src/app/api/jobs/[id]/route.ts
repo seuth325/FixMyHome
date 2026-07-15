@@ -55,7 +55,9 @@ export async function GET(_request: Request, { params }: Params) {
             : null,
         },
       })),
-      myBid: myBid ? { ...myBid, amount: Number(myBid.amount) } : null,
+      myBid: myBid
+        ? { id: myBid.id, amount: Number(myBid.amount), message: myBid.message, etaDays: myBid.etaDays }
+        : null,
       hasReview: job.reviews.some(r => r.reviewerId === user.id),
     });
   } catch {
