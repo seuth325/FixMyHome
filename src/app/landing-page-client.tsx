@@ -24,13 +24,10 @@ export default function LandingPageClient() {
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3" aria-label="FixMyHome home">
-            <img
-              src="/fixmyhome-logo-white.png"
-              alt=""
-              aria-hidden="true"
-              className="h-10 w-auto rounded-sm bg-white p-1 shadow-lg shadow-black/20 sm:h-11"
-            />
-            <span className="text-xl font-bold tracking-tight text-white sm:text-2xl">FixMyHome</span>
+            <span className="flex size-10 items-center justify-center rounded-md border border-cyan-300/35 bg-cyan-400/10 text-cyan-300 shadow-lg shadow-cyan-950/20 sm:size-11">
+              <Home className="size-5 sm:size-6" />
+            </span>
+            <span className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-xl font-bold tracking-tight text-transparent sm:text-2xl">FixMyHome</span>
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">
