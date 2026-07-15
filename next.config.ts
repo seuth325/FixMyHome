@@ -14,6 +14,17 @@ const nextConfig: NextConfig = {
   // the process-fork limit above. tsc --noEmit is already run locally before
   // every deploy, so skip the redundant in-build subprocess.
   typescript: { ignoreBuildErrors: true },
+  async headers() {
+    return [
+      {
+        source: '/',
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-cache, no-store, max-age=0, must-revalidate' },
+          { key: 'CDN-Cache-Control', value: 'no-store' },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

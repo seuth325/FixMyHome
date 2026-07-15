@@ -1,7 +1,4 @@
-'use client';
-
 import Link from 'next/link';
-import { useCurrentUser } from '@/lib/hooks/use-current-user';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,9 +25,6 @@ const featureCards = [
 ];
 
 export default function LandingPageClient() {
-  const { user } = useCurrentUser();
-  const dashboardPath = user?.role === 'HOMEOWNER' ? '/homeowner/dashboard' : '/handyman/dashboard';
-
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950 dark:bg-gray-950 dark:text-gray-50">
       <section className="relative min-h-[88vh] overflow-hidden">
@@ -52,20 +46,12 @@ export default function LandingPageClient() {
               <span className="text-2xl font-bold tracking-tight">FixMyHome</span>
             </Link>
             <div className="flex items-center gap-2">
-              {user?.role ? (
-                <Button asChild variant="secondary" size="sm">
-                  <Link href={dashboardPath}>Go to Dashboard</Link>
-                </Button>
-              ) : (
-                <>
-                  <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">
-                    <Link href="/sign-in">Sign In</Link>
-                  </Button>
-                  <Button asChild variant="secondary" size="sm">
-                    <Link href="/sign-up">Get Started</Link>
-                  </Button>
-                </>
-              )}
+              <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">
+                <Link href="/sign-in">Sign In</Link>
+              </Button>
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/sign-up">Get Started</Link>
+              </Button>
             </div>
           </header>
 
@@ -79,20 +65,12 @@ export default function LandingPageClient() {
                 FixMyHome connects homeowners with local handymen for repairs, remodels, and everyday fixes. Keep jobs, bids, messages, and reviews organized from the first quote to the final walkthrough.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                {user?.role ? (
-                  <Button asChild size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600">
-                    <Link href={dashboardPath}>Go to Dashboard <ArrowRight className="ml-2 size-4" /></Link>
-                  </Button>
-                ) : (
-                  <>
-                    <Button asChild size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600">
-                      <Link href="/sign-up">Create Free Account <ArrowRight className="ml-2 size-4" /></Link>
-                    </Button>
-                    <Button asChild size="lg" variant="secondary">
-                      <Link href="/sign-in">Sign In</Link>
-                    </Button>
-                  </>
-                )}
+                <Button asChild size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600">
+                  <Link href="/sign-up">Create Free Account <ArrowRight className="ml-2 size-4" /></Link>
+                </Button>
+                <Button asChild size="lg" variant="secondary">
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
               </div>
               <div className="mt-8 grid gap-4 text-sm text-slate-200 sm:grid-cols-3">
                 <div className="flex items-center gap-2"><ShieldCheck className="size-4 text-emerald-300" /> Verified accounts</div>
@@ -183,7 +161,7 @@ export default function LandingPageClient() {
             <h2 className="text-2xl font-bold">Popular project types</h2>
             <p className="text-muted-foreground">Start with the work homeowners request most often.</p>
           </div>
-          {!user?.role && <Button asChild><Link href="/sign-up">Start Free <ArrowRight className="ml-2 size-4" /></Link></Button>}
+          <Button asChild><Link href="/sign-up">Start Free <ArrowRight className="ml-2 size-4" /></Link></Button>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (
