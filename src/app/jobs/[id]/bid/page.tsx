@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -55,6 +55,7 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
   const {
     register,
     handleSubmit,
+    reset,
     watch,
     formState: { errors },
   } = useForm<CreateBidInput>({
@@ -63,6 +64,11 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
       ? { amount: existingBid.amount, message: existingBid.message, etaDays: existingBid.etaDays }
       : undefined,
   });
+
+  useEffect(() => {
+    if (!existingBid) return;
+    reset({ amount: existingBid.amount, message: existingBid.message, etaDays: existingBid.etaDays });
+  }, [existingBid, reset]);
 
   const bidAmount = watch('amount');
   const messageLength = watch('message')?.length ?? 0;
@@ -75,9 +81,9 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
           ? 'Your bid has been updated.'
           : 'The homeowner will be notified of your bid.',
       });
-      router.push('/bids');
-    } catch {
-      toast.error('Failed to submit bid. Please try again.');
+      window.location.assign('/bids');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to submit bid. Please try again.');
     }
   };
 
@@ -208,8 +214,8 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
                     {bidAmount > 0 && (
                       <p className={`text-xs font-medium ${underBudget ? 'text-green-600' : 'text-orange-600'}`}>
                         {underBudget
-                          ? `✓ Within the homeowner's budget of ${formatCurrency(job.budget)}`
-                          : `⚠ Exceeds homeowner's budget of ${formatCurrency(job.budget)}`}
+                          ? `Within the homeowner's budget of ${formatCurrency(job.budget)}`
+                          : `Exceeds homeowner's budget of ${formatCurrency(job.budget)}`}
                       </p>
                     )}
                   </div>
@@ -307,10 +313,10 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
             <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
               <CardContent className="pt-4 text-xs text-blue-800 dark:text-blue-200 space-y-1">
                 <p className="font-semibold">Tips for winning bids:</p>
-                <p>• Bid competitively but don't undervalue your work</p>
-                <p>• Mention specific experience with this type of job</p>
-                <p>• Provide a realistic timeline</p>
-                <p>• Be professional and responsive</p>
+                <p>- Bid competitively but don't undervalue your work</p>
+                <p>- Mention specific experience with this type of job</p>
+                <p>- Provide a realistic timeline</p>
+                <p>- Be professional and responsive</p>
               </CardContent>
             </Card>
           </div>
