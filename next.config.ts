@@ -15,13 +15,21 @@ const nextConfig: NextConfig = {
   // every deploy, so skip the redundant in-build subprocess.
   typescript: { ignoreBuildErrors: true },
   async headers() {
+    const noStoreHeaders = [
+      { key: 'Cache-Control', value: 'private, no-cache, no-store, max-age=0, must-revalidate' },
+      { key: 'CDN-Cache-Control', value: 'no-store' },
+      { key: 'Pragma', value: 'no-cache' },
+      { key: 'Expires', value: '0' },
+    ];
+
     return [
       {
-        source: '/',
-        headers: [
-          { key: 'Cache-Control', value: 'private, no-cache, no-store, max-age=0, must-revalidate' },
-          { key: 'CDN-Cache-Control', value: 'no-store' },
-        ],
+        source: '/:path*',
+        headers: noStoreHeaders,
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: noStoreHeaders,
       },
     ];
   },
