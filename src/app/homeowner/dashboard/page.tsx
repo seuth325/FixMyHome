@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { signOut } from 'next-auth/react';
 import { useCurrentUser } from '@/lib/hooks/use-current-user';
 import { useMyJobs } from '@/lib/hooks/use-jobs';
 import { useQuery } from '@tanstack/react-query';
@@ -136,10 +135,7 @@ export default function HomeownerDashboard() {
                 )}
               </Button>
             </Link>
-            <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: '/' })}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
+            <Button asChild variant="ghost" size="sm"><Link href="/sign-out"><LogOut className="w-4 h-4 mr-2" />Sign Out</Link></Button>
           </div>
         </div>
       </header>

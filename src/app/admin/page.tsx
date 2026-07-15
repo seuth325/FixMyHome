@@ -277,7 +277,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline text-sm text-muted-foreground">{session.user.email}</span>
             <ThemeToggle />
-            <Button asChild variant="outline" size="sm"><Link href="/api/auth/signout">Sign Out</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link href="/sign-out">Sign Out</Link></Button>
           </div>
         </div>
       </header>
