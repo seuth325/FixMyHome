@@ -35,15 +35,15 @@ export default function LandingPageClient() {
         />
         <div className="absolute inset-0 bg-slate-950/70" />
         <div className="relative mx-auto flex min-h-[88vh] max-w-6xl flex-col px-4 py-6">
-          <header className="flex items-center justify-between gap-4 text-white">
-            <Link href="/" className="flex items-center gap-3 text-white">
+          <header className="flex flex-wrap items-center justify-between gap-3 text-white">
+            <Link href="/" className="flex min-w-0 items-center gap-2 text-white sm:gap-3">
               <img
                 src="/fixmyhome-logo-white.png"
                 alt=""
                 aria-hidden="true"
-                className="h-11 w-auto shrink-0 rounded-sm bg-white p-1 shadow-lg sm:h-12"
+                className="h-9 w-auto shrink-0 rounded-sm bg-white p-1 shadow-lg sm:h-12"
               />
-              <span className="text-2xl font-bold tracking-tight">FixMyHome</span>
+              <span className="truncate text-xl font-bold tracking-tight sm:text-2xl">FixMyHome</span>
             </Link>
             <div className="flex items-center gap-2">
               <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">
@@ -55,13 +55,13 @@ export default function LandingPageClient() {
             </div>
           </header>
 
-          <div className="grid flex-1 items-center gap-10 py-16 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="grid flex-1 items-center gap-8 py-10 sm:py-16 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="max-w-3xl text-white">
               <Badge className="mb-5 bg-emerald-500/95 text-white hover:bg-emerald-500">Florida home repair marketplace</Badge>
-              <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+              <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
                 Post the job. Compare bids. Hire with confidence.
               </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
+              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
                 FixMyHome connects homeowners with local handymen for repairs, remodels, and everyday fixes. Keep jobs, bids, messages, and reviews organized from the first quote to the final walkthrough.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -93,7 +93,7 @@ export default function LandingPageClient() {
                   ['Local remodel crew', '$5,300', 'Includes materials review'],
                   ['Independent pro', '$4,600', 'Best value match'],
                 ].map(([name, price, detail]) => (
-                  <div key={name} className="flex items-center justify-between rounded-md border bg-background p-4">
+                  <div key={name} className="flex flex-col gap-2 rounded-md border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-semibold">{name}</p>
                       <p className="text-sm text-muted-foreground">{detail}</p>

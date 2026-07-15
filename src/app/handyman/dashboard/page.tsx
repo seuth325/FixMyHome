@@ -156,10 +156,10 @@ export default function HandymanDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur dark:bg-gray-950/95">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-          <Link href="/" className="flex items-center gap-3">
-            <img src="/fixmyhome-logo-white.png" alt="" aria-hidden="true" className="h-9 w-auto rounded-sm bg-white p-1 shadow-sm" />
-            <span className="text-xl font-bold tracking-tight">FixMyHome</span>
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-4">
+          <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <img src="/fixmyhome-logo-white.png" alt="" aria-hidden="true" className="h-8 w-auto rounded-sm bg-white p-1 shadow-sm sm:h-9" />
+            <span className="truncate text-lg font-bold tracking-tight sm:text-xl">FixMyHome</span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex" aria-label="Handyman navigation">
             <Button asChild variant="secondary" size="sm"><Link href="/handyman/dashboard"><LayoutDashboard className="w-4 h-4" />Dashboard</Link></Button>
@@ -167,7 +167,7 @@ export default function HandymanDashboard() {
             <Button asChild variant="ghost" size="sm"><Link href="/bids">Bids</Link></Button>
             <Button asChild variant="ghost" size="sm"><Link href="/messages">Messages</Link></Button>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <span className="hidden text-sm text-muted-foreground lg:inline">{user.name}</span>
             <ThemeToggle />
             <Button asChild variant="ghost" size="icon-sm" className="relative" title="Notifications">
@@ -180,16 +180,22 @@ export default function HandymanDashboard() {
                 )}
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm"><Link href="/sign-out"><LogOut className="w-4 h-4" />Sign Out</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link href="/sign-out"><LogOut className="w-4 h-4" /><span className="hidden sm:inline">Sign Out</span></Link></Button>
           </div>
         </div>
+        <nav className="mx-auto grid max-w-7xl grid-cols-2 gap-2 px-3 pb-3 sm:grid-cols-4 md:hidden" aria-label="Handyman mobile navigation">
+          <Button asChild variant="secondary" size="sm"><Link href="/handyman/dashboard"><LayoutDashboard className="w-4 h-4" />Dashboard</Link></Button>
+          <Button asChild variant="ghost" size="sm"><Link href="/browse">Browse</Link></Button>
+          <Button asChild variant="ghost" size="sm"><Link href="/bids">Bids</Link></Button>
+          <Button asChild variant="ghost" size="sm"><Link href="/messages">Messages</Link></Button>
+        </nav>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8">
         <section className="mb-8 flex flex-col justify-between gap-4 rounded-lg border bg-white p-5 shadow-sm dark:bg-gray-950 sm:flex-row sm:items-center">
           <div>
             <div className="mb-2 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Handyman workspace</div>
-            <h2 className="text-3xl font-bold tracking-tight">Handyman Dashboard</h2>
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Handyman Dashboard</h2>
             <p className="mt-1 text-muted-foreground">Find nearby work, track bids, and keep your public profile sharp.</p>
           </div>
           <Button asChild size="lg" className="shrink-0"><Link href="/browse"><Search className="w-4 h-4" />Find Work</Link></Button>
@@ -268,7 +274,7 @@ export default function HandymanDashboard() {
               </div>
             )}
             <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 <Switch
                   id="availability"
                   checked={user.isAvailable ?? true}
@@ -283,7 +289,7 @@ export default function HandymanDashboard() {
               </div>
               <Link href={`/profile/${user.id}`}>
                 <Button variant="link" className="p-0 h-auto text-xs text-muted-foreground hover:text-primary">
-                  View public profile →
+                  View public profile -
                 </Button>
               </Link>
             </div>
@@ -315,7 +321,7 @@ export default function HandymanDashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Average Rating</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 <div className="text-2xl font-bold">
                   {displayRatingCount > 0 ? displayRating.toFixed(1) : '--'}
                 </div>
