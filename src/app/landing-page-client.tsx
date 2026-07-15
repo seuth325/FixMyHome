@@ -1,172 +1,114 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, CheckCircle, ClipboardList, Hammer, Home, MessageSquare, ShieldCheck, Star, Wrench } from 'lucide-react';
+import { ArrowRight, CheckCircle, Home, Wrench } from 'lucide-react';
 
-const homeownerSteps = [
-  'Post a repair with photos, budget, and timing',
-  'Compare local bids side by side',
-  'Message, hire, and review in one place',
+const homeownerBenefits = [
+  'Post jobs with your budget and timeline',
+  'Receive competitive bids from local pros',
+  'View AI-recommended best value bids',
+  'Message handymen before hiring',
+  'Rate and review after completion',
 ];
 
-const proSteps = [
-  'Browse jobs near your service area',
-  'Bid on work that matches your skills',
-  'Build trust with completed jobs and reviews',
-];
-
-const categories = ['Bathroom remodel', 'Roofing', 'Plumbing', 'Electrical', 'Painting', 'Handyman'];
-
-const featureCards = [
-  { title: 'Post with clarity', body: 'Add photos, budget, ZIP code, timing, and repair details.', Icon: ClipboardList },
-  { title: 'Compare real bids', body: 'Review proposals from local pros before you commit.', Icon: Hammer },
-  { title: 'Manage the work', body: 'Message, track status, and leave a review when complete.', Icon: CheckCircle },
+const handymanBenefits = [
+  'Browse local jobs in your area',
+  'Submit competitive bids to win work',
+  'No lead fees or subscription costs',
+  'Message homeowners directly',
+  'Build your reputation with ratings',
 ];
 
 export default function LandingPageClient() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950 dark:bg-gray-950 dark:text-gray-50">
-      <section className="relative min-h-[88vh] overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1800&q=80"
-          alt="Home repair professional measuring a cabinet installation"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-slate-950/70" />
-        <div className="relative mx-auto flex min-h-[88vh] max-w-6xl flex-col px-4 py-6">
-          <header className="flex flex-wrap items-center justify-between gap-3 text-white">
-            <Link href="/" className="flex min-w-0 items-center gap-2 text-white sm:gap-3">
-              <img
-                src="/fixmyhome-logo-white.png"
-                alt=""
-                aria-hidden="true"
-                className="h-9 w-auto shrink-0 rounded-sm bg-white p-1 shadow-lg sm:h-12"
-              />
-              <span className="truncate text-xl font-bold tracking-tight sm:text-2xl">FixMyHome</span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">
+    <main className="min-h-screen overflow-hidden bg-[#111b2b] text-white">
+      <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
+        <header className="flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-3" aria-label="FixMyHome home">
+            <img
+              src="/fixmyhome-logo-white.png"
+              alt=""
+              aria-hidden="true"
+              className="h-10 w-auto rounded-sm bg-white p-1 shadow-lg shadow-black/20 sm:h-11"
+            />
+            <span className="text-xl font-bold tracking-tight text-white sm:text-2xl">FixMyHome</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">
+              <Link href="/sign-in">Sign In</Link>
+            </Button>
+            <Button asChild size="sm" className="bg-white text-slate-950 hover:bg-slate-200">
+              <Link href="/sign-up">Get Started</Link>
+            </Button>
+          </div>
+        </header>
+
+        <div className="flex flex-1 flex-col justify-center py-14 sm:py-20">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-6xl">
+              FixMyHome
+            </h1>
+            <p className="mx-auto mt-7 max-w-2xl text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl">
+              Post your home task, set your budget, compare bids, hire confidently.
+            </p>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+              Connect Florida homeowners with local handymen for home repairs and improvements. Get competitive bids, compare options, and hire the right person for the job.
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button asChild size="lg" className="w-full bg-white text-slate-950 hover:bg-slate-200 sm:w-auto">
+                <Link href="/sign-up">Get Started Free <ArrowRight className="ml-2 size-4" /></Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="w-full border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto">
                 <Link href="/sign-in">Sign In</Link>
               </Button>
-              <Button asChild variant="secondary" size="sm">
-                <Link href="/sign-up">Get Started</Link>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-16 grid w-full max-w-5xl gap-6 md:grid-cols-2">
+            <article className="rounded-lg border border-white/5 bg-slate-800/65 p-7 shadow-xl shadow-black/10">
+              <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-blue-600 text-white">
+                <Home className="size-6" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight">For Homeowners</h2>
+              <ul className="mt-6 space-y-4 text-base text-slate-100">
+                {homeownerBenefits.map((benefit) => (
+                  <li key={benefit} className="flex items-start gap-3">
+                    <CheckCircle className="mt-0.5 size-5 shrink-0 text-emerald-400" />
+                    <span>{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article className="rounded-lg border border-white/5 bg-slate-800/65 p-7 shadow-xl shadow-black/10">
+              <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-emerald-600 text-white">
+                <Wrench className="size-6" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight">For Handymen</h2>
+              <ul className="mt-6 space-y-4 text-base text-slate-100">
+                {handymanBenefits.map((benefit) => (
+                  <li key={benefit} className="flex items-start gap-3">
+                    <CheckCircle className="mt-0.5 size-5 shrink-0 text-emerald-400" />
+                    <span>{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          </div>
+
+          <section className="mx-auto mt-16 w-full max-w-4xl rounded-lg bg-blue-600 px-6 py-9 text-center shadow-2xl shadow-blue-950/30">
+            <h2 className="text-3xl font-bold tracking-tight">Ready to get started?</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-blue-50">
+              Create your free account and choose whether you are posting repairs or bidding on local work.
+            </p>
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button asChild size="lg" className="bg-white text-slate-950 hover:bg-slate-200">
+                <Link href="/sign-up">Create Account</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white">
+                <Link href="/sign-in">Sign In</Link>
               </Button>
             </div>
-          </header>
-
-          <div className="grid flex-1 items-center gap-8 py-10 sm:py-16 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="max-w-3xl text-white">
-              <Badge className="mb-5 bg-emerald-500/95 text-white hover:bg-emerald-500">Florida home repair marketplace</Badge>
-              <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                Post the job. Compare bids. Hire with confidence.
-              </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
-                FixMyHome connects homeowners with local handymen for repairs, remodels, and everyday fixes. Keep jobs, bids, messages, and reviews organized from the first quote to the final walkthrough.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600">
-                  <Link href="/sign-up">Create Free Account <ArrowRight className="ml-2 size-4" /></Link>
-                </Button>
-                <Button asChild size="lg" variant="secondary">
-                  <Link href="/sign-in">Sign In</Link>
-                </Button>
-              </div>
-              <div className="mt-8 grid gap-4 text-sm text-slate-200 sm:grid-cols-3">
-                <div className="flex items-center gap-2"><ShieldCheck className="size-4 text-emerald-300" /> Verified accounts</div>
-                <div className="flex items-center gap-2"><MessageSquare className="size-4 text-emerald-300" /> Built-in messaging</div>
-                <div className="flex items-center gap-2"><Star className="size-4 text-emerald-300" /> Reviews after work</div>
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-white/15 bg-white/95 p-5 shadow-2xl dark:bg-gray-900/95">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Sample job</p>
-                  <h2 className="text-xl font-bold">Bathroom remodel estimate</h2>
-                </div>
-                <Badge variant="outline">3 bids</Badge>
-              </div>
-              <div className="space-y-3">
-                {[
-                  ['Licensed handyman', '$4,850', 'Can start this week'],
-                  ['Local remodel crew', '$5,300', 'Includes materials review'],
-                  ['Independent pro', '$4,600', 'Best value match'],
-                ].map(([name, price, detail]) => (
-                  <div key={name} className="flex flex-col gap-2 rounded-md border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="font-semibold">{name}</p>
-                      <p className="text-sm text-muted-foreground">{detail}</p>
-                    </div>
-                    <p className="font-bold text-emerald-600">{price}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 rounded-md bg-slate-100 p-4 text-sm text-slate-700 dark:bg-gray-800 dark:text-gray-200">
-                Homeowners can compare price, timing, rating, and messages before choosing who to hire.
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 py-14">
-        <div className="grid gap-5 md:grid-cols-3">
-          {featureCards.map(({ title, body, Icon }) => (
-            <Card key={title}>
-              <CardHeader>
-                <div className="mb-3 flex size-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                  <Icon className="size-5" />
-                </div>
-                <CardTitle>{title}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm leading-6 text-muted-foreground">{body}</CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="border-y bg-white dark:bg-gray-900">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 lg:grid-cols-2">
-          <div>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"><Home className="size-6" /></div>
-              <div>
-                <h2 className="text-2xl font-bold">For homeowners</h2>
-                <p className="text-muted-foreground">Get better bids without losing the details.</p>
-              </div>
-            </div>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              {homeownerSteps.map((step) => <li key={step} className="flex gap-2"><CheckCircle className="mt-0.5 size-4 text-emerald-600" />{step}</li>)}
-            </ul>
-          </div>
-          <div>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"><Wrench className="size-6" /></div>
-              <div>
-                <h2 className="text-2xl font-bold">For handymen</h2>
-                <p className="text-muted-foreground">Find nearby work and build your reputation.</p>
-              </div>
-            </div>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              {proSteps.map((step) => <li key={step} className="flex gap-2"><CheckCircle className="mt-0.5 size-4 text-emerald-600" />{step}</li>)}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 py-14">
-        <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-          <div>
-            <h2 className="text-2xl font-bold">Popular project types</h2>
-            <p className="text-muted-foreground">Start with the work homeowners request most often.</p>
-          </div>
-          <Button asChild><Link href="/sign-up">Start Free <ArrowRight className="ml-2 size-4" /></Link></Button>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => (
-            <div key={category} className="rounded-md border bg-white p-4 font-medium shadow-sm dark:bg-gray-900">{category}</div>
-          ))}
+          </section>
         </div>
       </section>
     </main>
