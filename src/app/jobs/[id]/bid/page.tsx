@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { ArrowLeft, DollarSign, Clock, AlertCircle, MapPin, Calendar } from 'lucide-react';
+import { ArrowLeft, DollarSign, Clock, AlertCircle, MapPin, Calendar, CheckCircle } from 'lucide-react';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -44,6 +44,7 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
   const router = useRouter();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const { data: job, isPending } = useQuery({
     queryKey: ['job', id],
@@ -88,7 +89,7 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
         throw new Error(err?.error ?? 'Failed to submit bid');
       }
 
-      window.location.href = '/bids';
+      setSubmitted(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to submit bid. Please try again.');
       setIsSubmitting(false);
@@ -165,6 +166,36 @@ export default function SubmitBidPage({ params }: { params: Promise<{ id: string
   }
 
   const underBudget = bidAmount && bidAmount <= job.budget;
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto flex min-h-screen max-w-md items-center px-4 py-10">
+          <Card className="w-full text-center">
+            <CardHeader>
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300">
+                <CheckCircle className="h-7 w-7" />
+              </div>
+              <CardTitle>{existingBid ? 'Bid Updated' : 'Bid Submitted'}</CardTitle>
+              <CardDescription>
+                {existingBid
+                  ? 'Your updated bid has been saved.'
+                  : 'Your bid has been sent to the homeowner.'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button asChild className="w-full">
+                <a href="/bids">View My Bids</a>
+              </Button>
+              <Button asChild variant="outline" className="w-full">
+                <a href="/handyman/dashboard">Back to Dashboard</a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
