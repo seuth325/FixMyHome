@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   Search, Briefcase, MessageSquare, User, LogOut, DollarSign, Calendar,
-  MapPin, Star, TrendingUp, Pencil, Camera, Phone, Navigation, Zap, Bell,
+  MapPin, Star, TrendingUp, Pencil, Camera, Phone, Navigation, Zap, Bell, LayoutDashboard,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -155,37 +155,48 @@ export default function HandymanDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary">FixMyHome</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              Welcome, <strong>{user.name}</strong>
-            </span>
+      <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur dark:bg-gray-950/95">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/fixmyhome-logo-white.png" alt="" aria-hidden="true" className="h-9 w-auto rounded-sm bg-white p-1 shadow-sm" />
+            <span className="text-xl font-bold tracking-tight">FixMyHome</span>
+          </Link>
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Handyman navigation">
+            <Button asChild variant="secondary" size="sm"><Link href="/handyman/dashboard"><LayoutDashboard className="w-4 h-4" />Dashboard</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link href="/browse">Browse</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link href="/bids">Bids</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link href="/messages">Messages</Link></Button>
+          </nav>
+          <div className="flex items-center gap-2">
+            <span className="hidden text-sm text-muted-foreground lg:inline">{user.name}</span>
             <ThemeToggle />
-            <Link href="/notifications" title="Notifications">
-              <Button variant="ghost" size="sm" className="relative">
+            <Button asChild variant="ghost" size="icon-sm" className="relative" title="Notifications">
+              <Link href="/notifications">
                 <Bell className="w-4 h-4" />
                 {notifUnread > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center leading-none">
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] leading-none text-white">
                     {notifUnread > 9 ? '9+' : notifUnread}
                   </span>
                 )}
-              </Button>
-            </Link>
-            <Button asChild variant="ghost" size="sm"><Link href="/sign-out"><LogOut className="w-4 h-4 mr-2" />Sign Out</Link></Button>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm"><Link href="/sign-out"><LogOut className="w-4 h-4" />Sign Out</Link></Button>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Handyman Dashboard</h2>
-          <p className="text-muted-foreground">Browse jobs, submit bids, and grow your business</p>
-        </div>
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <section className="mb-8 flex flex-col justify-between gap-4 rounded-lg border bg-white p-5 shadow-sm dark:bg-gray-950 sm:flex-row sm:items-center">
+          <div>
+            <div className="mb-2 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Handyman workspace</div>
+            <h2 className="text-3xl font-bold tracking-tight">Handyman Dashboard</h2>
+            <p className="mt-1 text-muted-foreground">Find nearby work, track bids, and keep your public profile sharp.</p>
+          </div>
+          <Button asChild size="lg" className="shrink-0"><Link href="/browse"><Search className="w-4 h-4" />Find Work</Link></Button>
+        </section>
 
         {/* Profile Card */}
-        <Card className="mb-8">
+        <Card className="mb-8 rounded-lg">
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -280,7 +291,7 @@ export default function HandymanDashboard() {
         </Card>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
+        <div className="mb-8 grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active Bids</CardTitle>
@@ -318,8 +329,8 @@ export default function HandymanDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow">
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Card className="rounded-lg transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-2">
                 <Search className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -332,7 +343,7 @@ export default function HandymanDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="rounded-lg transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="relative w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-2">
                 <Briefcase className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -350,7 +361,7 @@ export default function HandymanDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="rounded-lg transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="relative w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-2">
                 <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -363,7 +374,7 @@ export default function HandymanDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="rounded-lg transition-shadow hover:shadow-md">
             <CardHeader>
               <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center mb-2">
                 <User className="w-6 h-6 text-orange-600 dark:text-orange-400" />
