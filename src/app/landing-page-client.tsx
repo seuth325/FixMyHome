@@ -42,7 +42,15 @@ export default function LandingPageClient() {
         <div className="absolute inset-0 bg-slate-950/70" />
         <div className="relative mx-auto flex min-h-[88vh] max-w-6xl flex-col px-4 py-6">
           <header className="flex items-center justify-between gap-4 text-white">
-            <Link href="/" className="text-2xl font-bold tracking-tight">FixMyHome</Link>
+            <Link href="/" className="flex items-center gap-3 text-white">
+              <img
+                src="/fixmyhome-mark.png"
+                alt=""
+                aria-hidden="true"
+                className="h-10 w-auto shrink-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)] sm:h-12"
+              />
+              <span className="text-2xl font-bold tracking-tight">FixMyHome</span>
+            </Link>
             <div className="flex items-center gap-2">
               {user?.role ? (
                 <Button asChild variant="secondary" size="sm">

@@ -14,6 +14,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "FixMyHome - Connect with Local Handymen",
   description: "Post your home repair job, get competitive bids from local handymen, and hire with confidence.",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
