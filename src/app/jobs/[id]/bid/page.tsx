@@ -1,366 +1,212 @@
-'use client';
-
-import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import type React from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { createBidSchema, type CreateBidInput } from '@/lib/validations/bid';
+import { redirect } from 'next/navigation';
+import { requireUser } from '@/lib/auth';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
 import { ArrowLeft, DollarSign, Clock, AlertCircle, MapPin, Calendar, CheckCircle } from 'lucide-react';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Breadcrumb } from '@/components/ui/breadcrumb';
 
-type JobForBid = {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  location: string;
-  budget: number;
-  status: string;
-  createdAt: string;
-  _count: { bids: number };
-  myBid: { id: string; amount: number; message: string; etaDays: number } | null;
+export const dynamic = 'force-dynamic';
+
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ submitted?: string; error?: string }>;
 };
 
-async function fetchJob(id: string): Promise<JobForBid> {
-  const res = await fetch(`/api/jobs/${id}`);
-  if (!res.ok) throw new Error('Not found');
-  return res.json();
-}
+export default async function SubmitBidPage({ params, searchParams }: PageProps) {
+  const { id } = await params;
+  const query = searchParams ? await searchParams : {};
+  const user = await requireUser();
 
-export default function SubmitBidPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const router = useRouter();
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const { data: job, isPending } = useQuery({
-    queryKey: ['job', id],
-    queryFn: () => fetchJob(id),
-    staleTime: 20_000,
-  });
-
-  const existingBid = job?.myBid;
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm<CreateBidInput>({
-    resolver: zodResolver(createBidSchema),
-    defaultValues: existingBid
-      ? { amount: existingBid.amount, message: existingBid.message, etaDays: existingBid.etaDays }
-      : undefined,
-  });
-
-  useEffect(() => {
-    if (!existingBid) return;
-    reset({ amount: existingBid.amount, message: existingBid.message, etaDays: existingBid.etaDays });
-  }, [existingBid, reset]);
-
-  const bidAmount = watch('amount');
-  const messageLength = watch('message')?.length ?? 0;
-
-  const onSubmit = async (data: CreateBidInput) => {
-    setIsSubmitting(true);
-    try {
-      const res = await fetch(`/api/jobs/${id}/bids`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.error ?? 'Failed to submit bid');
-      }
-
-      setSubmitted(true);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to submit bid. Please try again.');
-      setIsSubmitting(false);
-    }
-  };
-
-  if (isPending) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="container mx-auto px-4 py-4">
-            <Skeleton className="h-9 w-36" />
-          </div>
-        </header>
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
-          <Skeleton className="h-5 w-56 mb-6" />
-          <Skeleton className="h-9 w-48 mb-2" />
-          <Skeleton className="h-5 w-64 mb-6" />
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-20 mb-1" />
-                  <Skeleton className="h-4 w-48" />
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full" />)}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (user.role !== 'HANDYMAN') {
+    redirect('/role-selection');
   }
+
+  const job = await db.job.findUnique({
+    where: { id },
+    include: {
+      _count: { select: { bids: true } },
+      bids: {
+        where: { handymanId: user.id },
+        select: { id: true, amount: true, message: true, etaDays: true },
+        take: 1,
+      },
+    },
+  });
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <header className="bg-white dark:bg-gray-800 border-b">
-          <div className="container mx-auto px-4 py-4">
-            <Link href="/browse">
-              <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-2" />Back to Browse</Button>
-            </Link>
-          </div>
-        </header>
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold mb-2">Job Not Found</h1>
+      <Shell backHref="/browse" backLabel="Back to Browse">
+        <div className="py-16 text-center">
+          <h1 className="mb-2 text-2xl font-bold">Job Not Found</h1>
+          <p className="text-muted-foreground">The job you are looking for does not exist.</p>
         </div>
-      </div>
+      </Shell>
+    );
+  }
+
+  const existingBid = job.bids[0] ?? null;
+  const budget = Number(job.budget);
+  const submitted = query.submitted === '1';
+  const error = query.error;
+
+  if (submitted) {
+    return (
+      <Shell backHref="/handyman/dashboard" backLabel="Back to Dashboard" narrow>
+        <Card className="w-full text-center">
+          <CardHeader>
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300">
+              <CheckCircle className="h-7 w-7" />
+            </div>
+            <CardTitle>{existingBid ? 'Bid Updated' : 'Bid Submitted'}</CardTitle>
+            <CardDescription>Your bid has been saved and sent to the homeowner.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button asChild className="w-full"><a href="/bids">View My Bids</a></Button>
+            <Button asChild variant="outline" className="w-full"><a href="/handyman/dashboard">Back to Dashboard</a></Button>
+          </CardContent>
+        </Card>
+      </Shell>
     );
   }
 
   if (job.status !== 'OPEN' && job.status !== 'IN_REVIEW') {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <header className="bg-white dark:bg-gray-800 border-b">
-          <div className="container mx-auto px-4 py-4">
-            <Link href="/browse">
-              <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-2" />Back to Browse</Button>
-            </Link>
-          </div>
-        </header>
-        <div className="container mx-auto px-4 py-16 text-center">
-          <AlertCircle className="w-16 h-16 mx-auto text-orange-500 mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Bidding Closed</h1>
-          <p className="text-muted-foreground mb-4">
+      <Shell backHref="/browse" backLabel="Back to Browse">
+        <div className="py-16 text-center">
+          <AlertCircle className="mx-auto mb-4 h-16 w-16 text-orange-500" />
+          <h1 className="mb-2 text-2xl font-bold">Bidding Closed</h1>
+          <p className="mb-4 text-muted-foreground">
             This job is no longer accepting bids. It is currently "{job.status.replace('_', ' ')}".
           </p>
           <Link href="/browse"><Button>Browse Other Jobs</Button></Link>
         </div>
-      </div>
-    );
-  }
-
-  const underBudget = bidAmount && bidAmount <= job.budget;
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto flex min-h-screen max-w-md items-center px-4 py-10">
-          <Card className="w-full text-center">
-            <CardHeader>
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300">
-                <CheckCircle className="h-7 w-7" />
-              </div>
-              <CardTitle>{existingBid ? 'Bid Updated' : 'Bid Submitted'}</CardTitle>
-              <CardDescription>
-                {existingBid
-                  ? 'Your updated bid has been saved.'
-                  : 'Your bid has been sent to the homeowner.'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button asChild className="w-full">
-                <a href="/bids">View My Bids</a>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <a href="/handyman/dashboard">Back to Dashboard</a>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      </Shell>
     );
   }
 
   return (
+    <Shell backHref={`/jobs/${id}`} backLabel="Back to Job Details">
+      <div className="mb-6">
+        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+          <Link href="/browse" className="hover:text-foreground">Browse</Link>
+          <span>/</span>
+          <Link href={`/jobs/${id}`} className="hover:text-foreground">{job.title}</Link>
+          <span>/</span>
+          <span>{existingBid ? 'Update Bid' : 'Submit Bid'}</span>
+        </div>
+        <h1 className="mb-1 text-3xl font-bold">{existingBid ? 'Update Your Bid' : 'Submit a Bid'}</h1>
+        <p className="text-muted-foreground">
+          {existingBid ? 'Make changes to your existing bid.' : "Convince the homeowner you're the right person for the job."}
+        </p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Bid</CardTitle>
+              <CardDescription>Be clear, competitive, and professional</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <div className="mb-5 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+                  {error}
+                </div>
+              )}
+              <form action={`/api/jobs/${id}/bids`} method="post" className="space-y-6">
+                <div className="space-y-2">
+                  <label htmlFor="amount" className="text-sm font-medium">Your Bid Amount <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <Input id="amount" name="amount" type="number" min="1" max="50000" step="1" required defaultValue={existingBid ? Number(existingBid.amount) : ''} className="pl-7" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Homeowner budget: {formatCurrency(budget)}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="etaDays" className="text-sm font-medium">Estimated Completion <span className="text-red-500">*</span></label>
+                  <div className="flex items-center gap-3">
+                    <Input id="etaDays" name="etaDays" type="number" min="1" max="90" step="1" required defaultValue={existingBid?.etaDays ?? ''} className="w-32" />
+                    <span className="text-sm text-muted-foreground">days after award</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="message" className="text-sm font-medium">Cover Message <span className="text-red-500">*</span></label>
+                  <Textarea id="message" name="message" required minLength={30} maxLength={1000} rows={6} defaultValue={existingBid?.message ?? ''} placeholder="Introduce yourself, describe your approach, mention relevant experience, and explain why you're the best fit for this job..." />
+                  <p className="text-xs text-muted-foreground">Minimum 30 characters.</p>
+                </div>
+
+                <div className="flex gap-3 border-t pt-4">
+                  <Button asChild variant="outline" className="flex-1"><a href={`/jobs/${id}`}>Cancel</a></Button>
+                  <Button type="submit" className="flex-1">{existingBid ? 'Update Bid' : 'Submit Bid'}</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Job Summary</CardTitle></CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p className="font-semibold">{job.title}</p>
+              <Badge variant="outline">{job.category}</Badge>
+              <p className="line-clamp-4 text-muted-foreground">{job.description}</p>
+              <Separator />
+              <div className="space-y-2 text-muted-foreground">
+                <InfoRow icon={<DollarSign className="h-4 w-4" />} label="Budget" value={formatCurrency(budget)} />
+                <InfoRow icon={<MapPin className="h-4 w-4" />} label="ZIP" value={job.location} />
+                <InfoRow icon={<Calendar className="h-4 w-4" />} label="Posted" value={formatRelativeTime(job.createdAt)} />
+                {job._count.bids > 0 && <InfoRow icon={<Clock className="h-4 w-4" />} label="Bids" value={`${job._count.bids} submitted`} />}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+            <CardContent className="space-y-1 pt-4 text-xs text-blue-800 dark:text-blue-200">
+              <p className="font-semibold">Tips for winning bids:</p>
+              <p>- Bid competitively but do not undervalue your work</p>
+              <p>- Mention specific experience with this type of job</p>
+              <p>- Provide a realistic timeline</p>
+              <p>- Be professional and responsive</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </Shell>
+  );
+}
+
+function Shell({ children, backHref, backLabel, narrow = false }: { children: React.ReactNode; backHref: string; backLabel: string; narrow?: boolean }) {
+  return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <header className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
         <div className="container mx-auto px-4 py-4">
-          <Link href={`/jobs/${id}`}>
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Job Details
-            </Button>
+          <Link href={backHref}>
+            <Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />{backLabel}</Button>
           </Link>
         </div>
       </header>
+      <main className={`container mx-auto px-4 py-8 ${narrow ? 'flex min-h-[calc(100vh-73px)] max-w-md items-center' : 'max-w-3xl'}`}>
+        {children}
+      </main>
+    </div>
+  );
+}
 
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <Breadcrumb
-          items={[
-            { label: 'Browse', href: '/browse' },
-            { label: job.title, href: `/jobs/${id}` },
-            { label: existingBid ? 'Update Bid' : 'Submit Bid' },
-          ]}
-        />
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-1">
-            {existingBid ? 'Update Your Bid' : 'Submit a Bid'}
-          </h1>
-          <p className="text-muted-foreground">
-            {existingBid ? 'Make changes to your existing bid.' : "Convince the homeowner you're the right person for the job."}
-          </p>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Bid</CardTitle>
-                <CardDescription>Be clear, competitive, and professional</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="amount">Your Bid Amount <span className="text-red-500">*</span></Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="0"
-                        className="pl-7"
-                        {...register('amount', { valueAsNumber: true })}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    {errors.amount && <p className="text-sm text-red-500">{errors.amount.message}</p>}
-                    {bidAmount > 0 && (
-                      <p className={`text-xs font-medium ${underBudget ? 'text-green-600' : 'text-orange-600'}`}>
-                        {underBudget
-                          ? `Within the homeowner's budget of ${formatCurrency(job.budget)}`
-                          : `Exceeds homeowner's budget of ${formatCurrency(job.budget)}`}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="etaDays">Estimated Completion <span className="text-red-500">*</span></Label>
-                    <div className="flex items-center gap-3">
-                      <Input
-                        id="etaDays"
-                        type="number"
-                        placeholder="3"
-                        className="w-32"
-                        min={1}
-                        max={90}
-                        {...register('etaDays', { valueAsNumber: true })}
-                        disabled={isSubmitting}
-                      />
-                      <span className="text-muted-foreground text-sm">days after award</span>
-                    </div>
-                    {errors.etaDays && <p className="text-sm text-red-500">{errors.etaDays.message}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Cover Message <span className="text-red-500">*</span></Label>
-                    <Textarea
-                      id="message"
-                      placeholder="Introduce yourself, describe your approach, mention relevant experience, and explain why you're the best fit for this job..."
-                      rows={6}
-                      {...register('message')}
-                      disabled={isSubmitting}
-                    />
-                    {errors.message && <p className="text-sm text-red-500">{errors.message.message}</p>}
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Minimum 30 characters</span>
-                      <span className={messageLength > 900 ? 'text-orange-500' : ''}>
-                        {messageLength} / 1000
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-4 border-t">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => router.back()}
-                      disabled={isSubmitting}
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting} className="flex-1">
-                      {isSubmitting
-                        ? (existingBid ? 'Updating...' : 'Submitting...')
-                        : (existingBid ? 'Update Bid' : 'Submit Bid')}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Job Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <p className="font-semibold">{job.title}</p>
-                <Badge variant="outline">{job.category}</Badge>
-                <p className="text-muted-foreground line-clamp-4">{job.description}</p>
-                <Separator />
-                <div className="space-y-2 text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    <span>Budget: <span className="font-medium text-foreground">{formatCurrency(job.budget)}</span></span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    <span>ZIP: <span className="font-medium text-foreground">{job.location}</span></span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>Posted {formatRelativeTime(job.createdAt)}</span>
-                  </div>
-                  {job._count.bids > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      <span>{job._count.bids} competing bid{job._count.bids !== 1 ? 's' : ''}</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
-              <CardContent className="pt-4 text-xs text-blue-800 dark:text-blue-200 space-y-1">
-                <p className="font-semibold">Tips for winning bids:</p>
-                <p>- Bid competitively but don't undervalue your work</p>
-                <p>- Mention specific experience with this type of job</p>
-                <p>- Provide a realistic timeline</p>
-                <p>- Be professional and responsive</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      {icon}
+      <span>{label}: <span className="font-medium text-foreground">{value}</span></span>
     </div>
   );
 }
