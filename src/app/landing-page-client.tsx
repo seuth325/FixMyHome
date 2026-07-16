@@ -251,7 +251,7 @@ export default function LandingPageClient() {
               <Link href="/about" className="hover:text-white">About</Link>
               <Link href="/terms" className="hover:text-white">Terms of Service</Link>
               <Link href="/contact" className="hover:text-white">Contact</Link>
-              <Link href="/security" className="hover:text-white">User Security</Link>
+              <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
             </nav>
           </footer>
         </div>

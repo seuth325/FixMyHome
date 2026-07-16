@@ -6,7 +6,7 @@ export const publicLinks = [
   { href: '/about', label: 'About' },
   { href: '/terms', label: 'Terms of Service' },
   { href: '/contact', label: 'Contact' },
-  { href: '/security', label: 'User Security' },
+  { href: '/privacy', label: 'Privacy Policy' },
 ];
 
 export function PublicPageShell({ title, eyebrow, children }: { title: string; eyebrow?: string; children: ReactNode }) {
