@@ -17,8 +17,8 @@
     .wrap { max-width:1180px; margin:0 auto; padding:32px 20px 40px; }
     .hero { min-height:100vh; display:flex; flex-direction:column; justify-content:center; gap:56px; }
     .center { text-align:center; max-width:780px; margin:0 auto; }
-    .logo { width:224px; height:224px; object-fit:contain; filter:drop-shadow(0 24px 44px rgba(0,0,0,.35)); }
-    .badge { display:inline-flex; align-items:center; gap:8px; margin-top:22px; padding:9px 16px; border:1px solid rgba(103,232,249,.25); border-radius:999px; background:rgba(8,145,178,.16); color:#d7faff; font-weight:700; font-size:14px; }
+    .logo { display:block; width:224px; height:224px; margin:0 auto; object-fit:contain; filter:drop-shadow(0 24px 44px rgba(0,0,0,.35)); }
+    .badge { display:flex; width:max-content; max-width:100%; align-items:center; justify-content:center; gap:8px; margin:22px auto 0; padding:9px 16px; border:1px solid rgba(103,232,249,.25); border-radius:999px; background:rgba(8,145,178,.16); color:#d7faff; font-weight:700; font-size:14px; }
     h1 { margin:28px auto 0; max-width:780px; font-size:clamp(34px,4.5vw,56px); line-height:1.04; letter-spacing:0; }
     .lead { margin:22px auto 0; max-width:700px; color:var(--muted); font-size:19px; line-height:1.7; }
     .actions { display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-top:34px; }
@@ -44,7 +44,7 @@
     .reviews { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:1040px; margin:0 auto; }
     .reviews + .reviews { margin-top:18px; }
     .review { padding:22px; }
-    .stars { color:#fbbf24; letter-spacing:2px; }
+    .stars { color:#fbbf24; letter-spacing:2px; font-size:18px; line-height:1; }
     .quote { color:#e2e8f0; line-height:1.65; margin:18px 0; }
     .person { border-top:1px solid var(--line); padding-top:16px; }
     .person strong { display:block; }
@@ -104,14 +104,14 @@
     <section>
       <div class="section-head"><div><div class="badge">Top reviews</div><h2>Homeowners and handymen both get a better repair workflow.</h2></div><p>Clear project details, straightforward bids, and built-in messaging help both sides move from uncertainty to a confident hire.</p></div>
       <div class="reviews">
-        <article class="review"><div class="stars">5/5</div><p class="quote">I posted a plumbing job with photos and had clear bids to compare. The messaging made it easy to ask questions before hiring.</p><div class="person"><strong>Maria G.</strong><span>Homeowner - Tampa, FL</span></div></article>
-        <article class="review"><div class="stars">5/5</div><p class="quote">The best part was seeing the price, timeline, and handyman profile together. It felt organized and much less stressful.</p><div class="person"><strong>Daniel R.</strong><span>Homeowner - Orlando, FL</span></div></article>
-        <article class="review"><div class="stars">5/5</div><p class="quote">FixMyHome helped me explain the project clearly and choose someone who understood the work. I would use it again for repairs.</p><div class="person"><strong>Alicia P.</strong><span>Homeowner - Miami, FL</span></div></article>
+        <article class="review"><div class="stars" aria-label="5 star review">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="quote">I posted a plumbing job with photos and had clear bids to compare. The messaging made it easy to ask questions before hiring.</p><div class="person"><strong>Maria G.</strong><span>Homeowner - Tampa, FL</span></div></article>
+        <article class="review"><div class="stars" aria-label="5 star review">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="quote">The best part was seeing the price, timeline, and handyman profile together. It felt organized and much less stressful.</p><div class="person"><strong>Daniel R.</strong><span>Homeowner - Orlando, FL</span></div></article>
+        <article class="review"><div class="stars" aria-label="5 star review">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="quote">FixMyHome helped me explain the project clearly and choose someone who understood the work. I would use it again for repairs.</p><div class="person"><strong>Alicia P.</strong><span>Homeowner - Miami, FL</span></div></article>
       </div>
       <div class="reviews">
-        <article class="review"><div class="stars">5/5</div><p class="quote">The job details are easy to scan, and submitting a bid is simple. It is built around real work, not chasing vague leads.</p><div class="person"><strong>Chris M.</strong><span>Handyman - St. Petersburg, FL</span></div></article>
-        <article class="review"><div class="stars">5/5</div><p class="quote">I like that homeowners can message before hiring. It helps me understand the job and send a realistic quote.</p><div class="person"><strong>Andre B.</strong><span>Handyman - Jacksonville, FL</span></div></article>
-        <article class="review"><div class="stars">5/5</div><p class="quote">The dashboard keeps bids, messages, and available jobs in one place. That saves time when I am checking work between appointments.</p><div class="person"><strong>Luis T.</strong><span>Handyman - Fort Lauderdale, FL</span></div></article>
+        <article class="review"><div class="stars" aria-label="5 star review">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="quote">The job details are easy to scan, and submitting a bid is simple. It is built around real work, not chasing vague leads.</p><div class="person"><strong>Chris M.</strong><span>Handyman - St. Petersburg, FL</span></div></article>
+        <article class="review"><div class="stars" aria-label="5 star review">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="quote">I like that homeowners can message before hiring. It helps me understand the job and send a realistic quote.</p><div class="person"><strong>Andre B.</strong><span>Handyman - Jacksonville, FL</span></div></article>
+        <article class="review"><div class="stars" aria-label="5 star review">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="quote">The dashboard keeps bids, messages, and available jobs in one place. That saves time when I am checking work between appointments.</p><div class="person"><strong>Luis T.</strong><span>Handyman - Fort Lauderdale, FL</span></div></article>
       </div>
     </section>
 
@@ -127,5 +127,6 @@
   </main>
 </body>
 </html>
+
 
 
