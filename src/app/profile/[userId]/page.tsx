@@ -19,6 +19,8 @@ import {
   MessageSquare,
   Navigation,
   Pencil,
+  Globe,
+  ShieldCheck,
 } from 'lucide-react';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 
@@ -30,6 +32,9 @@ type PublicProfile = {
   handymanProfile: {
     id: string;
     businessName: string | null;
+    website: string | null;
+    licenseNumber: string | null;
+    isInsured: boolean;
     bio: string | null;
     skills: string[];
     serviceRadius: number;
@@ -192,6 +197,18 @@ export default function HandymanProfilePage({ params }: { params: Promise<{ user
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <DollarSign className="w-4 h-4 text-primary" />
                       <span><strong className="text-foreground">{formatCurrency(hp.hourlyRate)}/hr</strong> base rate</span>
+                    </div>
+                  )}
+                  {hp.website && (
+                    <a href={hp.website.startsWith('http') ? hp.website : 'https://' + hp.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-primary">
+                      <Globe className="w-4 h-4 text-cyan-500" />
+                      <span>Website</span>
+                    </a>
+                  )}
+                  {(hp.licenseNumber || hp.isInsured) && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <ShieldCheck className="w-4 h-4 text-green-500" />
+                      <span>{hp.isInsured ? 'Insured' : 'License info'}{hp.licenseNumber ? ' / ' + hp.licenseNumber : ''}</span>
                     </div>
                   )}
                 </div>

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   Search, Briefcase, MessageSquare, User, LogOut, DollarSign, Calendar,
-  MapPin, Star, TrendingUp, Pencil, Camera, Phone, Navigation, Zap, Bell, LayoutDashboard,
+  MapPin, Star, TrendingUp, Pencil, Camera, Phone, Navigation, Zap, Bell, LayoutDashboard, Globe, ShieldCheck,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -56,6 +56,9 @@ export default function HandymanDashboard() {
   const [photoPreview, setPhotoPreview] = useState<string>('');
   const [formName, setFormName] = useState('');
   const [formBusiness, setFormBusiness] = useState('');
+  const [formWebsite, setFormWebsite] = useState('');
+  const [formLicense, setFormLicense] = useState('');
+  const [formInsured, setFormInsured] = useState(false);
   const [formBio, setFormBio] = useState('');
   const [formSkills, setFormSkills] = useState<string[]>([]);
   const [formRadius, setFormRadius] = useState('');
@@ -67,6 +70,9 @@ export default function HandymanDashboard() {
   const displaySkills = hp?.skills ?? [];
   const displayBio = hp?.bio;
   const displayBusinessName = hp?.businessName;
+  const displayWebsite = hp?.website;
+  const displayLicense = hp?.licenseNumber;
+  const displayInsured = hp?.isInsured ?? false;
   const displayRadius = hp?.serviceRadius;
   const displayRate = hp?.hourlyRate ? Number(hp.hourlyRate) : null;
   const displayRating = Number(hp?.ratingAvg ?? 0);
@@ -78,6 +84,9 @@ export default function HandymanDashboard() {
   const openProfileDialog = () => {
     setFormName(user?.name ?? '');
     setFormBusiness(hp?.businessName ?? '');
+    setFormWebsite(hp?.website ?? '');
+    setFormLicense(hp?.licenseNumber ?? '');
+    setFormInsured(hp?.isInsured ?? false);
     setFormBio(hp?.bio ?? '');
     setFormSkills(hp?.skills ?? []);
     setFormRadius(String(hp?.serviceRadius ?? ''));
@@ -134,6 +143,9 @@ export default function HandymanDashboard() {
         photoUrl: photoPreview || null,
         handymanProfile: {
           businessName: formBusiness.trim() || null,
+          website: formWebsite.trim() || null,
+          licenseNumber: formLicense.trim() || null,
+          isInsured: formInsured,
           bio: formBio.trim() || null,
           skills: formSkills,
           serviceRadius: radius ?? hp?.serviceRadius ?? 25,
@@ -259,6 +271,18 @@ export default function HandymanDashboard() {
                 <div className="flex items-center gap-1.5">
                   <Phone className="w-4 h-4" />
                   <span>{user.phone}</span>
+                </div>
+              )}
+              {displayWebsite && (
+                <a href={displayWebsite.startsWith('http') ? displayWebsite : 'https://' + displayWebsite} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-primary">
+                  <Globe className="w-4 h-4" />
+                  <span>Website</span>
+                </a>
+              )}
+              {(displayLicense || displayInsured) && (
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>{displayInsured ? 'Insured' : 'License info'}{displayLicense ? ' / ' + displayLicense : ''}</span>
                 </div>
               )}
             </div>
@@ -518,7 +542,7 @@ export default function HandymanDashboard() {
                 onClick={() => fileInputRef.current?.click()}
                 className="text-xs text-muted-foreground hover:text-primary transition-colors"
               >
-                {photoPreview ? 'Change photo' : 'Upload photo'} (JPG, PNG, WebP · max 5 MB)
+                {photoPreview ? 'Change photo' : 'Upload photo'} (JPG, PNG, WebP Ã‚Â· max 5 MB)
               </button>
               {photoPreview && (
                 <button
@@ -539,6 +563,25 @@ export default function HandymanDashboard() {
             <div className="space-y-1.5">
               <Label htmlFor="h-business">Business Name</Label>
               <Input id="h-business" value={formBusiness} onChange={e => setFormBusiness(e.target.value)} placeholder="Mike's Home Services" disabled={isSaving} />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="h-website">Website</Label>
+                <Input id="h-website" value={formWebsite} onChange={e => setFormWebsite(e.target.value)} placeholder="yourbusiness.com" disabled={isSaving} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="h-license">License Number</Label>
+                <Input id="h-license" value={formLicense} onChange={e => setFormLicense(e.target.value)} placeholder="Optional license number" disabled={isSaving} />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border p-3">
+              <div>
+                <Label htmlFor="h-insured">License / Insured</Label>
+                <p className="text-xs text-muted-foreground">Show homeowners insurance or professional license details.</p>
+              </div>
+              <Switch id="h-insured" checked={formInsured} onCheckedChange={setFormInsured} disabled={isSaving} />
             </div>
 
             <div className="space-y-1.5">

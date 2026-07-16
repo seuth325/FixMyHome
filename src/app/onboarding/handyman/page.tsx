@@ -19,6 +19,9 @@ export default function HandymanOnboardingPage() {
   const isLoaded = status !== 'loading';
   const isSignedIn = status === 'authenticated';
   const [businessName, setBusinessName] = useState('');
+  const [website, setWebsite] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [isInsured, setIsInsured] = useState(false);
   const [skills, setSkills] = useState<string[]>([]);
   const [bio, setBio] = useState('');
   const [serviceRadius, setServiceRadius] = useState('25');
@@ -50,6 +53,9 @@ export default function HandymanOnboardingPage() {
         body: JSON.stringify({
           handymanProfile: {
             businessName: businessName || null,
+            website: website || null,
+            licenseNumber: licenseNumber || null,
+            isInsured,
             bio: bio || null,
             skills,
             serviceRadius: parseInt(serviceRadius) || 25,
@@ -93,6 +99,25 @@ export default function HandymanOnboardingPage() {
                 disabled={isLoading}
               />
             </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="website">Website (optional)</Label>
+                <Input id="website" type="text" placeholder="yourbusiness.com" value={website} onChange={(e) => setWebsite(e.target.value)} disabled={isLoading} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="licenseNumber">License Number (optional)</Label>
+                <Input id="licenseNumber" type="text" placeholder="License number" value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} disabled={isLoading} />
+              </div>
+            </div>
+
+            <label className="flex items-center justify-between rounded-md border p-3 text-sm">
+              <span>
+                <span className="block font-medium">License / Insured</span>
+                <span className="text-muted-foreground">Show this on your public profile.</span>
+              </span>
+              <input type="checkbox" checked={isInsured} onChange={(e) => setIsInsured(e.target.checked)} disabled={isLoading} className="h-4 w-4" />
+            </label>
 
             <div className="space-y-2">
               <Label>Skills and services</Label>

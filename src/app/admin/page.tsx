@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, MessageSquare, Search, Star, Trash2, Users } from 'lucide-react';
 
@@ -61,6 +62,69 @@ async function updateUserAvailability(formData: FormData) {
 
   if (!userId) return;
   await db.user.update({ where: { id: userId }, data: { isAvailable } });
+  revalidatePath('/admin');
+}
+
+function optionalText(formData: FormData, key: string) {
+  const value = String(formData.get(key) ?? '').trim();
+  return value.length > 0 ? value : null;
+}
+
+function parseSkills(value: string | null) {
+  if (!value) return [];
+  return value.split(/[,\n]/).map((skill) => skill.trim()).filter(Boolean);
+}
+
+async function updateAdminUserProfile(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const userId = String(formData.get('userId') ?? '');
+  const role = String(formData.get('role') ?? '') as Role;
+  if (!userId || !['HOMEOWNER', 'HANDYMAN', 'ADMIN'].includes(role)) return;
+
+  const serviceRadius = Number(formData.get('serviceRadius') || 25);
+  const hourlyRateRaw = String(formData.get('hourlyRate') ?? '').trim();
+  const hourlyRate = hourlyRateRaw ? Number(hourlyRateRaw) : null;
+
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      name: optionalText(formData, 'name') || 'User',
+      role,
+      location: optionalText(formData, 'location'),
+      phone: optionalText(formData, 'phone'),
+      isAvailable: String(formData.get('isAvailable')) === 'true',
+    },
+  });
+
+  if (role === 'HANDYMAN') {
+    await db.handymanProfile.upsert({
+      where: { userId },
+      update: {
+        businessName: optionalText(formData, 'businessName'),
+        website: optionalText(formData, 'website'),
+        licenseNumber: optionalText(formData, 'licenseNumber'),
+        isInsured: String(formData.get('isInsured')) === 'true',
+        bio: optionalText(formData, 'bio'),
+        skills: parseSkills(optionalText(formData, 'skills')),
+        serviceRadius: Number.isFinite(serviceRadius) && serviceRadius > 0 ? Math.min(serviceRadius, 200) : 25,
+        hourlyRate: hourlyRate !== null && Number.isFinite(hourlyRate) ? hourlyRate : null,
+      },
+      create: {
+        userId,
+        businessName: optionalText(formData, 'businessName'),
+        website: optionalText(formData, 'website'),
+        licenseNumber: optionalText(formData, 'licenseNumber'),
+        isInsured: String(formData.get('isInsured')) === 'true',
+        bio: optionalText(formData, 'bio'),
+        skills: parseSkills(optionalText(formData, 'skills')),
+        serviceRadius: Number.isFinite(serviceRadius) && serviceRadius > 0 ? Math.min(serviceRadius, 200) : 25,
+        hourlyRate: hourlyRate !== null && Number.isFinite(hourlyRate) ? hourlyRate : null,
+      },
+    });
+  }
+
   revalidatePath('/admin');
 }
 
@@ -205,7 +269,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
       where: userWhere,
       orderBy: { createdAt: 'desc' },
       take: 50,
-      include: { _count: { select: { jobsPosted: true, bidsSubmitted: true, messagesSent: true } } },
+      include: { handymanProfile: true, _count: { select: { jobsPosted: true, bidsSubmitted: true, messagesSent: true } } },
     }),
     db.job.findMany({
       where: contentWhere,
@@ -384,6 +448,32 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
                           </Button>
                         </form>
                       </div>
+                      <details className="mt-3 rounded-md border p-3">
+                        <summary className="cursor-pointer text-sm font-medium">Edit profile</summary>
+                        <form action={updateAdminUserProfile} className="mt-3 grid gap-3">
+                          <input type="hidden" name="userId" value={user.id} />
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <label className="space-y-1 text-xs font-medium">Name<Input name="name" defaultValue={user.name} /></label>
+                            <label className="space-y-1 text-xs font-medium">Role<select name="role" defaultValue={user.role} className="h-9 w-full rounded-md border bg-background px-2 text-sm"><option value="HOMEOWNER">Homeowner</option><option value="HANDYMAN">Handyman</option><option value="ADMIN">Admin</option></select></label>
+                            <label className="space-y-1 text-xs font-medium">ZIP / Location<Input name="location" defaultValue={user.location ?? ''} /></label>
+                            <label className="space-y-1 text-xs font-medium">Phone<Input name="phone" defaultValue={user.phone ?? ''} /></label>
+                          </div>
+                          <label className="flex items-center gap-2 text-xs font-medium"><input type="checkbox" name="isAvailable" value="true" defaultChecked={user.isAvailable} /> Active / available</label>
+                          {user.role === 'HANDYMAN' && (
+                            <div className="grid gap-3 rounded-md bg-muted/40 p-3 md:grid-cols-2">
+                              <label className="space-y-1 text-xs font-medium">Business Name<Input name="businessName" defaultValue={user.handymanProfile?.businessName ?? ''} /></label>
+                              <label className="space-y-1 text-xs font-medium">Website<Input name="website" defaultValue={user.handymanProfile?.website ?? ''} placeholder="yourbusiness.com" /></label>
+                              <label className="space-y-1 text-xs font-medium">License Number<Input name="licenseNumber" defaultValue={user.handymanProfile?.licenseNumber ?? ''} /></label>
+                              <label className="space-y-1 text-xs font-medium">Service Radius<Input name="serviceRadius" type="number" min="1" max="200" defaultValue={user.handymanProfile?.serviceRadius ?? 25} /></label>
+                              <label className="space-y-1 text-xs font-medium">Hourly Rate<Input name="hourlyRate" type="number" min="0" step="0.01" defaultValue={user.handymanProfile?.hourlyRate ? Number(user.handymanProfile.hourlyRate) : ''} /></label>
+                              <label className="flex items-center gap-2 text-xs font-medium md:pt-6"><input type="checkbox" name="isInsured" value="true" defaultChecked={user.handymanProfile?.isInsured ?? false} /> License / insured</label>
+                              <label className="space-y-1 text-xs font-medium md:col-span-2">Skills<Textarea name="skills" defaultValue={Array.isArray(user.handymanProfile?.skills) ? user.handymanProfile.skills.join(', ') : ''} rows={2} /></label>
+                              <label className="space-y-1 text-xs font-medium md:col-span-2">Bio<Textarea name="bio" defaultValue={user.handymanProfile?.bio ?? ''} rows={3} /></label>
+                            </div>
+                          )}
+                          <Button type="submit" size="sm" className="w-fit">Save Profile</Button>
+                        </form>
+                      </details>
                     </td>
                   </tr>
                 ))}

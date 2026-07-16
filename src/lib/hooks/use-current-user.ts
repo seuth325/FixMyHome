@@ -36,6 +36,9 @@ export function useCurrentUser() {
     isAvailable: boolean;
     handymanProfile: Partial<{
       businessName: string | null;
+      website: string | null;
+      licenseNumber: string | null;
+      isInsured: boolean;
       bio: string | null;
       skills: string[];
       serviceRadius: number;

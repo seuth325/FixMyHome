@@ -43,6 +43,9 @@ model HandymanProfile {
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   businessName  String?
+  website       String?
+  licenseNumber String?
+  isInsured     Boolean  @default(false)
   skills        Json     @default("[]")
   bio           String?  @db.Text
   serviceRadius Int      // miles

@@ -47,9 +47,15 @@ export default function TermsPage() {
         </p>
       </InfoSection>
 
-      <InfoSection title="Account Changes and Termination">
+      <InfoSection title="Account Changes, Suspension, and Termination">
         <p>
-          FixMyHome.pro may update, suspend, or terminate access if an account violates these Terms, creates security risk, or misuses the service. Users may stop using the service at any time.
+          FixMyHome.pro may update, restrict, suspend, remove, or terminate a user account, profile, listing, bid, message, review, or other content if FixMyHome.pro believes, in its judgment, that the account or activity violates these Terms, creates a security or safety risk, misuses the service, appears misleading, inappropriate, abusive, unlawful, fraudulent, spam-like, or inconsistent with the purpose of the site or service.
+        </p>
+        <p>
+          Handyman profiles may also be suspended or removed if FixMyHome.pro believes the handyman is impersonating another business or person, making false licensing or insurance claims, attempting to scam users, requesting unsafe off-platform activity, repeatedly receiving credible complaints, or otherwise presenting a risk to homeowners, other handymen, FixMyHome.pro, or the marketplace.
+        </p>
+        <p>
+          Users may stop using the service at any time. Account suspension or removal does not waive any rights or remedies available to FixMyHome.pro or affected users.
         </p>
       </InfoSection>
 
