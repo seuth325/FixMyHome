@@ -125,6 +125,52 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     }
   };
 
+  const getNoActionMessage = () => {
+    if (!job) {
+      return { title: 'No actions available', description: 'Check back later.' };
+    }
+
+    if (isHandyman) {
+      if (job.status === 'IN_REVIEW') {
+        return job.myBid
+          ? {
+              title: 'Bid submitted / Job in review',
+              description: 'The homeowner is reviewing bids. No action is needed right now.',
+            }
+          : {
+              title: 'Job in review',
+              description: 'This job is no longer accepting new bids while the homeowner reviews submissions.',
+            };
+      }
+
+      if (job.status === 'AWARDED') {
+        return job.myBid
+          ? {
+              title: 'Job awarded',
+              description: 'The homeowner selected a bid. Check your bids page for the latest status.',
+            }
+          : {
+              title: 'Job awarded',
+              description: 'This job has already been assigned to another handyman.',
+            };
+      }
+
+      if (job.status === 'COMPLETED') {
+        return { title: 'Job complete', description: 'This job has been completed, so bidding actions are closed.' };
+      }
+
+      if (job.status === 'CANCELLED') {
+        return { title: 'Job closed', description: 'The homeowner closed this job and it is no longer accepting bids.' };
+      }
+    }
+
+    if (job.status === 'CANCELLED') {
+      return { title: 'Job closed', description: 'This job has been closed. No additional action is available.' };
+    }
+
+    return { title: 'No actions available', description: 'Check back later.' };
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -375,9 +421,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                                   <span className="font-semibold text-primary text-lg">{formatCurrency(bid.amount)}</span>
-                                  <span>•</span>
+                                  <span>-</span>
                                   <span>{bid.etaDays} day{bid.etaDays !== 1 ? 's' : ''}</span>
-                                  <span>•</span>
+                                  <span>-</span>
                                   <span>{formatRelativeTime(bid.createdAt)}</span>
                                 </div>
                               </div>
@@ -482,7 +528,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     )}
                     {job.status === 'COMPLETED' && (
                       <Link href={`/review/${id}`}>
-                        <Button className="w-full">{job.hasReview ? 'Review Submitted ✓' : 'Leave Review'}</Button>
+                        <Button className="w-full">{job.hasReview ? 'Review Submitted' : 'Leave Review'}</Button>
                       </Link>
                     )}
                   </>
@@ -505,12 +551,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                  !(isHandyman && job.status === 'OPEN') && (
                   <div className="text-center py-5 text-muted-foreground">
                     <Info className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm font-medium">No actions available</p>
-                    <p className="text-xs mt-1">
-                      {job.status === 'CANCELLED' ? 'This job has been closed.' :
-                       job.status === 'AWARDED' ? 'This job is in progress.' :
-                       job.status === 'COMPLETED' ? 'This job is complete.' : 'Check back later.'}
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{getNoActionMessage().title}</p>
+                    <p className="text-xs mt-1 leading-relaxed">{getNoActionMessage().description}</p>
                   </div>
                 )}
               </CardContent>
