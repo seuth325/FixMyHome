@@ -1,5 +1,6 @@
 import { InfoSection, PublicPageShell } from '@/components/marketing/public-page-shell';
 import { Mail, MapPin, MessageSquare } from 'lucide-react';
+import { ContactForm } from '@/components/marketing/contact-form';
 
 export const metadata = {
   title: 'Contact FixMyHome.pro',
@@ -27,6 +28,10 @@ export default function ContactPage() {
             <p className="mt-1 text-sm text-slate-300">Homeowners and handymen</p>
           </div>
         </div>
+      </InfoSection>
+
+      <InfoSection title="Contact Form">
+        <ContactForm />
       </InfoSection>
 
       <InfoSection title="What to Include">
