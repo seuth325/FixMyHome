@@ -10,4 +10,24 @@ PassengerMaxInstancesPerApp 1
 PassengerMinInstances 1
 PassengerStartTimeout 120
 SetEnv LSNODE_CONSOLE_LOG console.log
+
+DirectoryIndex index.html server.js
+RewriteEngine On
 RewriteRule ^\.builds - [F,L]
+
+<IfModule mod_headers.c>
+  Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  Header always set Pragma "no-cache"
+  Header always set Expires "0"
+  Header always set CDN-Cache-Control "no-store"
+  Header always set X-FixMyHome-Deploy "static-home-20260716-cache-kill"
+</IfModule>
+
+<FilesMatch "^(index\.html|service-worker\.js|sw\.js|manifest\.json)$">
+  <IfModule mod_headers.c>
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+    Header always set CDN-Cache-Control "no-store"
+  </IfModule>
+</FilesMatch>
