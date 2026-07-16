@@ -54,11 +54,11 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="items-center text-center">
+        <CardHeader className="items-center text-center space-y-3">
           <Link href="/" aria-label="FixMyHome.pro home">
-            <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="mb-2 h-20 w-20 object-contain" />
+            <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-24 w-24 object-contain sm:h-28 sm:w-28" />
           </Link>
-          <CardTitle>Sign In</CardTitle>
+          <CardTitle className="text-2xl">Sign In</CardTitle>
           <CardDescription>Welcome back to FixMyHome</CardDescription>
         </CardHeader>
         <CardContent>
