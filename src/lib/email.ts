@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
 import { buildPasswordResetEmail } from '@/lib/email-template';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || 'https://fixmyhome.pro';
-const FROM_EMAIL = process.env.MAIL_FROM || 'FixMyHome <noreply@fixmyhome.pro>';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'https://fixmyhome.pro';
+const FROM_EMAIL = process.env.EMAIL_FROM || process.env.MAIL_FROM || 'FixMyHome <noreply@fixmyhome.pro>';
 
 type ResetEmailInput = {
   to: string;
@@ -11,10 +11,10 @@ type ResetEmailInput = {
 };
 
 function createTransport() {
-  const host = process.env.SMTP_HOST;
-  const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASSWORD;
+  const host = process.env.SMTP_HOST || process.env.EMAIL_SERVER_HOST;
+  const port = Number(process.env.SMTP_PORT || process.env.EMAIL_SERVER_PORT || 587);
+  const user = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER;
+  const pass = process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD;
 
   if (host && user && pass) {
     return nodemailer.createTransport({

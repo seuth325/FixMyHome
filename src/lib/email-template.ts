@@ -14,7 +14,7 @@ export interface DigestEmailData {
   matchingJobs?: Array<{ title: string; category: string; budget: number; location: string }>;
 }
 
-const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || 'https://fixmyhome.pro').replace(/\/$/, '');
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'https://fixmyhome.pro').replace(/\/$/, '');
 const ACCENT = '#2563eb';
 const ACCENT_DARK = '#1d4ed8';
 const SUCCESS = '#16a34a';
