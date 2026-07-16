@@ -15,6 +15,7 @@ import { ArrowLeft, Send, DollarSign, Briefcase } from 'lucide-react';
 import { formatCurrency, formatDate, formatRelativeTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { ReportButton } from '@/components/safety/report-button';
 
 type BidDetail = {
   id: string;
@@ -158,6 +159,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ bidId:
                 <p className="text-xs text-muted-foreground truncate">{bid.job.title}</p>
               </div>
             </div>
+            <ReportButton targetType="MESSAGE_THREAD" targetId={bidId} label="Report" variant="ghost" />
             <Link href={`/jobs/${bid.job.id}`}>
               <Badge variant="outline" className="hidden sm:flex items-center gap-1 cursor-pointer hover:bg-accent">
                 <Briefcase className="w-3 h-3" />

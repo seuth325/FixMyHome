@@ -40,6 +40,7 @@ export function useCurrentUser() {
       website: string | null;
       licenseNumber: string | null;
       isInsured: boolean;
+      verificationStatus: string;
       bio: string | null;
       skills: string[];
       serviceRadius: number;

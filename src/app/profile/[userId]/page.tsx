@@ -23,6 +23,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
+import { ReportButton } from '@/components/safety/report-button';
 
 type PublicProfile = {
   id: string;
@@ -35,6 +36,7 @@ type PublicProfile = {
     website: string | null;
     licenseNumber: string | null;
     isInsured: boolean;
+    verificationStatus: string;
     bio: string | null;
     skills: string[];
     serviceRadius: number;
@@ -120,6 +122,12 @@ export default function HandymanProfilePage({ params }: { params: Promise<{ user
   const hp = profile.handymanProfile;
   const ratingCount = hp.ratingCount;
   const ratingAvg = Number(hp.ratingAvg);
+  const verificationBadge: Record<string, string> = {
+    VERIFIED: 'Verified',
+    PENDING_REVIEW: 'Pending Review',
+    SUSPENDED: 'Suspended',
+    UNVERIFIED: 'Unverified',
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -167,6 +175,9 @@ export default function HandymanProfilePage({ params }: { params: Promise<{ user
                   {hp.businessName && (
                     <p className="text-muted-foreground text-sm">{hp.businessName}</p>
                   )}
+                  <Badge variant={hp.verificationStatus === 'VERIFIED' ? 'default' : 'outline'} className="mt-2 text-xs">
+                    {verificationBadge[hp.verificationStatus] || 'Unverified'}
+                  </Badge>
                   {isOwnProfile && (
                     <Badge variant="outline" className="mt-2 text-xs">Your Profile</Badge>
                   )}
@@ -217,6 +228,7 @@ export default function HandymanProfilePage({ params }: { params: Promise<{ user
 
                 {currentUser?.role === 'HOMEOWNER' && (
                   <div className="space-y-2">
+                    <ReportButton targetType="PROFILE" targetId={profile.id} label="Report Profile" />
                     <Link href="/jobs/new">
                       <Button className="w-full">Post a Job for This Handyman</Button>
                     </Link>

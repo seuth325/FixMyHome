@@ -106,6 +106,7 @@ async function updateAdminUserProfile(formData: FormData) {
         website: optionalText(formData, 'website'),
         licenseNumber: optionalText(formData, 'licenseNumber'),
         isInsured: String(formData.get('isInsured')) === 'true',
+        verificationStatus: String(formData.get('verificationStatus') || 'UNVERIFIED'),
         bio: optionalText(formData, 'bio'),
         skills: parseSkills(optionalText(formData, 'skills')),
         serviceRadius: Number.isFinite(serviceRadius) && serviceRadius > 0 ? Math.min(serviceRadius, 200) : 25,
@@ -165,6 +166,17 @@ async function deleteNotification(formData: FormData) {
   const id = String(formData.get('id') ?? '');
   if (!id) return;
   await db.notification.delete({ where: { id } });
+  revalidatePath('/admin');
+}
+
+async function updateReportStatus(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  const status = String(formData.get('status') ?? 'OPEN');
+  if (!id || !['OPEN', 'REVIEWING', 'RESOLVED', 'DISMISSED'].includes(status)) return;
+  await db.report.update({ where: { id }, data: { status } });
   revalidatePath('/admin');
 }
 
@@ -263,6 +275,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
     reviews,
     notifications,
     resetTokens,
+    reports,
     counts,
   ] = await Promise.all([
     db.user.findMany({
@@ -306,6 +319,12 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
       orderBy: { createdAt: 'desc' },
       take: 30,
       include: { user: { select: { name: true, email: true } } },
+    }),
+    db.report.findMany({
+      where: q ? { OR: [{ reason: { contains: q } }, { details: { contains: q } }, { reporter: { email: { contains: q } } }] } : undefined,
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+      include: { reporter: { select: { name: true, email: true } } },
     }),
     Promise.all([
       db.user.count(),
@@ -467,6 +486,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
                               <label className="space-y-1 text-xs font-medium">Service Radius<Input name="serviceRadius" type="number" min="1" max="200" defaultValue={user.handymanProfile?.serviceRadius ?? 25} /></label>
                               <label className="space-y-1 text-xs font-medium">Hourly Rate<Input name="hourlyRate" type="number" min="0" step="0.01" defaultValue={user.handymanProfile?.hourlyRate ? Number(user.handymanProfile.hourlyRate) : ''} /></label>
                               <label className="flex items-center gap-2 text-xs font-medium md:pt-6"><input type="checkbox" name="isInsured" value="true" defaultChecked={user.handymanProfile?.isInsured ?? false} /> License / insured</label>
+                              <label className="space-y-1 text-xs font-medium md:col-span-2">Verification Status<select name="verificationStatus" defaultValue={user.handymanProfile?.verificationStatus ?? 'UNVERIFIED'} className="h-9 w-full rounded-md border bg-background px-2 text-sm"><option value="UNVERIFIED">Unverified</option><option value="PENDING_REVIEW">Pending Review</option><option value="VERIFIED">Verified</option><option value="SUSPENDED">Suspended</option></select></label>
                               <label className="space-y-1 text-xs font-medium md:col-span-2">Skills<Textarea name="skills" defaultValue={Array.isArray(user.handymanProfile?.skills) ? user.handymanProfile.skills.join(', ') : ''} rows={2} /></label>
                               <label className="space-y-1 text-xs font-medium md:col-span-2">Bio<Textarea name="bio" defaultValue={user.handymanProfile?.bio ?? ''} rows={3} /></label>
                             </div>
@@ -552,6 +572,26 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
                 </div>
               ))}
               {notifications.length === 0 && <p className="text-sm text-muted-foreground">No notifications found.</p>}
+            </CardContent>
+          </Card>
+
+
+          <Card>
+            <CardHeader><CardTitle>Trust & Safety Reports</CardTitle><CardDescription>User reports for profiles, jobs, and message threads.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {reports.map((report) => (
+                <div key={report.id} className="rounded-md border p-4">
+                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{report.targetType} / {report.targetId}</div><div className="text-xs text-muted-foreground">Reported by {report.reporter.name} / {report.reporter.email} / {formatDate(report.createdAt)}</div></div>{statusBadge(report.status)}</div>
+                  <p className="mt-2 text-sm"><strong>Reason:</strong> {report.reason}</p>
+                  {report.details && <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{report.details}</p>}
+                  <form action={updateReportStatus} className="mt-3 flex flex-wrap gap-2">
+                    <input type="hidden" name="id" value={report.id} />
+                    <select name="status" defaultValue={report.status} className="h-9 rounded-md border bg-background px-2 text-sm"><option value="OPEN">Open</option><option value="REVIEWING">Reviewing</option><option value="RESOLVED">Resolved</option><option value="DISMISSED">Dismissed</option></select>
+                    <Button type="submit" size="sm" variant="outline">Update</Button>
+                  </form>
+                </div>
+              ))}
+              {reports.length === 0 && <p className="text-sm text-muted-foreground">No reports found.</p>}
             </CardContent>
           </Card>
 

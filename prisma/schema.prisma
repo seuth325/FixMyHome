@@ -31,6 +31,7 @@ model User {
   reviewsReceived Review[]          @relation("ReviewsReceived")
   notifications   Notification[]
   passwordResetTokens PasswordResetToken[]
+  reportsFiled    Report[]
 }
 
 enum Role {
@@ -47,6 +48,7 @@ model HandymanProfile {
   website       String?
   licenseNumber String?
   isInsured     Boolean  @default(false)
+  verificationStatus String @default("UNVERIFIED")
   skills        Json     @default("[]")
   bio           String?  @db.Text
   serviceRadius Int      // miles
@@ -196,4 +198,20 @@ model PasswordResetToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType  String
+  targetId    String
+  reason      String
+  details     String?  @db.Text
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([reporterId])
+  @@index([targetType, targetId])
+  @@index([status])
 }
