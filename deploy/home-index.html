@@ -58,6 +58,24 @@
     footer nav { display:flex; gap:18px; flex-wrap:wrap; }
     @media (max-width: 820px) { .wrap { padding:24px 16px 34px; } .logo { width:172px; height:172px; } .stats, .cards, .reviews, .info-grid { grid-template-columns:1fr; } .section-head { display:block; } .section-head h2 { font-size:30px; } .section-head p { margin-top:14px; } .hero { gap:42px; } }
   </style>
+  <script>
+    (function () {
+      try {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            return Promise.all(registrations.map(function (registration) { return registration.unregister(); }));
+          }).catch(function () {});
+        }
+        if ('caches' in window) {
+          caches.keys().then(function (keys) {
+            return Promise.all(keys.map(function (key) { return caches.delete(key); }));
+          }).catch(function () {});
+        }
+        try { localStorage.removeItem('fixmyhome-home-cache'); } catch (e) {}
+        try { sessionStorage.removeItem('fixmyhome-home-cache'); } catch (e) {}
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <main class="wrap hero">
@@ -109,4 +127,5 @@
   </main>
 </body>
 </html>
+
 
