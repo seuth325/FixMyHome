@@ -158,7 +158,7 @@ export default function HandymanDashboard() {
       <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur dark:bg-gray-950/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-4">
           <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-12 w-12 rounded-sm object-contain shadow-sm sm:h-14 sm:w-14" />
+            <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-12 w-12 object-contain sm:h-14 sm:w-14" />
           </Link>
           <nav className="hidden items-center gap-1 md:flex" aria-label="Handyman navigation">
             <Button asChild variant="secondary" size="sm"><Link href="/handyman/dashboard"><LayoutDashboard className="w-4 h-4" />Dashboard</Link></Button>

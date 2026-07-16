@@ -204,7 +204,7 @@ export default function NotificationsPage() {
 
           {/* Email header banner */}
           <div className="bg-gradient-to-r from-blue-600 to-green-500 px-8 py-8 text-white text-center">
-            <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="mx-auto mb-2 h-24 w-24 rounded-sm object-contain" />
+            <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="mx-auto mb-2 h-24 w-24 object-contain" />
             <p className="text-blue-100 text-sm">Your local home repair marketplace</p>
           </div>
 

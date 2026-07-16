@@ -15,7 +15,7 @@ export function PublicPageShell({ title, eyebrow, children }: { title: string; e
       <header className="border-b border-white/10 bg-[#111b2b]/95">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
           <Link href="/" aria-label="FixMyHome.pro home" className="flex items-center gap-3">
-            <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-14 w-14 rounded-sm object-contain" />
+            <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-14 w-14 object-contain" />
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">

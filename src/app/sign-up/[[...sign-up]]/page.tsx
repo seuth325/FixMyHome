@@ -68,7 +68,7 @@ export default function SignUpPage() {
     <main className="min-h-screen bg-slate-50 px-4 py-10 dark:bg-gray-950">
       <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-5xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
         <section className="hidden lg:block">
-          <Link href="/" aria-label="FixMyHome.pro home"><img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-20 w-20 rounded-sm object-contain" /></Link>
+          <Link href="/" aria-label="FixMyHome.pro home"><img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-20 w-20 object-contain" /></Link>
           <h1 className="mt-8 text-4xl font-bold tracking-tight">Start with the right local repair workflow.</h1>
           <p className="mt-4 text-lg leading-8 text-muted-foreground">
             Create one account, choose your role, and finish a short setup so the app can show the right jobs, bids, and dashboard.

@@ -54,7 +54,10 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="items-center text-center">
+          <Link href="/" aria-label="FixMyHome.pro home">
+            <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="mb-2 h-20 w-20 object-contain" />
+          </Link>
           <CardTitle>Sign In</CardTitle>
           <CardDescription>Welcome back to FixMyHome</CardDescription>
         </CardHeader>

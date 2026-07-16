@@ -106,24 +106,11 @@ export default function LandingPageClient() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#111b2b] text-white">
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
-        <header className="flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3" aria-label="FixMyHome home">
-            <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-14 w-14 rounded-sm object-contain shadow-lg shadow-cyan-950/20 sm:h-16 sm:w-16" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">
-              <Link href="/sign-in">Sign In</Link>
-            </Button>
-            <Button asChild size="sm" className="bg-white text-slate-950 hover:bg-slate-200">
-              <Link href="/sign-up">Get Started</Link>
-            </Button>
-          </div>
-        </header>
 
         <div className="flex flex-1 flex-col justify-center py-14 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
             <div className="flex justify-center">
-              <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-44 w-44 rounded-sm object-contain shadow-2xl shadow-black/20 sm:h-56 sm:w-56" />
+              <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-44 w-44 object-contain drop-shadow-2xl sm:h-56 sm:w-56" />
             </div>
             <div className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-100">
               <ShieldCheck className="size-4" /> Florida home repair marketplace
