@@ -13,6 +13,10 @@ SetEnv LSNODE_CONSOLE_LOG console.log
 
 DirectoryIndex index.html server.js
 RewriteEngine On
+# Temporary cache bypass for stale CDN/browser copies of the bare root URL.
+RewriteCond %{REQUEST_URI} ^/$
+RewriteCond %{QUERY_STRING} ^$
+RewriteRule ^$ /?fresh=1 [R=302,L]
 RewriteRule ^\.builds - [F,L]
 
 <IfModule mod_headers.c>
@@ -31,3 +35,4 @@ RewriteRule ^\.builds - [F,L]
     Header always set CDN-Cache-Control "no-store"
   </IfModule>
 </FilesMatch>
+
