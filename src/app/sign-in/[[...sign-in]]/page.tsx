@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -28,7 +29,21 @@ export default function SignInPage() {
         toast.error('Invalid email or password');
         return;
       }
-      router.push('/role-selection');
+      const callbackUrl = searchParams.get('callbackUrl');
+      if (callbackUrl?.startsWith('/')) {
+        router.push(callbackUrl);
+        router.refresh();
+        return;
+      }
+
+      const me = await fetch('/api/users/me').then((response) => response.ok ? response.json() : null).catch(() => null);
+      const dashboardPath = me?.role === 'ADMIN'
+        ? '/admin'
+        : me?.role === 'HANDYMAN'
+          ? '/handyman/dashboard'
+          : '/homeowner/dashboard';
+      router.push(dashboardPath);
+      router.refresh();
     } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {

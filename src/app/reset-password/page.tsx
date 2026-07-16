@@ -5,12 +5,20 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { signIn } from 'next-auth/react';
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+
+type ResetPasswordResponse = {
+  ok: boolean;
+  email?: string;
+  dashboardPath?: string;
+  error?: string;
+};
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -30,15 +38,31 @@ function ResetPasswordForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, token }),
       });
+      const body = await res.json().catch(() => null) as ResetPasswordResponse | null;
 
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
         toast.error(body?.error || 'This reset link is invalid or expired.');
         return;
       }
 
+      const dashboardPath = body?.dashboardPath || '/homeowner/dashboard';
+      if (body?.email) {
+        const signInResult = await signIn('credentials', {
+          email: body.email,
+          password: data.password,
+          redirect: false,
+        });
+
+        if (!signInResult?.error) {
+          toast.success('Password updated. Taking you to your dashboard.');
+          router.push(dashboardPath);
+          router.refresh();
+          return;
+        }
+      }
+
       toast.success('Password updated. Please sign in with your new password.');
-      router.push('/sign-in');
+      router.push(`/sign-in?callbackUrl=${encodeURIComponent(dashboardPath)}`);
     } catch {
       toast.error('Unable to reset password. Please try again.');
     } finally {

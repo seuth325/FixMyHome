@@ -3,6 +3,12 @@ import { db } from '@/lib/db';
 import { hashPassword, hashPasswordResetToken } from '@/lib/password';
 import { resetPasswordSchema } from '@/lib/validations/auth';
 
+function dashboardPathForRole(role: 'HOMEOWNER' | 'HANDYMAN' | 'ADMIN') {
+  if (role === 'ADMIN') return '/admin';
+  if (role === 'HANDYMAN') return '/handyman/dashboard';
+  return '/homeowner/dashboard';
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -14,6 +20,7 @@ export async function POST(request: Request) {
 
     const tokenRecord = await db.passwordResetToken.findUnique({
       where: { tokenHash: hashPasswordResetToken(parsed.data.token) },
+      include: { user: { select: { email: true, role: true } } },
     });
 
     if (!tokenRecord || tokenRecord.usedAt || tokenRecord.expiresAt <= new Date()) {
@@ -31,7 +38,12 @@ export async function POST(request: Request) {
       }),
     ]);
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      email: tokenRecord.user.email,
+      role: tokenRecord.user.role,
+      dashboardPath: dashboardPathForRole(tokenRecord.user.role),
+    });
   } catch (error) {
     console.error('Password reset failed:', error);
     return NextResponse.json({ error: 'Unable to reset password. Please try again.' }, { status: 500 });
