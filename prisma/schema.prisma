@@ -19,6 +19,7 @@ model User {
   phone           String?
   photoUrl        String?
   isAvailable     Boolean           @default(true)
+  emailOptOut     Boolean           @default(false)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 

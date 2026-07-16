@@ -40,13 +40,13 @@ export default function PrivacyPolicyPage() {
 
       <InfoSection title="Email and Notifications">
         <p>
-          We may send transactional emails such as password reset links, account notices, and service-related messages. Password reset links are designed to expire after a limited time for safety.
+          We may send transactional emails such as password reset links, account notices, and service-related messages. Registered homeowners and handymen can unsubscribe from optional marketing and promotional emails in their dashboard account settings. Important account, password, security, and service-related emails may still be sent. Password reset links are designed to expire after a limited time for safety.
         </p>
       </InfoSection>
 
       <InfoSection title="Your Choices">
         <p>
-          You can update account details in the app where available. For account, privacy, or data questions, contact support and include the email address tied to your account. Do not send passwords or sensitive financial information by email.
+          You can update account details in the app where available. Registered homeowners and handymen can request self-service account deletion from dashboard account settings. Some records may be retained where needed for security, fraud prevention, legal compliance, dispute handling, backups, or legitimate business records. For account, privacy, or data questions, contact support and include the email address tied to your account. Do not send passwords or sensitive financial information by email.
         </p>
       </InfoSection>
 

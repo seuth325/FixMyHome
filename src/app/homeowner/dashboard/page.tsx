@@ -24,6 +24,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useUploadProfilePhoto } from '@/lib/hooks/use-upload';
+import { AccountSettingsCard } from '@/components/account/account-settings-card';
 
 export default function HomeownerDashboard() {
   const { user, isLoaded, updateProfile } = useCurrentUser();
@@ -248,6 +249,10 @@ export default function HomeownerDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="mb-8">
+          <AccountSettingsCard />
+        </div>
 
         {/* Quick Actions */}
         <div className="mb-8 grid gap-4 lg:grid-cols-3">

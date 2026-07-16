@@ -55,7 +55,7 @@ export default function TermsPage() {
           Handyman profiles may also be suspended or removed if FixMyHome.pro believes the handyman is impersonating another business or person, making false licensing or insurance claims, attempting to scam users, requesting unsafe off-platform activity, repeatedly receiving credible complaints, or otherwise presenting a risk to homeowners, other handymen, FixMyHome.pro, or the marketplace.
         </p>
         <p>
-          Users may stop using the service at any time. Account suspension or removal does not waive any rights or remedies available to FixMyHome.pro or affected users.
+          Users may stop using the service at any time. Registered homeowners and handymen may request self-service account deletion from dashboard account settings, subject to records that may need to be retained for security, fraud prevention, legal compliance, dispute handling, backups, or legitimate business purposes. Account suspension, deletion, or removal does not waive any rights or remedies available to FixMyHome.pro or affected users.
         </p>
       </InfoSection>
 

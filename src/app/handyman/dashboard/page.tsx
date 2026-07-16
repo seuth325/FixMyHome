@@ -31,6 +31,7 @@ import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { StarRating } from '@/components/ui/star-rating';
 import { toast } from 'sonner';
 import { useUploadProfilePhoto } from '@/lib/hooks/use-upload';
+import { AccountSettingsCard } from '@/components/account/account-settings-card';
 
 export default function HandymanDashboard() {
   const { user, isLoaded, updateProfile } = useCurrentUser();
@@ -318,6 +319,10 @@ export default function HandymanDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="mb-8">
+          <AccountSettingsCard />
+        </div>
 
         {/* Stats */}
         <div className="mb-8 grid gap-4 md:grid-cols-3">

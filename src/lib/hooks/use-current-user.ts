@@ -34,6 +34,7 @@ export function useCurrentUser() {
     phone: string | null;
     photoUrl: string | null;
     isAvailable: boolean;
+    emailOptOut: boolean;
     handymanProfile: Partial<{
       businessName: string | null;
       website: string | null;

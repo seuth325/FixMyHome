@@ -21,6 +21,7 @@ const updateSchema = z.object({
   phone: z.string().optional().nullable(),
   photoUrl: z.string().optional().nullable(),
   isAvailable: z.boolean().optional(),
+  emailOptOut: z.boolean().optional(),
   handymanProfile: z.object({
     businessName: z.string().optional().nullable(),
     website: z.string().max(200).optional().nullable(),
@@ -53,6 +54,7 @@ export async function PATCH(req: Request) {
       ...(userData.phone     !== undefined && { phone: userData.phone }),
       ...(userData.photoUrl  !== undefined && { photoUrl: userData.photoUrl }),
       ...(userData.isAvailable !== undefined && { isAvailable: userData.isAvailable }),
+      ...(userData.emailOptOut !== undefined && { emailOptOut: userData.emailOptOut }),
     },
     include: { handymanProfile: true },
   });
@@ -90,4 +92,23 @@ export async function PATCH(req: Request) {
   });
 
   return NextResponse.json(updatedUser);
+}
+
+
+export async function DELETE() {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, role: true },
+  });
+
+  if (!user) return NextResponse.json({ ok: true });
+  if (user.role === 'ADMIN') {
+    return NextResponse.json({ error: 'Admin accounts cannot be deleted from self-service settings.' }, { status: 403 });
+  }
+
+  await prisma.user.delete({ where: { id: user.id } });
+  return NextResponse.json({ ok: true, message: 'Account deleted.' });
 }
