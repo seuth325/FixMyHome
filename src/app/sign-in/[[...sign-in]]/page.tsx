@@ -56,7 +56,7 @@ export default function SignInPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
           <Link href="/" aria-label="FixMyHome.pro home">
-            <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="mb-2 h-20 w-20 object-contain" />
+            <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="mb-2 h-20 w-20 object-contain" />
           </Link>
           <CardTitle>Sign In</CardTitle>
           <CardDescription>Welcome back to FixMyHome</CardDescription>

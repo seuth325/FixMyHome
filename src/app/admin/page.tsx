@@ -271,7 +271,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
       <header className="border-b bg-white dark:bg-gray-800 dark:border-gray-700">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div>
-            <Link href="/" aria-label="FixMyHome.pro home"><img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-14 w-14 object-contain" /></Link>
+            <Link href="/" aria-label="FixMyHome.pro home"><img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-14 w-14 object-contain" /></Link>
             <p className="text-sm text-muted-foreground">Admin Console</p>
           </div>
           <div className="flex items-center gap-3">
