@@ -1,0 +1,13 @@
+PassengerAppRoot /home/u853098024/domains/fixmyhome.pro/public_html
+PassengerAppType node
+PassengerNodejs /opt/alt/alt-nodejs22/root/usr/bin/node
+PassengerStartupFile server.js
+PassengerBaseURI /
+PassengerRestartDir /home/u853098024/domains/fixmyhome.pro/public_html/tmp
+PassengerAppEnv production
+PassengerMaxPoolSize 1
+PassengerMaxInstancesPerApp 1
+PassengerMinInstances 1
+PassengerStartTimeout 120
+SetEnv LSNODE_CONSOLE_LOG console.log
+RewriteRule ^\.builds - [F,L]
