@@ -27,17 +27,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <AuthSessionProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+        <AuthSessionProvider>
           <ThemeProvider>
             <ReactQueryProvider>
               {children}
               <Toaster />
             </ReactQueryProvider>
           </ThemeProvider>
-        </body>
-      </html>
-    </AuthSessionProvider>
+        </AuthSessionProvider>
+      </body>
+    </html>
   );
 }
