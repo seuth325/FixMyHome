@@ -141,7 +141,7 @@ function emailShell(title: string, preview: string, body: string, recipientEmail
         <table width="640" cellpadding="0" cellspacing="0" border="0" style="max-width:640px;background:${BG_CARD};border-radius:8px;overflow:hidden;border:1px solid ${BORDER};">
           <tr>
             <td style="padding:22px 32px;border-bottom:1px solid ${BORDER};">
-              <div style="font-size:26px;font-weight:800;color:${ACCENT_DARK};letter-spacing:-0.3px;">FixMyHome</div>
+              <img src="${APP_URL}/fixmyhome-logo.png" width="96" height="96" alt="FixMyHome.pro" style="display:block;border:0;border-radius:4px;outline:none;text-decoration:none;" />
               <div style="font-size:13px;color:${MUTED};margin-top:3px;">Your local home repair marketplace</div>
             </td>
           </tr>

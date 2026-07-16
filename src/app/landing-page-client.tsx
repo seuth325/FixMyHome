@@ -24,10 +24,7 @@ export default function LandingPageClient() {
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3" aria-label="FixMyHome home">
-            <span className="flex size-10 items-center justify-center rounded-md border border-cyan-300/35 bg-cyan-400/10 text-cyan-300 shadow-lg shadow-cyan-950/20 sm:size-11">
-              <Home className="size-5 sm:size-6" />
-            </span>
-            <span className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-xl font-bold tracking-tight text-transparent sm:text-2xl">FixMyHome</span>
+            <img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-14 w-14 rounded-sm object-contain shadow-lg shadow-cyan-950/20 sm:h-16 sm:w-16" />
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white">
@@ -41,9 +38,7 @@ export default function LandingPageClient() {
 
         <div className="flex flex-1 flex-col justify-center py-14 sm:py-20">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-6xl">
-              FixMyHome
-            </h1>
+            <div className="flex justify-center"><img src="/fixmyhome-logo.png" alt="FixMyHome.pro" className="h-44 w-44 rounded-sm object-contain shadow-2xl shadow-black/20 sm:h-56 sm:w-56" /></div>
             <p className="mx-auto mt-7 max-w-2xl text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl">
               Post your home task, set your budget, compare bids, hire confidently.
             </p>
