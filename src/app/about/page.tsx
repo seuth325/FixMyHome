@@ -10,7 +10,7 @@ export default function AboutPage() {
     <PublicPageShell title="About FixMyHome.pro" eyebrow="Florida home repair marketplace">
       <InfoSection title="Who We Are">
         <p>
-          FixMyHome Pro LLC is a Florida registered business name created to help homeowners and local handymen connect through a clear, organized repair marketplace.
+          FixMyHome.pro is created and operated by FixMyHome Pro LLC to help homeowners and local handymen connect through a clear, organized home repair marketplace.
         </p>
         <p>
           The app is built for everyday home repair and improvement projects: homeowners can explain the job, set a budget, compare bids, message local pros, and keep project communication in one place.

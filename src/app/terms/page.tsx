@@ -10,7 +10,7 @@ export default function TermsPage() {
     <PublicPageShell title="Terms of Service" eyebrow="Last updated July 16, 2026">
       <InfoSection title="Agreement to These Terms">
         <p>
-          These Terms of Service govern your use of FixMyHome.pro, operated under FixMyHome Pro LLC, a Florida registered business name. By creating an account or using the platform, you agree to use the service responsibly and comply with applicable laws.
+          These Terms of Service govern your use of FixMyHome.pro, created and operated by FixMyHome Pro LLC as an online home repair marketplace. By creating an account or using the platform, you agree to use the service responsibly and comply with applicable laws.
         </p>
       </InfoSection>
 

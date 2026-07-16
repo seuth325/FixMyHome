@@ -42,7 +42,7 @@ export default function ContactPage() {
 
       <InfoSection title="Business Name">
         <p>
-          FixMyHome Pro LLC is a Florida registered business name. The platform operates online at FixMyHome.pro for home repair and improvement marketplace services.
+          FixMyHome.pro is created and operated by FixMyHome Pro LLC. The platform helps homeowners post repair and improvement jobs, compare bids, message local handymen, and choose who to hire. Handymen can create profiles, submit bids, and manage customer opportunities.
         </p>
       </InfoSection>
     </PublicPageShell>

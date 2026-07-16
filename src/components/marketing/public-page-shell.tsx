@@ -38,7 +38,7 @@ export function PublicPageShell({ title, eyebrow, children }: { title: string; e
 
       <footer className="border-t border-white/10 px-4 py-8 text-sm text-slate-400 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 FixMyHome Pro LLC. Florida registered business name.</p>
+          <p>© 2026 FixMyHome Pro LLC. Created and operated for the FixMyHome.pro home repair marketplace.</p>
           <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Public pages">
             {publicLinks.map((link) => (
               <Link key={link.href} href={link.href} className="hover:text-white">{link.label}</Link>

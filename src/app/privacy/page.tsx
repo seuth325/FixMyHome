@@ -10,7 +10,7 @@ export default function PrivacyPolicyPage() {
     <PublicPageShell title="Privacy Policy" eyebrow="Last updated July 16, 2026">
       <InfoSection title="Overview">
         <p>
-          FixMyHome.pro is operated under FixMyHome Pro LLC, a Florida registered business name. This Privacy Policy explains how we collect, use, and protect information when homeowners, handymen, and administrators use the platform.
+          FixMyHome.pro is created and operated by FixMyHome Pro LLC as an online home repair marketplace. This Privacy Policy explains how we collect, use, and protect information when homeowners, handymen, and administrators use the platform.
         </p>
       </InfoSection>
 
