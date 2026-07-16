@@ -66,22 +66,24 @@ export default function SignUpPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10 dark:bg-gray-950">
-      <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-5xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-        <section className="hidden lg:block">
-          <Link href="/" aria-label="FixMyHome.pro home"><img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-20 w-20 object-contain" /></Link>
-          <h1 className="mt-8 text-4xl font-bold tracking-tight">Start with the right local repair workflow.</h1>
-          <p className="mt-4 text-lg leading-8 text-muted-foreground">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col items-center justify-center gap-6">
+        <section className="w-full rounded-lg border bg-white/80 p-6 text-center shadow-sm backdrop-blur dark:bg-gray-900/80 dark:border-gray-800 sm:p-8">
+          <Link href="/" aria-label="FixMyHome.pro home" className="inline-flex justify-center">
+            <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-24 w-24 object-contain sm:h-28 sm:w-28" />
+          </Link>
+          <h1 className="mx-auto mt-5 max-w-xl text-3xl font-bold tracking-tight sm:text-4xl">Start with the right local repair workflow.</h1>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
             Create one account, choose your role, and finish a short setup so the app can show the right jobs, bids, and dashboard.
           </p>
-          <ul className="mt-8 space-y-4 text-sm text-muted-foreground">
+          <ul className="mx-auto mt-6 grid max-w-xl gap-3 text-left text-sm text-muted-foreground sm:grid-cols-3">
             {benefits.map((benefit) => (
-              <li key={benefit} className="flex gap-3"><CheckCircle className="mt-0.5 size-4 text-emerald-600" />{benefit}</li>
+              <li key={benefit} className="flex gap-2"><CheckCircle className="mt-0.5 size-4 shrink-0 text-emerald-600" />{benefit}</li>
             ))}
           </ul>
         </section>
 
         <Card className="w-full">
-          <CardHeader>
+          <CardHeader className="text-center">
             <CardTitle>Create your account</CardTitle>
             <CardDescription>Sign up once, then choose homeowner or handyman.</CardDescription>
           </CardHeader>
