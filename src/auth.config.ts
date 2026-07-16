@@ -10,6 +10,10 @@ const PUBLIC_ROUTES = [
   /^\/forgot-password(\/.*)?$/,
   /^\/reset-password(\/.*)?$/,
   /^\/profile(\/.*)?$/,
+  /^\/about(\/.*)?$/,
+  /^\/terms(\/.*)?$/,
+  /^\/contact(\/.*)?$/,
+  /^\/security(\/.*)?$/,
   /^\/api\/auth(\/.*)?$/, // NextAuth's own handlers + our /api/auth/register
   /^\/api\/health$/,
 ];
