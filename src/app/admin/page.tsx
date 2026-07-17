@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, MessageSquare, Search, Star, Trash2, Users } from 'lucide-react';
+import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, Mail, MessageSquare, Search, Star, Trash2, Users } from 'lucide-react';
 
 type AdminSearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -180,6 +180,27 @@ async function updateReportStatus(formData: FormData) {
   revalidatePath('/admin');
 }
 
+
+async function updateContactSubmissionStatus(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  const status = String(formData.get('status') ?? 'NEW');
+  if (!id || !['NEW', 'IN_PROGRESS', 'CLOSED', 'SPAM'].includes(status)) return;
+  await db.contactSubmission.update({ where: { id }, data: { status } });
+  revalidatePath('/admin');
+}
+
+async function deleteContactSubmission(formData: FormData) {
+  'use server';
+
+  await requireAdmin();
+  const id = String(formData.get('id') ?? '');
+  if (!id) return;
+  await db.contactSubmission.delete({ where: { id } });
+  revalidatePath('/admin');
+}
 async function expireResetToken(formData: FormData) {
   'use server';
 
@@ -214,6 +235,13 @@ function statusBadge(status: string) {
     ACCEPTED: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
     DECLINED: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
     WITHDRAWN: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+    NEW: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200',
+    IN_PROGRESS: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
+    CLOSED: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    SPAM: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
+    REVIEWING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
+    RESOLVED: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    DISMISSED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
   };
   return <Badge className={colors[status] ?? ''}>{status.replace('_', ' ')}</Badge>;
 }
@@ -326,6 +354,11 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
       take: 30,
       include: { reporter: { select: { name: true, email: true } } },
     }),
+    db.contactSubmission.findMany({
+      where: q ? { OR: [{ name: { contains: q } }, { email: { contains: q } }, { role: { contains: q } }, { reason: { contains: q } }, { message: { contains: q } }] } : undefined,
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+    }),
     Promise.all([
       db.user.count(),
       db.job.count(),
@@ -338,7 +371,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
     ]),
   ]);
 
-  const [userCount, jobCount, bidCount, messageCount, reviewCount, unreadNotifications, activeResets, budgetTotal] = counts;
+  const [userCount, jobCount, bidCount, messageCount, reviewCount, unreadNotifications, activeResets, newContactRequests, budgetTotal] = counts;
   const stats = [
     { label: 'Users', value: userCount, detail: 'Registered accounts', icon: Users },
     { label: 'Jobs', value: jobCount, detail: `${money(budgetTotal._sum.budget)} posted budget`, icon: Briefcase },
@@ -347,6 +380,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
     { label: 'Reviews', value: reviewCount, detail: 'Completed feedback', icon: Star },
     { label: 'Unread Alerts', value: unreadNotifications, detail: 'Open notifications', icon: Activity },
     { label: 'Reset Links', value: activeResets, detail: 'Active password resets', icon: KeyRound },
+    { label: 'Contact', value: newContactRequests, detail: 'New contact requests', icon: Mail },
   ];
 
   return (
@@ -594,7 +628,27 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               {reports.length === 0 && <p className="text-sm text-muted-foreground">No reports found.</p>}
             </CardContent>
           </Card>
-
+          <Card>
+            <CardHeader><CardTitle>Contact Requests</CardTitle><CardDescription>Messages submitted from the public contact form.</CardDescription></CardHeader>
+            <CardContent className="space-y-4">
+              {contactSubmissions.map((submission) => (
+                <div key={submission.id} className="rounded-md border p-4">
+                  <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{submission.reason}</div><div className="text-xs text-muted-foreground">{submission.name} / {submission.email} / {submission.role} / {formatDate(submission.createdAt)}</div></div>{statusBadge(submission.status)}</div>
+                  <p className="mt-2 line-clamp-4 text-sm text-muted-foreground">{submission.message}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline"><a href={`mailto:${submission.email}`}>Reply</a></Button>
+                    <form action={updateContactSubmissionStatus} className="flex flex-wrap gap-2">
+                      <input type="hidden" name="id" value={submission.id} />
+                      <select name="status" defaultValue={submission.status} className="h-9 rounded-md border bg-background px-2 text-sm"><option value="NEW">New</option><option value="IN_PROGRESS">In Progress</option><option value="CLOSED">Closed</option><option value="SPAM">Spam</option></select>
+                      <Button type="submit" size="sm" variant="outline">Update</Button>
+                    </form>
+                    <form action={deleteContactSubmission}><input type="hidden" name="id" value={submission.id} /><DeleteButton /></form>
+                  </div>
+                </div>
+              ))}
+              {contactSubmissions.length === 0 && <p className="text-sm text-muted-foreground">No contact requests found.</p>}
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader><CardTitle>Password Reset Links</CardTitle><CardDescription>Expire active account recovery links.</CardDescription></CardHeader>
             <CardContent className="space-y-4">

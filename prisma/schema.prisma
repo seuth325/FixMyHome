@@ -215,3 +215,18 @@ model Report {
   @@index([targetType, targetId])
   @@index([status])
 }
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  role      String
+  reason    String
+  message   String   @db.Text
+  status    String   @default("NEW")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}

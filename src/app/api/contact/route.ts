@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendContactEmail } from '@/lib/email';
+import { db } from '@/lib/db';
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, 'Please enter your name').max(100),
@@ -19,6 +20,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Please check the form and try again.' }, { status: 400 });
     }
 
+    await db.contactSubmission.create({ data: parsed.data });
     await sendContactEmail(parsed.data);
     return NextResponse.json({ ok: true, message: 'Thanks. Your message has been sent.' });
   } catch (error) {
