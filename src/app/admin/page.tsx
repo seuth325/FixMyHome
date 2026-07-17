@@ -367,6 +367,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
       db.review.count(),
       db.notification.count({ where: { read: false } }),
       db.passwordResetToken.count({ where: { usedAt: null, expiresAt: { gt: new Date() } } }),
+      db.contactSubmission.count({ where: { status: 'NEW' } }),
       db.job.aggregate({ _sum: { budget: true } }),
     ]),
   ]);
