@@ -13,6 +13,71 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, Mail, MessageSquare, Search, Star, Trash2, Users } from 'lucide-react';
 
 type AdminSearchParams = Promise<Record<string, string | string[] | undefined>>;
+type ReportTargetUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isAvailable: boolean;
+  relationship: string;
+};
+
+async function resolveReportTargetUsers(reports: Array<{ id: string; targetType: string; targetId: string; reporterId: string }>) {
+  const targets = new Map<string, ReportTargetUser[]>();
+  const addTarget = (reportId: string, user: Omit<ReportTargetUser, 'relationship'>, relationship: string, reporterId: string) => {
+    if (user.id === reporterId) return;
+    const list = targets.get(reportId) ?? [];
+    if (!list.some((item) => item.id === user.id)) list.push({ ...user, relationship });
+    targets.set(reportId, list);
+  };
+
+  const profileReports = reports.filter((report) => report.targetType === 'PROFILE');
+  const jobReports = reports.filter((report) => report.targetType === 'JOB');
+  const threadReports = reports.filter((report) => report.targetType === 'MESSAGE_THREAD');
+
+  const [profileUsers, jobs, bids] = await Promise.all([
+    profileReports.length
+      ? db.user.findMany({
+          where: { id: { in: profileReports.map((report) => report.targetId) } },
+          select: { id: true, name: true, email: true, role: true, isAvailable: true },
+        })
+      : [],
+    jobReports.length
+      ? db.job.findMany({
+          where: { id: { in: jobReports.map((report) => report.targetId) } },
+          select: { id: true, homeowner: { select: { id: true, name: true, email: true, role: true, isAvailable: true } } },
+        })
+      : [],
+    threadReports.length
+      ? db.bid.findMany({
+          where: { id: { in: threadReports.map((report) => report.targetId) } },
+          select: {
+            id: true,
+            handyman: { select: { id: true, name: true, email: true, role: true, isAvailable: true } },
+            job: { select: { homeowner: { select: { id: true, name: true, email: true, role: true, isAvailable: true } } } },
+          },
+        })
+      : [],
+  ]);
+
+  for (const report of profileReports) {
+    const user = profileUsers.find((item) => item.id === report.targetId);
+    if (user) addTarget(report.id, user, 'Reported profile', report.reporterId);
+  }
+  for (const report of jobReports) {
+    const job = jobs.find((item) => item.id === report.targetId);
+    if (job) addTarget(report.id, job.homeowner, 'Job homeowner', report.reporterId);
+  }
+  for (const report of threadReports) {
+    const bid = bids.find((item) => item.id === report.targetId);
+    if (bid) {
+      addTarget(report.id, bid.handyman, 'Thread handyman', report.reporterId);
+      addTarget(report.id, bid.job.homeowner, 'Thread homeowner', report.reporterId);
+    }
+  }
+
+  return targets;
+}
 
 async function requireAdmin() {
   const session = await auth();
@@ -350,7 +415,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
       include: { user: { select: { name: true, email: true } } },
     }),
     db.report.findMany({
-      where: q ? { OR: [{ reason: { contains: q } }, { details: { contains: q } }, { reporter: { email: { contains: q } } }] } : undefined,
+      where: q ? { OR: [{ id: q }, { targetId: q }, { reason: q }, { status: q.toUpperCase() }, { reporter: { email: q } }] } : undefined,
       orderBy: { createdAt: 'desc' },
       take: 30,
       include: { reporter: { select: { name: true, email: true } } },
@@ -373,6 +438,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
     ]),
   ]);
 
+  const reportTargetUsers = await resolveReportTargetUsers(reports);
   const [userCount, jobCount, bidCount, messageCount, reviewCount, unreadNotifications, activeResets, newContactRequests, budgetTotal] = counts;
   const stats = [
     { label: 'Users', value: userCount, detail: 'Registered accounts', icon: Users },
@@ -620,10 +686,30 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
                   <div className="flex items-start justify-between gap-3"><div><div className="font-medium">{report.targetType} / {report.targetId}</div><div className="text-xs text-muted-foreground">Reported by {report.reporter.name} / {report.reporter.email} / {formatDate(report.createdAt)}</div></div>{statusBadge(report.status)}</div>
                   <p className="mt-2 text-sm"><strong>Reason:</strong> {report.reason}</p>
                   {report.details && <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{report.details}</p>}
+                  {(reportTargetUsers.get(report.id) ?? []).length > 0 && (
+                    <div className="mt-3 space-y-2 rounded-md bg-muted/40 p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Reported account actions</div>
+                      {(reportTargetUsers.get(report.id) ?? []).map((target) => (
+                        <div key={target.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-background p-2">
+                          <div className="text-sm">
+                            <div className="font-medium">{target.name} <span className="text-xs text-muted-foreground">/ {target.relationship}</span></div>
+                            <div className="text-xs text-muted-foreground">{target.email} / {target.role} / {target.isAvailable ? 'Active' : 'Suspended'}</div>
+                          </div>
+                          <form action={updateUserAvailability}>
+                            <input type="hidden" name="userId" value={target.id} />
+                            <input type="hidden" name="isAvailable" value={String(!target.isAvailable)} />
+                            <Button type="submit" size="sm" variant={target.isAvailable ? 'destructive' : 'outline'}>
+                              {target.isAvailable ? 'Suspend account' : 'Reactivate account'}
+                            </Button>
+                          </form>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <form action={updateReportStatus} className="mt-3 flex flex-wrap gap-2">
                     <input type="hidden" name="id" value={report.id} />
                     <select name="status" defaultValue={report.status} className="h-9 rounded-md border bg-background px-2 text-sm"><option value="OPEN">Open</option><option value="REVIEWING">Reviewing</option><option value="RESOLVED">Resolved</option><option value="DISMISSED">Dismissed</option></select>
-                    <Button type="submit" size="sm" variant="outline">Update</Button>
+                    <Button type="submit" size="sm" variant="outline">Update report</Button>
                   </form>
                 </div>
               ))}
