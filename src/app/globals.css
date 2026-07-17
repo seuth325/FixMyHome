@@ -120,7 +120,52 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    min-height: 100%;
+    background: #0d1a24;
+  }
+
   body {
+    min-height: 100%;
+    isolation: isolate;
     @apply bg-background text-foreground;
+    background:
+      radial-gradient(ellipse at 50% 112%, rgba(62, 132, 67, 0.62) 0 16%, rgba(27, 83, 49, 0.26) 34%, transparent 58%),
+      radial-gradient(circle at 12% 18%, rgba(33, 94, 54, 0.55) 0 9%, transparent 24%),
+      radial-gradient(circle at 88% 16%, rgba(35, 103, 64, 0.48) 0 11%, transparent 27%),
+      linear-gradient(180deg, #0b1424 0%, #101c2c 48%, #143124 100%);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -12%;
+    z-index: -2;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 16% 22%, rgba(51, 125, 68, 0.58) 0 8%, transparent 22%),
+      radial-gradient(circle at 82% 19%, rgba(59, 135, 77, 0.50) 0 10%, transparent 25%),
+      radial-gradient(ellipse at 50% 118%, rgba(105, 160, 79, 0.30), transparent 38%);
+    filter: blur(28px) saturate(112%);
+    transform: scale(1.04);
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(8, 13, 24, 0.58), rgba(8, 13, 24, 0.18) 48%, rgba(8, 13, 24, 0.62));
+  }
+
+  .dark .dark\:bg-gray-950,
+  .dark .dark\:bg-gray-900 {
+    background-color: rgb(8 15 25 / 0.90) !important;
+  }
+
+  .dark .dark\:bg-gray-800 {
+    background-color: rgb(22 33 46 / 0.86) !important;
   }
 }

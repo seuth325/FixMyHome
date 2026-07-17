@@ -88,7 +88,7 @@ function Stars() {
 
 function ReviewCard({ review }: { review: { name: string; role: string; location: string; comment: string } }) {
   return (
-    <article className="rounded-lg border border-white/8 bg-slate-800/70 p-5 shadow-xl shadow-black/10">
+    <article className="rounded-lg border border-white/8 bg-slate-900/55 backdrop-blur-md p-5 shadow-xl shadow-black/10">
       <div className="mb-4 flex items-center justify-between gap-4">
         <Stars />
         <Quote className="size-5 text-cyan-300/70" />
@@ -96,7 +96,7 @@ function ReviewCard({ review }: { review: { name: string; role: string; location
       <p className="text-sm leading-6 text-slate-100">{review.comment}</p>
       <div className="mt-5 border-t border-white/8 pt-4">
         <p className="font-semibold text-white">{review.name}</p>
-        <p className="mt-1 text-xs text-slate-400">{review.role} · {review.location}</p>
+        <p className="mt-1 text-xs text-slate-400">{review.role} Ã‚- {review.location}</p>
       </div>
     </article>
   );
@@ -104,7 +104,9 @@ function ReviewCard({ review }: { review: { name: string; role: string; location
 
 export default function LandingPageClient() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#111b2b] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#0d1a24] text-white">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_112%,rgba(62,132,67,0.70)_0_16%,rgba(27,83,49,0.28)_34%,transparent_58%),radial-gradient(circle_at_12%_20%,rgba(33,94,54,0.58)_0_9%,transparent_24%),radial-gradient(circle_at_88%_18%,rgba(35,103,64,0.50)_0_11%,transparent_27%),linear-gradient(180deg,#0b1424_0%,#101c2c_48%,#143124_100%)] blur-2xl saturate-110" />
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(180deg,rgba(8,13,24,0.62),rgba(8,13,24,0.20)_48%,rgba(8,13,24,0.70))]" />
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
 
         <div className="flex flex-1 flex-col justify-center py-14 sm:py-20">
@@ -141,7 +143,7 @@ export default function LandingPageClient() {
           </div>
 
           <div className="mx-auto mt-16 grid w-full max-w-5xl gap-6 md:grid-cols-2">
-            <article className="rounded-lg border border-white/5 bg-slate-800/65 p-7 shadow-xl shadow-black/10">
+            <article className="rounded-lg border border-white/5 bg-slate-900/55 backdrop-blur-md p-7 shadow-xl shadow-black/10">
               <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-blue-600 text-white">
                 <Home className="size-6" />
               </div>
@@ -156,7 +158,7 @@ export default function LandingPageClient() {
               </ul>
             </article>
 
-            <article className="rounded-lg border border-white/5 bg-slate-800/65 p-7 shadow-xl shadow-black/10">
+            <article className="rounded-lg border border-white/5 bg-slate-900/55 backdrop-blur-md p-7 shadow-xl shadow-black/10">
               <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-emerald-600 text-white">
                 <Wrench className="size-6" />
               </div>
@@ -194,7 +196,7 @@ export default function LandingPageClient() {
             </div>
           </section>
 
-          <section className="mx-auto mt-16 grid w-full max-w-5xl gap-5 rounded-lg border border-white/8 bg-slate-900/55 p-6 shadow-2xl shadow-black/20 md:grid-cols-3">
+          <section className="mx-auto mt-16 grid w-full max-w-5xl gap-5 rounded-lg border border-white/8 bg-slate-900/55 backdrop-blur-md p-6 shadow-2xl shadow-black/20 md:grid-cols-3">
             <div className="flex items-start gap-3">
               <MapPin className="mt-1 size-5 text-cyan-300" />
               <div>
@@ -233,7 +235,7 @@ export default function LandingPageClient() {
             </div>
           </section>
           <footer className="mx-auto mt-12 flex w-full max-w-6xl flex-col gap-4 border-t border-white/10 pt-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-            <p>© 2026 FixMyHome Pro LLC. Created and operated for the FixMyHome.pro home repair marketplace.</p>
+            <p>Ã‚(c) 2026 FixMyHome Pro LLC. Created and operated for the FixMyHome.pro home repair marketplace.</p>
             <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Public pages">
               <Link href="/about" className="hover:text-white">About</Link>
               <Link href="/terms" className="hover:text-white">Terms of Service</Link>
