@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-// GET /api/jobs/browse — open/in-review jobs for handymen
+// GET /api/jobs/browse - open/in-review jobs for handymen
 export async function GET(request: Request) {
   try {
     const user = await requireUser();
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       where: {
         status: { in: ['OPEN', 'IN_REVIEW'] },
         ...(category && { category }),
-        ...(location && { location: { contains: location } }),
+        ...(location && { location }),
         ...(minBudget && { budget: { gte: parseFloat(minBudget) } }),
         ...(maxBudget && { budget: { lte: parseFloat(maxBudget) } }),
       },
