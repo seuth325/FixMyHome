@@ -71,7 +71,7 @@ function ResetPasswordForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md border-white/10 bg-slate-950/70 shadow-2xl shadow-black/30 backdrop-blur-md">
       <CardHeader>
         <CardTitle>Choose New Password</CardTitle>
         <CardDescription>Enter a new password for your FixMyHome account.</CardDescription>
@@ -111,7 +111,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4 py-10">
       <Suspense fallback={null}>
         <ResetPasswordForm />
       </Suspense>

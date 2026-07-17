@@ -57,7 +57,7 @@ export default function RoleSelectionPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-12 dark:bg-gray-950">
+    <main className="min-h-screen bg-transparent px-4 py-12">
       <div className="mx-auto w-full max-w-5xl">
         <div className="mb-8 text-center">
           <p className="text-sm font-medium text-emerald-600">One quick choice</p>

@@ -52,8 +52,8 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4 py-10">
+      <Card className="w-full max-w-md border-white/10 bg-slate-950/70 shadow-2xl shadow-black/30 backdrop-blur-md">
         <CardHeader className="items-center text-center space-y-3">
           <Link href="/" aria-label="FixMyHome.pro home">
             <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-24 w-24 object-contain sm:h-28 sm:w-28" />

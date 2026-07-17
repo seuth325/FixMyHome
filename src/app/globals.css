@@ -160,6 +160,11 @@
     background: linear-gradient(180deg, rgba(8, 13, 24, 0.58), rgba(8, 13, 24, 0.18) 48%, rgba(8, 13, 24, 0.62));
   }
 
+  .bg-gray-50,
+  .bg-slate-50 {
+    background-color: transparent !important;
+  }
+
   .dark .dark\:bg-gray-950,
   .dark .dark\:bg-gray-900 {
     background-color: rgb(8 15 25 / 0.90) !important;

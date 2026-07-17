@@ -65,9 +65,9 @@ export default function SignUpPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 dark:bg-gray-950">
+    <main className="min-h-screen bg-transparent px-4 py-10">
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col items-center justify-center gap-6">
-        <section className="w-full rounded-lg border bg-white/80 p-6 text-center shadow-sm backdrop-blur dark:bg-gray-900/80 dark:border-gray-800 sm:p-8">
+        <section className="w-full rounded-lg border border-white/10 bg-slate-950/60 p-6 text-center shadow-2xl shadow-black/25 backdrop-blur-md sm:p-8">
           <Link href="/" aria-label="FixMyHome.pro home" className="inline-flex justify-center">
             <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-24 w-24 object-contain sm:h-28 sm:w-28" />
           </Link>
@@ -82,7 +82,7 @@ export default function SignUpPage() {
           </ul>
         </section>
 
-        <Card className="w-full">
+        <Card className="w-full border-white/10 bg-slate-950/70 shadow-2xl shadow-black/30 backdrop-blur-md">
           <CardHeader className="text-center">
             <CardTitle>Create your account</CardTitle>
             <CardDescription>Sign up once, then choose homeowner or handyman.</CardDescription>
