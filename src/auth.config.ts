@@ -13,6 +13,7 @@ const PUBLIC_ROUTES = [
   /^\/about(\/.*)?$/,
   /^\/terms(\/.*)?$/,
   /^\/contact(\/.*)?$/,
+  /^\/for-pros(\/.*)?$/,
   /^\/security(\/.*)?$/,
   /^\/privacy(\/.*)?$/,
   /^\/api\/auth(\/.*)?$/, // NextAuth's own handlers + our /api/auth/register

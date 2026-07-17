@@ -290,6 +290,7 @@ export default function LandingPageClient() {
           <footer className="mx-auto mt-12 flex w-full max-w-6xl flex-col gap-4 border-t border-white/10 pt-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
             <p>(c) 2026 FixMyHome Pro LLC. Created and operated for the FixMyHome.pro home repair marketplace.</p>
             <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Public pages">
+              <Link href="/for-pros" className="hover:text-white">Services for Pros</Link>
               <Link href="/about" className="hover:text-white">About</Link>
               <Link href="/terms" className="hover:text-white">Terms of Service</Link>
               <Link href="/contact" className="hover:text-white">Contact</Link>

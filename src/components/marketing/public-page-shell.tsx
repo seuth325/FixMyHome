@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 
 export const publicLinks = [
+  { href: '/for-pros', label: 'Services for Pros' },
   { href: '/about', label: 'About' },
   { href: '/terms', label: 'Terms of Service' },
   { href: '/contact', label: 'Contact' },

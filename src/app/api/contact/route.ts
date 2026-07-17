@@ -8,7 +8,7 @@ const contactSchema = z.object({
   name: z.string().trim().min(2, 'Please enter your name').max(100),
   email: z.string().trim().email('Please enter a valid email address').max(160),
   role: z.enum(['Homeowner', 'Handyman', 'Business', 'Other']),
-  reason: z.enum(['Account help', 'Job or bid support', 'Technical issue', 'Business inquiry', 'Other']),
+  reason: z.enum(['Account help', 'Job or bid support', 'Technical issue', 'Business inquiry', 'Handyman Growth Package', 'Other']),
   message: z.string().trim().min(20, 'Please include at least 20 characters').max(3000),
 });
 

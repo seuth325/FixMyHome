@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 const roles = ['Homeowner', 'Handyman', 'Business', 'Other'];
-const reasons = ['Account help', 'Job or bid support', 'Technical issue', 'Business inquiry', 'Other'];
+const reasons = ['Account help', 'Job or bid support', 'Technical issue', 'Business inquiry', 'Handyman Growth Package', 'Other'];
 
 export function ContactForm() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');

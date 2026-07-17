@@ -320,6 +320,15 @@ export default function HandymanDashboard() {
           </CardContent>
         </Card>
 
+        <Card className="mb-8 border-emerald-200 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/30">
+          <CardHeader className="sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle>Grow your handyman business</CardTitle>
+              <CardDescription className="mt-1">Get a professional profile, one-page website, and local marketing foundation.</CardDescription>
+            </div>
+            <Button asChild className="mt-4 shrink-0 sm:mt-0"><Link href="/for-pros"><Globe className="w-4 h-4" />View $499 Package</Link></Button>
+          </CardHeader>
+        </Card>
         <div className="mb-8">
           <AccountSettingsCard />
         </div>
