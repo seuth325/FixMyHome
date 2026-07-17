@@ -304,6 +304,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
     notifications,
     resetTokens,
     reports,
+    contactSubmissions,
     counts,
   ] = await Promise.all([
     db.user.findMany({
@@ -375,7 +376,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
   const [userCount, jobCount, bidCount, messageCount, reviewCount, unreadNotifications, activeResets, newContactRequests, budgetTotal] = counts;
   const stats = [
     { label: 'Users', value: userCount, detail: 'Registered accounts', icon: Users },
-    { label: 'Jobs', value: jobCount, detail: `${money(budgetTotal._sum.budget)} posted budget`, icon: Briefcase },
+    { label: 'Jobs', value: jobCount, detail: `${money(budgetTotal?._sum?.budget ?? 0)} posted budget`, icon: Briefcase },
     { label: 'Bids', value: bidCount, detail: 'Submitted proposals', icon: DollarSign },
     { label: 'Messages', value: messageCount, detail: 'User conversations', icon: MessageSquare },
     { label: 'Reviews', value: reviewCount, detail: 'Completed feedback', icon: Star },
