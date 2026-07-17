@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Activity, Ban, Briefcase, CheckCircle2, DollarSign, KeyRound, Mail, MessageSquare, Search, Star, Trash2, Users } from 'lucide-react';
+import { Activity, Ban, Briefcase, CheckCircle2, ChevronDown, DollarSign, KeyRound, Mail, MessageSquare, Search, Star, Trash2, Users } from 'lucide-react';
 
 type AdminSearchParams = Promise<Record<string, string | string[] | undefined>>;
 type ReportTargetUser = {
@@ -329,6 +329,30 @@ function DeleteButton({ label = 'Delete' }: { label?: string }) {
   );
 }
 
+function AdminDropdown({ title, description, count, children, defaultOpen = false }: {
+  title: string;
+  description: string;
+  count: number;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details open={defaultOpen} className="group overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 marker:content-none">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold leading-none tracking-tight">{title}</h2>
+            <Badge variant="secondary">{count}</Badge>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+        </div>
+        <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="border-t">{children}</div>
+    </details>
+  );
+}
+
 export default async function AdminPage({ searchParams }: { searchParams?: AdminSearchParams }) {
   const session = await requireAdmin();
   const params = searchParams ? await searchParams : {};
@@ -518,11 +542,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>User Management</CardTitle>
-            <CardDescription>Change roles, suspend availability, and inspect account activity.</CardDescription>
-          </CardHeader>
+        <AdminDropdown title="User Management" description="Change roles, suspend availability, and inspect account activity." count={users.length} defaultOpen>
           <CardContent className="overflow-x-auto">
             <table className="w-full min-w-[920px] text-sm">
               <thead className="text-left text-muted-foreground border-b">
@@ -602,11 +622,10 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               </tbody>
             </table>
           </CardContent>
-        </Card>
+        </AdminDropdown>
 
         <div className="grid gap-8 xl:grid-cols-2">
-          <Card>
-            <CardHeader><CardTitle>Recent Jobs</CardTitle><CardDescription>Delete inappropriate or duplicate job posts.</CardDescription></CardHeader>
+          <AdminDropdown title="Recent Jobs" description="Delete inappropriate or duplicate job posts." count={jobs.length}>
             <CardContent className="space-y-4">
               {jobs.map((job) => (
                 <div key={job.id} className="rounded-md border p-4">
@@ -617,10 +636,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               ))}
               {jobs.length === 0 && <p className="text-sm text-muted-foreground">No jobs found.</p>}
             </CardContent>
-          </Card>
+          </AdminDropdown>
 
-          <Card>
-            <CardHeader><CardTitle>Recent Bids</CardTitle><CardDescription>Latest proposals from handymen.</CardDescription></CardHeader>
+          <AdminDropdown title="Recent Bids" description="Latest proposals from handymen." count={bids.length}>
             <CardContent className="space-y-4">
               {bids.map((bid) => (
                 <div key={bid.id} className="rounded-md border p-4">
@@ -630,10 +648,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               ))}
               {bids.length === 0 && <p className="text-sm text-muted-foreground">No bids found.</p>}
             </CardContent>
-          </Card>
+          </AdminDropdown>
 
-          <Card>
-            <CardHeader><CardTitle>Recent Messages</CardTitle><CardDescription>Remove inappropriate user communication.</CardDescription></CardHeader>
+          <AdminDropdown title="Recent Messages" description="Remove inappropriate user communication." count={messages.length}>
             <CardContent className="space-y-4">
               {messages.map((message) => (
                 <div key={message.id} className="rounded-md border p-4">
@@ -645,10 +662,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               ))}
               {messages.length === 0 && <p className="text-sm text-muted-foreground">No messages found.</p>}
             </CardContent>
-          </Card>
+          </AdminDropdown>
 
-          <Card>
-            <CardHeader><CardTitle>Recent Reviews</CardTitle><CardDescription>Remove abusive or mistaken reviews.</CardDescription></CardHeader>
+          <AdminDropdown title="Recent Reviews" description="Remove abusive or mistaken reviews." count={reviews.length}>
             <CardContent className="space-y-4">
               {reviews.map((review) => (
                 <div key={review.id} className="rounded-md border p-4">
@@ -660,10 +676,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               ))}
               {reviews.length === 0 && <p className="text-sm text-muted-foreground">No reviews found.</p>}
             </CardContent>
-          </Card>
+          </AdminDropdown>
 
-          <Card>
-            <CardHeader><CardTitle>Notifications</CardTitle><CardDescription>Clean up stale platform notifications.</CardDescription></CardHeader>
+          <AdminDropdown title="Notifications" description="Clean up stale platform notifications." count={notifications.length}>
             <CardContent className="space-y-4">
               {notifications.map((notification) => (
                 <div key={notification.id} className="rounded-md border p-4">
@@ -675,7 +690,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               ))}
               {notifications.length === 0 && <p className="text-sm text-muted-foreground">No notifications found.</p>}
             </CardContent>
-          </Card>
+          </AdminDropdown>
 
 
           <Card>
@@ -716,8 +731,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               {reports.length === 0 && <p className="text-sm text-muted-foreground">No reports found.</p>}
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader><CardTitle>Contact Requests</CardTitle><CardDescription>Messages submitted from the public contact form.</CardDescription></CardHeader>
+          <AdminDropdown title="Contact Requests" description="Messages submitted from the public contact form." count={contactSubmissions.length}>
             <CardContent className="space-y-4">
               {contactSubmissions.map((submission) => (
                 <div key={submission.id} className="rounded-md border p-4">
@@ -736,9 +750,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               ))}
               {contactSubmissions.length === 0 && <p className="text-sm text-muted-foreground">No contact requests found.</p>}
             </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Password Reset Links</CardTitle><CardDescription>Expire active account recovery links.</CardDescription></CardHeader>
+          </AdminDropdown>
+          <AdminDropdown title="Password Reset Links" description="Expire active account recovery links." count={resetTokens.length}>
             <CardContent className="space-y-4">
               {resetTokens.map((token) => (
                 <div key={token.id} className="rounded-md border p-4">
@@ -749,7 +762,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
               ))}
               {resetTokens.length === 0 && <p className="text-sm text-muted-foreground">No reset links found.</p>}
             </CardContent>
-          </Card>
+          </AdminDropdown>
         </div>
       </main>
     </div>

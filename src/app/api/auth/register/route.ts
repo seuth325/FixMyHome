@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { registerSchema } from '@/lib/validations/auth';
 import { hashPassword } from '@/lib/password';
-import { sendNewUserNotification } from '@/lib/email';
+import { sendNewUserNotification, sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -23,16 +23,19 @@ export async function POST(request: Request) {
     data: { name, email, passwordHash, role: 'HOMEOWNER' },
   });
 
-  try {
-    await sendNewUserNotification({
+  const emailResults = await Promise.allSettled([
+    sendWelcomeEmail({ to: user.email, name: user.name }),
+    sendNewUserNotification({
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       createdAt: user.createdAt,
-    });
-  } catch (error) {
-    console.error('Failed to send new user notification', error);
+    }),
+  ]);
+
+  for (const result of emailResults) {
+    if (result.status === 'rejected') console.error('Failed to send registration email', result.reason);
   }
 
   return NextResponse.json({ id: user.id, email: user.email, name: user.name }, { status: 201 });
