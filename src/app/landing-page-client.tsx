@@ -10,6 +10,9 @@ import {
   ShieldCheck,
   MapPin,
   Quote,
+  ClipboardList,
+  SearchCheck,
+  Handshake,
 } from 'lucide-react';
 
 const homeownerBenefits = [
@@ -55,6 +58,24 @@ const homeownerReviews = [
   },
 ];
 
+
+const howItWorksSteps = [
+  {
+    title: 'Post the job',
+    description: 'Homeowners describe the repair, budget, timing, photos, and location so local pros understand the scope.',
+    icon: ClipboardList,
+  },
+  {
+    title: 'Compare bids',
+    description: 'Review price, timeline, profile details, messages, and ratings before deciding who fits the project.',
+    icon: SearchCheck,
+  },
+  {
+    title: 'Message and hire',
+    description: 'Ask questions, confirm details, choose the right handyman, and keep the conversation organized.',
+    icon: Handshake,
+  },
+];
 const handymanReviews = [
   {
     name: 'Chris M.',
@@ -96,7 +117,7 @@ function ReviewCard({ review }: { review: { name: string; role: string; location
       <p className="text-sm leading-6 text-slate-100">{review.comment}</p>
       <div className="mt-5 border-t border-white/8 pt-4">
         <p className="font-semibold text-white">{review.name}</p>
-        <p className="mt-1 text-xs text-slate-400">{review.role} Ã‚- {review.location}</p>
+        <p className="mt-1 text-xs text-slate-400">{review.role} - {review.location}</p>
       </div>
     </article>
   );
@@ -174,6 +195,38 @@ export default function LandingPageClient() {
             </article>
           </div>
 
+
+          <section className="mx-auto mt-16 w-full max-w-6xl">
+            <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-sm text-cyan-100">
+                  <ClipboardList className="size-4" /> How it works
+                </div>
+                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">A clear repair workflow from first post to final review.</h2>
+              </div>
+              <p className="max-w-sm text-sm leading-6 text-slate-300">
+                FixMyHome keeps each step organized so homeowners can compare confidently and handymen can bid on real, detailed work.
+              </p>
+            </div>
+            <div className="grid gap-5 lg:grid-cols-3">
+              {howItWorksSteps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <article key={step.title} className="rounded-lg border border-white/8 bg-slate-900/55 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
+                    <div className="mb-5 flex items-center justify-between gap-4">
+                      <div className="flex size-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-300/20">
+                        <Icon className="size-6" />
+                      </div>
+                      <span className="text-sm font-bold text-cyan-100">Step {index + 1}</span>
+                    </div>
+                    <h3 className="text-xl font-bold tracking-tight">{step.title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-slate-300">{step.description}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
           <section className="mx-auto mt-16 w-full max-w-6xl">
             <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
@@ -235,7 +288,7 @@ export default function LandingPageClient() {
             </div>
           </section>
           <footer className="mx-auto mt-12 flex w-full max-w-6xl flex-col gap-4 border-t border-white/10 pt-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-            <p>Ã‚(c) 2026 FixMyHome Pro LLC. Created and operated for the FixMyHome.pro home repair marketplace.</p>
+            <p>(c) 2026 FixMyHome Pro LLC. Created and operated for the FixMyHome.pro home repair marketplace.</p>
             <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Public pages">
               <Link href="/about" className="hover:text-white">About</Link>
               <Link href="/terms" className="hover:text-white">Terms of Service</Link>
