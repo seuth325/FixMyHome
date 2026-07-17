@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { sendMarketplaceEmail } from '@/lib/email';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -12,7 +13,7 @@ export async function POST(_request: Request, { params }: Params) {
 
     const bid = await db.bid.findUnique({
       where: { id: bidId },
-      include: { job: true },
+      include: { job: true, handyman: { select: { name: true, email: true, emailOptOut: true } } },
     });
 
     if (!bid) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -40,6 +41,14 @@ export async function POST(_request: Request, { params }: Params) {
         linkPath: `/jobs/${bid.jobId}`,
       },
     });
+    if (!bid.handyman.emailOptOut) {
+      await sendMarketplaceEmail({
+        to: bid.handyman.email, name: bid.handyman.name, category: 'BID_ACCEPTED',
+        subject: 'Your bid was accepted', title: 'You won the job',
+        body: 'Your bid of $' + bid.amount + ' on "' + bid.job.title + '" was accepted.',
+        actionText: 'View Job', actionPath: '/jobs/' + bid.jobId,
+      }).catch((error) => console.error('Bid accepted email failed', error));
+    }
 
     // Notify declined handymen
     const declinedBids = await db.bid.findMany({

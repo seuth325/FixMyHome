@@ -24,6 +24,17 @@ export default function SignInPage() {
   const onSubmit = async (data: SignInInput) => {
     setIsLoading(true);
     try {
+      const accountStatus = await fetch('/api/auth/account-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.email }),
+      }).then((response) => response.json()).catch(() => ({ verified: true }));
+      if (!accountStatus.verified) {
+        toast.error('Please verify your email before signing in.');
+        router.push('/verify-email?email=' + encodeURIComponent(data.email));
+        return;
+      }
+
       const result = await signIn('credentials', { ...data, redirect: false });
       if (result?.error) {
         toast.error('Invalid email or password');

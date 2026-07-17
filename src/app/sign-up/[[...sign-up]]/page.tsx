@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signIn } from 'next-auth/react';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { registerFormSchema, type RegisterFormInput } from '@/lib/validations/auth';
 import { Button } from '@/components/ui/button';
@@ -45,18 +44,7 @@ export default function SignUpPage() {
         return;
       }
 
-      const result = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-      if (result?.error) {
-        toast.error('Account created, but sign-in failed. Please sign in manually.');
-        router.push('/sign-in');
-        return;
-      }
-
-      router.push('/role-selection');
+      router.push('/verify-email?email=' + encodeURIComponent(data.email));
     } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {

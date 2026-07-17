@@ -307,6 +307,8 @@ function statusBadge(status: string) {
     REVIEWING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
     RESOLVED: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
     DISMISSED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+    SENT: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200',
+    FAILED: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
   };
   return <Badge className={colors[status] ?? ''}>{status.replace('_', ' ')}</Badge>;
 }
@@ -463,6 +465,10 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
   ]);
 
   const reportTargetUsers = await resolveReportTargetUsers(reports);
+  const emailDeliveries = await db.emailDelivery.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  });
   const [userCount, jobCount, bidCount, messageCount, reviewCount, unreadNotifications, activeResets, newContactRequests, budgetTotal] = counts;
   const stats = [
     { label: 'Users', value: userCount, detail: 'Registered accounts', icon: Users },
@@ -565,6 +571,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
                     <td className="py-4 pr-4">{roleBadge(user.role)}</td>
                     <td className="py-4 pr-4">
                       {user.isAvailable ? <Badge className="bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"><CheckCircle2 className="size-3" /> Active</Badge> : <Badge className="bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"><Ban className="size-3" /> Suspended</Badge>}
+                      <div className="mt-2">{user.emailVerifiedAt ? <Badge variant="outline">Email verified</Badge> : <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200">Email pending</Badge>}</div>
                     </td>
                     <td className="py-4 pr-4 text-muted-foreground">
                       {user._count.jobsPosted} jobs / {user._count.bidsSubmitted} bids / {user._count.messagesSent} messages
@@ -693,6 +700,20 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
           </AdminDropdown>
 
 
+          <AdminDropdown title="Email Delivery" description="Recent transactional email delivery status and failures." count={emailDeliveries.length}>
+            <CardContent className="space-y-3 pt-6">
+              {emailDeliveries.map((delivery) => (
+                <div key={delivery.id} className="rounded-md border p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div><div className="font-medium">{delivery.subject}</div><div className="text-xs text-muted-foreground">{delivery.recipient} / {delivery.category} / {formatDate(delivery.createdAt)}</div></div>
+                    {statusBadge(delivery.status)}
+                  </div>
+                  {delivery.errorMessage && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{delivery.errorMessage}</p>}
+                </div>
+              ))}
+              {emailDeliveries.length === 0 && <p className="text-sm text-muted-foreground">No email deliveries recorded yet.</p>}
+            </CardContent>
+          </AdminDropdown>
           <Card>
             <CardHeader><CardTitle>Trust & Safety Reports</CardTitle><CardDescription>User reports for profiles, jobs, and message threads.</CardDescription></CardHeader>
             <CardContent className="space-y-4">

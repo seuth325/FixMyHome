@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { registerSchema } from '@/lib/validations/auth';
 import { hashPassword } from '@/lib/password';
-import { sendNewUserNotification, sendWelcomeEmail } from '@/lib/email';
+import { sendEmailVerification, sendNewUserNotification } from '@/lib/email';
+import { createEmailVerificationToken, hashEmailVerificationToken } from '@/lib/email-verification';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -23,8 +25,17 @@ export async function POST(request: Request) {
     data: { name, email, passwordHash, role: 'HOMEOWNER' },
   });
 
+  const verificationToken = createEmailVerificationToken();
+  await prisma.emailVerificationToken.create({
+    data: {
+      userId: user.id,
+      tokenHash: hashEmailVerificationToken(verificationToken),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  });
+
   const emailResults = await Promise.allSettled([
-    sendWelcomeEmail({ to: user.email, name: user.name }),
+    sendEmailVerification({ to: user.email, name: user.name, token: verificationToken }),
     sendNewUserNotification({
       id: user.id,
       name: user.name,

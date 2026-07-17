@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendContactEmail } from '@/lib/email';
 import { db } from '@/lib/db';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, 'Please enter your name').max(100),
@@ -12,6 +13,9 @@ const contactSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const rateLimit = checkRateLimit(request, 'contact', 5, 60 * 60 * 1000);
+  if (!rateLimit.allowed) return NextResponse.json({ error: 'Too many messages. Please try again later.' }, { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter) } });
+
   try {
     const body = await request.json();
     const parsed = contactSchema.safeParse(body);

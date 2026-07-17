@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { sendMessageSchema } from '@/lib/validations/message';
+import { sendMarketplaceEmail } from '@/lib/email';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 type Params = { params: Promise<{ bidId: string }> };
 
@@ -71,6 +73,18 @@ export async function POST(request: Request, { params }: Params) {
         linkPath: `/messages/${bidId}`,
       },
     });
+    const recipient = await db.user.findUnique({
+      where: { id: recipientId },
+      select: { name: true, email: true, emailOptOut: true },
+    });
+    if (recipient && !recipient.emailOptOut) {
+      await sendMarketplaceEmail({
+        to: recipient.email, name: recipient.name, category: 'NEW_MESSAGE',
+        subject: 'New message about ' + bid.job.title, title: 'You have a new message',
+        body: user.name + ' sent you a message about "' + bid.job.title + '".',
+        actionText: 'Read Message', actionPath: '/messages/' + bidId,
+      }).catch((error) => console.error('New message email failed', error));
+    }
 
     return NextResponse.json(message, { status: 201 });
   } catch {

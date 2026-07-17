@@ -34,6 +34,7 @@ export async function GET(_request: Request, { params }: Params) {
       name: user.name,
       email: user.email,
       photoUrl: user.photoUrl,
+      emailVerified: Boolean(user.emailVerifiedAt),
       handymanProfile: user.handymanProfile
         ? {
             ...user.handymanProfile,

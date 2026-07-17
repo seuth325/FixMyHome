@@ -3,11 +3,15 @@ import { db } from '@/lib/db';
 import { createPasswordResetToken, hashPasswordResetToken } from '@/lib/password';
 import { forgotPasswordSchema } from '@/lib/validations/auth';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 const SUCCESS_RESPONSE = { ok: true, message: 'If an account exists for that email, a reset link has been sent.' };
 
 export async function POST(request: Request) {
+  const rateLimit = checkRateLimit(request, 'forgot-password', 5, 15 * 60 * 1000);
+  if (!rateLimit.allowed) return NextResponse.json(SUCCESS_RESPONSE, { headers: { 'Retry-After': String(rateLimit.retryAfter) } });
+
   try {
     const body = await request.json();
     const parsed = forgotPasswordSchema.safeParse(body);

@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { buildPasswordResetEmail } from '@/lib/email-template';
+import { db } from '@/lib/db';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'https://fixmyhome.pro';
 const FROM_EMAIL = process.env.EMAIL_FROM || process.env.MAIL_FROM || 'FixMyHome <noreply@fixmyhome.pro>';
@@ -48,11 +49,31 @@ function createTransport() {
   return nodemailer.createTransport({ sendmail: true, newline: 'unix', path: '/usr/sbin/sendmail' });
 }
 
+async function sendTrackedEmail(transporter: ReturnType<typeof createTransport>, category: string, to: string, options: Parameters<typeof transporter.sendMail>[0]) {
+  const delivery = await db.emailDelivery.create({
+    data: { category, recipient: to, subject: String(options.subject || ''), status: 'PENDING' },
+  });
+
+  try {
+    const info = await transporter.sendMail(options);
+    await db.emailDelivery.update({
+      where: { id: delivery.id },
+      data: { status: 'SENT', providerId: info.messageId || null, sentAt: new Date() },
+    });
+    return info;
+  } catch (error) {
+    await db.emailDelivery.update({
+      where: { id: delivery.id },
+      data: { status: 'FAILED', errorMessage: error instanceof Error ? error.message : String(error) },
+    }).catch(() => undefined);
+    throw error;
+  }
+}
 export async function sendPasswordResetEmail({ to, name, token }: ResetEmailInput) {
   const resetUrl = `${APP_URL.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
   const transporter = createTransport();
 
-  await transporter.sendMail({
+  await sendTrackedEmail(transporter, 'PASSWORD_RESET', to, {
     from: FROM_EMAIL,
     to,
     subject: 'Reset your FixMyHome password',
@@ -113,7 +134,7 @@ export async function sendContactEmail({ name, email, role, reason, message }: C
 </body>
 </html>`;
 
-  await transporter.sendMail({
+  await sendTrackedEmail(transporter, 'CONTACT', to, {
     from: FROM_EMAIL,
     to,
     replyTo: email,
@@ -138,7 +159,7 @@ export async function sendWelcomeEmail({ to, name }: WelcomeEmailInput) {
     'Manage jobs, bids, and conversations in one place',
   ];
 
-  await transporter.sendMail({
+  await sendTrackedEmail(transporter, 'WELCOME', to, {
     from: FROM_EMAIL,
     to,
     replyTo: process.env.SUPPORT_EMAIL || 'support@fixmyhome.pro',
@@ -183,7 +204,7 @@ export async function sendNewUserNotification({ id, name, email, role, createdAt
   const registeredAt = createdAt.toLocaleString('en-US', { timeZone: 'America/New_York' });
   const adminUrl = APP_URL.replace(/\/$/, '') + '/admin?user=' + encodeURIComponent(id);
 
-  await transporter.sendMail({
+  await sendTrackedEmail(transporter, 'NEW_USER_ADMIN', to, {
     from: FROM_EMAIL,
     to,
     replyTo: email,
@@ -205,5 +226,31 @@ export async function sendNewUserNotification({ id, name, email, role, createdAt
       '<p><strong>Initial role:</strong> ' + escapeHtml(role) + '</p>' +
       '<p><strong>Registered:</strong> ' + escapeHtml(registeredAt) + ' ET</p>' +
       '<p><a href="' + escapeHtml(adminUrl) + '">Review in Admin</a></p>',
+  });
+}
+
+export async function sendEmailVerification({ to, name, token }: { to: string; name: string; token: string }) {
+  const transporter = createTransport();
+  const verifyUrl = APP_URL.replace(/\/$/, '') + '/api/auth/verify-email?token=' + encodeURIComponent(token);
+  const subject = 'Verify your FixMyHome.pro email';
+  await sendTrackedEmail(transporter, 'EMAIL_VERIFICATION', to, {
+    from: FROM_EMAIL,
+    to,
+    replyTo: process.env.SUPPORT_EMAIL || 'support@fixmyhome.pro',
+    subject,
+    text: 'Hi ' + name + ',\n\nVerify your email to activate your FixMyHome.pro account:\n' + verifyUrl + '\n\nThis link expires in 24 hours.',
+    html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:28px;color:#172033"><img src="' + APP_URL.replace(/\/$/, '') + '/fixmyhome-logo-dark.png" width="96" alt="FixMyHome.pro"><h1>Verify your email</h1><p>Hi ' + escapeHtml(name) + ',</p><p>Confirm your email address to activate your account and keep the marketplace secure.</p><p><a href="' + escapeHtml(verifyUrl) + '" style="display:inline-block;background:#0f766e;color:white;padding:13px 20px;text-decoration:none;border-radius:6px;font-weight:bold">Verify Email Address</a></p><p style="color:#64748b;font-size:13px">This link expires in 24 hours. If you did not create this account, you can ignore this message.</p></div>',
+  });
+}
+
+export async function sendMarketplaceEmail(input: { to: string; name: string; category: string; subject: string; title: string; body: string; actionText: string; actionPath: string }) {
+  const transporter = createTransport();
+  const actionUrl = APP_URL.replace(/\/$/, '') + input.actionPath;
+  await sendTrackedEmail(transporter, input.category, input.to, {
+    from: FROM_EMAIL,
+    to: input.to,
+    subject: input.subject,
+    text: 'Hi ' + input.name + ',\n\n' + input.body + '\n\n' + actionUrl,
+    html: '<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:28px;color:#172033"><img src="' + APP_URL.replace(/\/$/, '') + '/fixmyhome-logo-dark.png" width="84" alt="FixMyHome.pro"><h1>' + escapeHtml(input.title) + '</h1><p>Hi ' + escapeHtml(input.name) + ',</p><p style="line-height:1.6">' + escapeHtml(input.body) + '</p><p><a href="' + escapeHtml(actionUrl) + '" style="display:inline-block;background:#0f766e;color:white;padding:12px 18px;text-decoration:none;border-radius:6px;font-weight:bold">' + escapeHtml(input.actionText) + '</a></p></div>',
   });
 }

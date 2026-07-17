@@ -30,6 +30,7 @@ type PublicProfile = {
   name: string;
   email: string;
   photoUrl: string | null;
+  emailVerified: boolean;
   handymanProfile: {
     id: string;
     businessName: string | null;
@@ -178,6 +179,7 @@ export default function HandymanProfilePage({ params }: { params: Promise<{ user
                   <Badge variant={hp.verificationStatus === 'VERIFIED' ? 'default' : 'outline'} className="mt-2 text-xs">
                     {verificationBadge[hp.verificationStatus] || 'Unverified'}
                   </Badge>
+                  {profile.emailVerified && <Badge variant="outline" className="mt-2 gap-1 text-xs"><CheckCircle className="size-3 text-emerald-500" /> Email verified</Badge>}
                   {isOwnProfile && (
                     <Badge variant="outline" className="mt-2 text-xs">Your Profile</Badge>
                   )}

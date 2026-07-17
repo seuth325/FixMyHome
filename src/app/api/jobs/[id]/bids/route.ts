@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { createBidSchema } from '@/lib/validations/bid';
+import { sendMarketplaceEmail } from '@/lib/email';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -19,6 +21,9 @@ function errorMessage(error: unknown) {
 
 // POST /api/jobs/[id]/bids - handyman submits or updates a bid
 export async function POST(request: Request, { params }: Params) {
+  const rateLimit = checkRateLimit(request, 'submit-bid', 20, 60 * 60 * 1000);
+  if (!rateLimit.allowed) return NextResponse.json({ error: 'Too many bid attempts. Please try again later.' }, { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfter) } });
+
   const contentType = request.headers.get('content-type') ?? '';
   const isFormPost = contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data');
   const { id: jobId } = await params;
@@ -49,7 +54,7 @@ export async function POST(request: Request, { params }: Params) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
-    const job = await db.job.findUnique({ where: { id: jobId } });
+    const job = await db.job.findUnique({ where: { id: jobId }, include: { homeowner: { select: { name: true, email: true, emailOptOut: true } } } });
     if (!job) {
       if (isFormPost) return formRedirect(request, jobId, { error: 'Job not found.' });
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -94,6 +99,14 @@ export async function POST(request: Request, { params }: Params) {
           linkPath: `/jobs/${jobId}`,
         },
       });
+      if (!job.homeowner.emailOptOut) {
+        await sendMarketplaceEmail({
+          to: job.homeowner.email, name: job.homeowner.name, category: 'NEW_BID',
+          subject: 'New bid received on ' + job.title, title: 'You received a new bid',
+          body: user.name + ' submitted a $' + parsed.data.amount + ' bid on "' + job.title + '".',
+          actionText: 'Review Bid', actionPath: '/jobs/' + jobId,
+        }).catch((error) => console.error('New bid email failed', error));
+      }
     }
 
     if (isFormPost) return formRedirect(request, jobId, { submitted: '1' });
