@@ -17,6 +17,13 @@ type ContactEmailInput = {
   reason: string;
   message: string;
 };
+type NewUserEmailInput = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: Date;
+};
 
 function createTransport() {
   const host = process.env.SMTP_HOST || process.env.EMAIL_SERVER_HOST;
@@ -108,5 +115,35 @@ export async function sendContactEmail({ name, email, role, reason, message }: C
     subject,
     text,
     html,
+  });
+}
+export async function sendNewUserNotification({ id, name, email, role, createdAt }: NewUserEmailInput) {
+  const transporter = createTransport();
+  const to = process.env.NEW_USER_NOTIFICATION_TO || process.env.SUPPORT_EMAIL || 'support@fixmyhome.pro';
+  const registeredAt = createdAt.toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const adminUrl = APP_URL.replace(/\/$/, '') + '/admin?user=' + encodeURIComponent(id);
+
+  await transporter.sendMail({
+    from: FROM_EMAIL,
+    to,
+    replyTo: email,
+    subject: 'New FixMyHome.pro user: ' + name,
+    text: [
+      'A new user registered on FixMyHome.pro.',
+      '',
+      'Name: ' + name,
+      'Email: ' + email,
+      'Initial role: ' + role,
+      'Registered: ' + registeredAt + ' ET',
+      'User ID: ' + id,
+      '',
+      'Review users: ' + adminUrl,
+    ].join('\n'),
+    html: '<h1>New FixMyHome.pro User</h1>' +
+      '<p><strong>Name:</strong> ' + escapeHtml(name) + '</p>' +
+      '<p><strong>Email:</strong> ' + escapeHtml(email) + '</p>' +
+      '<p><strong>Initial role:</strong> ' + escapeHtml(role) + '</p>' +
+      '<p><strong>Registered:</strong> ' + escapeHtml(registeredAt) + ' ET</p>' +
+      '<p><a href="' + escapeHtml(adminUrl) + '">Review in Admin</a></p>',
   });
 }
