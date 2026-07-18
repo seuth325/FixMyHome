@@ -70,6 +70,7 @@ model HandymanLead {
   phone          String?
   email          String?
   website        String?
+  services       String?  @db.Text
   sourceRating   Decimal?
   outreachSent   Boolean  @default(false)
   status         String   @default("PROSPECT")

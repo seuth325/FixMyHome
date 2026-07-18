@@ -565,12 +565,13 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
 
         <AdminDropdown title="Handyman Prospects" description="Unclaimed business leads imported for outreach. These are not registered user accounts." count={handymanLeads.length}>
           <CardContent className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-sm">
-              <thead className="border-b text-left text-muted-foreground"><tr><th className="py-3 pr-4 font-medium">Business</th><th className="py-3 pr-4 font-medium">Contact</th><th className="py-3 pr-4 font-medium">Website</th><th className="py-3 pr-4 font-medium">Source rating</th><th className="py-3 font-medium">Outreach</th></tr></thead>
+            <table className="w-full min-w-[1180px] text-sm">
+              <thead className="border-b text-left text-muted-foreground"><tr><th className="py-3 pr-4 font-medium">Business</th><th className="py-3 pr-4 font-medium">Services</th><th className="py-3 pr-4 font-medium">Contact</th><th className="py-3 pr-4 font-medium">Website</th><th className="py-3 pr-4 font-medium">Source rating</th><th className="py-3 font-medium">Outreach</th></tr></thead>
               <tbody className="divide-y">
                 {handymanLeads.map((lead) => (
                   <tr key={lead.id} className="align-top">
                     <td className="py-4 pr-4"><div className="font-medium">{lead.businessName}</div><div className="max-w-xs text-xs text-muted-foreground">{lead.address || 'Address unavailable'}</div></td>
+                    <td className="max-w-sm py-4 pr-4"><div className="flex flex-wrap gap-1.5">{lead.services ? lead.services.split(',').map((service) => <span key={service} className="rounded border bg-muted px-2 py-1 text-xs">{service.trim()}</span>) : <span className="text-muted-foreground">Not classified</span>}</div></td>
                     <td className="py-4 pr-4"><div>{lead.phone || 'No phone'}</div>{lead.email && <a className="text-xs text-primary hover:underline" href={`mailto:${lead.email}`}>{lead.email}</a>}</td>
                     <td className="py-4 pr-4">{lead.website ? <a className="text-primary hover:underline" href={`https://${lead.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer">Visit site</a> : <span className="text-muted-foreground">None</span>}</td>
                     <td className="py-4 pr-4">{lead.sourceRating ? `${Number(lead.sourceRating).toFixed(1)} external` : 'Not provided'}<div className="text-xs text-muted-foreground">Not a FixMyHome review</div></td>
