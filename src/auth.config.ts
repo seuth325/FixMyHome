@@ -16,9 +16,11 @@ const PUBLIC_ROUTES = [
   /^\/for-pros(\/.*)?$/,
   /^\/security(\/.*)?$/,
   /^\/privacy(\/.*)?$/,
+  /^\/seminole(\/.*)?$/,
   /^\/api\/auth(\/.*)?$/, // NextAuth's own handlers + our /api/auth/register
   /^\/api\/health$/,
   /^\/api\/contact$/,
+  /^\/api\/campaign\/events$/,
 ];
 
 export const authConfig = {
