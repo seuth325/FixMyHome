@@ -49,3 +49,6 @@ next-env.d.ts
 
 # local export artifacts
 /fixmyhome.zip
+
+# Imported third-party prospect data stays out of source control
+data/pinellas-electricians.json

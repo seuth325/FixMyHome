@@ -246,6 +246,15 @@ async function updateReportStatus(formData: FormData) {
 }
 
 
+async function updateHandymanLeadStatus(formData: FormData) {
+  'use server';
+  await requireAdmin();
+  const id = String(formData.get('id') || '');
+  const status = String(formData.get('status') || 'PROSPECT');
+  if (!id || !['PROSPECT', 'CONTACTED', 'INTERESTED', 'CLAIMED', 'DECLINED'].includes(status)) return;
+  await db.handymanLead.update({ where: { id }, data: { status, outreachSent: status !== 'PROSPECT' } });
+  revalidatePath('/admin');
+}
 async function updateContactSubmissionStatus(formData: FormData) {
   'use server';
 
@@ -469,6 +478,11 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
     orderBy: { createdAt: 'desc' },
     take: 50,
   });
+  const handymanLeads = await db.handymanLead.findMany({
+    where: q ? { OR: [{ businessName: { contains: q } }, { email: { contains: q } }, { phone: { contains: q } }, { address: { contains: q } }] } : undefined,
+    orderBy: [{ status: 'asc' }, { businessName: 'asc' }],
+    take: 200,
+  });
   const [userCount, jobCount, bidCount, messageCount, reviewCount, unreadNotifications, activeResets, newContactRequests, budgetTotal] = counts;
   const stats = [
     { label: 'Users', value: userCount, detail: 'Registered accounts', icon: Users },
@@ -479,6 +493,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
     { label: 'Unread Alerts', value: unreadNotifications, detail: 'Open notifications', icon: Activity },
     { label: 'Reset Links', value: activeResets, detail: 'Active password resets', icon: KeyRound },
     { label: 'Contact', value: newContactRequests, detail: 'New contact requests', icon: Mail },
+    { label: 'Prospects', value: handymanLeads.length, detail: 'Imported handyman leads', icon: Briefcase },
   ];
 
   return (
@@ -503,7 +518,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
           <p className="text-muted-foreground mt-2">Search, moderate, and maintain marketplace activity from one place.</p>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
           {stats.map(({ label, value, detail, icon: Icon }) => (
             <Card key={label}>
               <CardHeader className="pb-2">
@@ -548,6 +563,31 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
           </CardContent>
         </Card>
 
+        <AdminDropdown title="Handyman Prospects" description="Unclaimed business leads imported for outreach. These are not registered user accounts." count={handymanLeads.length}>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full min-w-[980px] text-sm">
+              <thead className="border-b text-left text-muted-foreground"><tr><th className="py-3 pr-4 font-medium">Business</th><th className="py-3 pr-4 font-medium">Contact</th><th className="py-3 pr-4 font-medium">Website</th><th className="py-3 pr-4 font-medium">Source rating</th><th className="py-3 font-medium">Outreach</th></tr></thead>
+              <tbody className="divide-y">
+                {handymanLeads.map((lead) => (
+                  <tr key={lead.id} className="align-top">
+                    <td className="py-4 pr-4"><div className="font-medium">{lead.businessName}</div><div className="max-w-xs text-xs text-muted-foreground">{lead.address || 'Address unavailable'}</div></td>
+                    <td className="py-4 pr-4"><div>{lead.phone || 'No phone'}</div>{lead.email && <a className="text-xs text-primary hover:underline" href={`mailto:${lead.email}`}>{lead.email}</a>}</td>
+                    <td className="py-4 pr-4">{lead.website ? <a className="text-primary hover:underline" href={`https://${lead.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer">Visit site</a> : <span className="text-muted-foreground">None</span>}</td>
+                    <td className="py-4 pr-4">{lead.sourceRating ? `${Number(lead.sourceRating).toFixed(1)} external` : 'Not provided'}<div className="text-xs text-muted-foreground">Not a FixMyHome review</div></td>
+                    <td className="py-4">
+                      <form action={updateHandymanLeadStatus} className="flex gap-2">
+                        <input type="hidden" name="id" value={lead.id} />
+                        <select name="status" defaultValue={lead.status} className="h-9 rounded-md border bg-background px-2 text-sm"><option value="PROSPECT">Prospect</option><option value="CONTACTED">Contacted</option><option value="INTERESTED">Interested</option><option value="CLAIMED">Claimed</option><option value="DECLINED">Declined</option></select>
+                        <Button type="submit" size="sm" variant="outline">Update</Button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {handymanLeads.length === 0 && <p className="py-4 text-sm text-muted-foreground">No handyman prospects found.</p>}
+          </CardContent>
+        </AdminDropdown>
         <AdminDropdown title="User Management" description="Change roles, suspend availability, and inspect account activity." count={users.length} defaultOpen>
           <CardContent className="overflow-x-auto">
             <table className="w-full min-w-[920px] text-sm">

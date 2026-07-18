@@ -61,6 +61,27 @@ model HandymanProfile {
   updatedAt     DateTime @updatedAt
 }
 
+model HandymanLead {
+  id             String   @id @default(cuid())
+  sourceKey      String   @unique
+  businessName   String
+  address        String?
+  location       String?
+  phone          String?
+  email          String?
+  website        String?
+  sourceRating   Decimal?
+  outreachSent   Boolean  @default(false)
+  status         String   @default("PROSPECT")
+  source         String
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@index([location])
+  @@index([businessName])
+}
 model Job {
   id            String     @id @default(cuid())
   homeownerId   String
