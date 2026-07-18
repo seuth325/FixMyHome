@@ -4,6 +4,8 @@ export const registerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  campaignSource: z.string().max(80).optional(),
+  referralCode: z.string().max(64).optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -33,6 +35,8 @@ export const resetPasswordSchema = z
   .object({
     token: z.string().min(1, 'Reset token is required'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
+  campaignSource: z.string().max(80).optional(),
+  referralCode: z.string().max(64).optional(),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

@@ -21,6 +21,8 @@ model User {
   isAvailable     Boolean           @default(true)
   emailOptOut     Boolean           @default(false)
   emailVerifiedAt DateTime?
+  campaignSource String?
+  referralCode   String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -93,6 +95,8 @@ model Job {
   location      String
   budget        Decimal
   preferredDate DateTime?
+  campaignSource String?
+  referralCode   String?
   status        JobStatus  @default(OPEN)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -282,4 +286,22 @@ model EmailDelivery {
   @@index([recipient])
   @@index([status])
   @@index([createdAt])
+}
+model CampaignEvent {
+  id           String   @id @default(cuid())
+  sessionId    String
+  eventName    String
+  campaign     String?
+  referralCode String?
+  path         String?
+  zipCode      String?
+  userId       String?
+  jobId        String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([eventName, createdAt])
+  @@index([campaign])
+  @@index([referralCode])
 }

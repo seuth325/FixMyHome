@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, campaignSource, referralCode } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, role: 'HOMEOWNER' },
+    data: { name, email, passwordHash, role: 'HOMEOWNER', campaignSource: campaignSource || null, referralCode: referralCode || null },
   });
 
   const verificationToken = createEmailVerificationToken();

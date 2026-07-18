@@ -32,7 +32,13 @@ export default function SignUpPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: data.name, email: data.email, password: data.password }),
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          campaignSource: new URLSearchParams(window.location.search).get('campaign') || undefined,
+          referralCode: new URLSearchParams(window.location.search).get('ref') || undefined,
+        }),
       });
 
       if (res.status === 409) {

@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { photoUrls = [], ...jobData } = body;
+    const { photoUrls = [] } = body;
 
     const job = await db.job.create({
       data: {
@@ -59,6 +59,8 @@ export async function POST(request: Request) {
         location: parsed.data.location,
         budget: parsed.data.budget,
         preferredDate: parsed.data.preferredDate ?? null,
+        campaignSource: typeof body.campaignSource === 'string' ? body.campaignSource.slice(0, 80) : null,
+        referralCode: typeof body.referralCode === 'string' ? body.referralCode.slice(0, 64) : null,
         homeownerId: user.id,
         photos: {
           create: (photoUrls as string[]).map((url: string) => ({ url })),
