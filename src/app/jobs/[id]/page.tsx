@@ -30,6 +30,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ReportButton } from '@/components/safety/report-button';
+import { InviteHandymenDialog } from '@/components/jobs/invite-handymen-dialog';
 
 type JobDetail = {
   id: string;
@@ -83,6 +84,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const updateStatus = useUpdateJobStatus();
 
   const isHandyman = currentUser?.role === 'HANDYMAN';
+  const isOwner = currentUser?.id === job?.homeowner.id;
   const isLoading = !userLoaded || jobPending;
 
   const handleAcceptBid = async (bidId: string, handymanName: string) => {
@@ -501,6 +503,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               </CardHeader>
               <CardContent className="space-y-3">
                 {currentUser && <ReportButton targetType="JOB" targetId={id} label="Report Job" />}
+                {isOwner && (job.status === 'OPEN' || job.status === 'IN_REVIEW') && (
+                  <InviteHandymenDialog jobId={id} jobTitle={job.title} />
+                )}
                 {!isHandyman && (
                   <>
                     {(job.status === 'OPEN' || job.status === 'IN_REVIEW') && (

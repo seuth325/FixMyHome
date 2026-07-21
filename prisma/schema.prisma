@@ -33,6 +33,7 @@ model User {
   reviewsGiven    Review[]          @relation("ReviewsGiven")
   reviewsReceived Review[]          @relation("ReviewsReceived")
   notifications   Notification[]
+  jobInvitations  JobInvitation[] @relation("HandymanInvitations")
   passwordResetTokens PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
   reportsFiled    Report[]
@@ -107,6 +108,7 @@ model Job {
   bids          Bid[]
   messages      Message[]
   reviews       Review[]
+  invitations   JobInvitation[]
 
   @@index([homeownerId])
   @@index([status])
@@ -160,6 +162,20 @@ enum BidStatus {
   WITHDRAWN
 }
 
+model JobInvitation {
+  id           String   @id @default(cuid())
+  jobId        String
+  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  handymanId   String
+  handyman     User     @relation("HandymanInvitations", fields: [handymanId], references: [id], onDelete: Cascade)
+  message      String?  @db.Text
+  respondedAt  DateTime?
+  createdAt    DateTime @default(now())
+
+  @@unique([jobId, handymanId])
+  @@index([handymanId, createdAt])
+  @@index([jobId])
+}
 model Message {
   id        String   @id @default(cuid())
   jobId     String
@@ -207,6 +223,7 @@ model Notification {
 }
 
 enum NotificationType {
+  BID_INVITATION
   NEW_BID
   BID_ACCEPTED
   BID_DECLINED

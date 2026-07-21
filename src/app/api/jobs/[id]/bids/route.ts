@@ -89,6 +89,11 @@ export async function POST(request: Request, { params }: Params) {
       await db.job.update({ where: { id: jobId }, data: { status: 'IN_REVIEW' } });
     }
 
+    await db.jobInvitation.updateMany({
+      where: { jobId, handymanId: user.id, respondedAt: null },
+      data: { respondedAt: new Date() },
+    });
+
     if (!existing) {
       await db.notification.create({
         data: {

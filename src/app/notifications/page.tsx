@@ -15,7 +15,7 @@ import { ArrowLeft, ExternalLink, Search, Star, Wrench, Droplets, Wind, Paintbru
   MessageSquare, CheckCircle, XCircle, Trophy, ClipboardCheck, Send, Loader2 } from 'lucide-react';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 
-type NotificationType = 'NEW_BID' | 'BID_ACCEPTED' | 'BID_DECLINED' | 'JOB_COMPLETED' | 'NEW_MESSAGE' | 'JOB_STATUS';
+type NotificationType = 'BID_INVITATION' | 'NEW_BID' | 'BID_ACCEPTED' | 'BID_DECLINED' | 'JOB_COMPLETED' | 'NEW_MESSAGE' | 'JOB_STATUS';
 
 type AppNotification = {
   id: string;
@@ -65,6 +65,7 @@ const TOP_TEN_CATEGORIES = [
 
 function notifIcon(type: NotificationType) {
   switch (type) {
+    case 'BID_INVITATION': return <Send className="w-4 h-4" />;
     case 'NEW_BID':       return <DollarSign className="w-4 h-4" />;
     case 'BID_ACCEPTED':  return <Trophy className="w-4 h-4" />;
     case 'BID_DECLINED':  return <XCircle className="w-4 h-4" />;
@@ -76,6 +77,7 @@ function notifIcon(type: NotificationType) {
 
 function notifIconBg(type: NotificationType): string {
   switch (type) {
+    case 'BID_INVITATION': return 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300';
     case 'NEW_BID':       return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300';
     case 'BID_ACCEPTED':  return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
     case 'BID_DECLINED':  return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
