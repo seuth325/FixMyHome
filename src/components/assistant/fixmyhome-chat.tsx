@@ -36,7 +36,14 @@ export function FixMyHomeChat() {
       if (saved) {
         const state = JSON.parse(saved) as { open?: boolean; messages?: Message[] };
         setOpen(Boolean(state.open));
-        if (Array.isArray(state.messages)) setMessages(state.messages.slice(-20));
+        if (Array.isArray(state.messages)) {
+          const validMessages = state.messages.filter((message): message is Message =>
+            Boolean(message) &&
+            (message.role === 'user' || message.role === 'assistant') &&
+            typeof message.content === 'string',
+          );
+          setMessages(validMessages.slice(-20));
+        }
       }
     } catch {
       sessionStorage.removeItem(CHAT_STORAGE_KEY);
@@ -48,7 +55,11 @@ export function FixMyHomeChat() {
 
   useEffect(() => {
     if (!restored) return;
-    sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ open, messages: messages.slice(-20) }));
+    try {
+      sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ open, messages: messages.slice(-20) }));
+    } catch {
+      // Storage can be unavailable or full; the assistant must keep working in memory.
+    }
   }, [messages, open, restored]);
 
   useEffect(() => end.current?.scrollIntoView({ behavior: 'smooth' }), [messages, busy]);
@@ -62,7 +73,12 @@ export function FixMyHomeChat() {
     try {
       const response = await fetch('/api/assistant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: question, pagePath: path, conversation: history }) });
       const body = await response.json().catch(() => null);
-      setMessages((old) => [...old, { role: 'assistant', content: response.ok ? body.answer : body?.error || 'I could not answer right now.' }]);
+      const answer = response.ok && typeof body?.answer === 'string'
+        ? body.answer
+        : typeof body?.error === 'string'
+          ? body.error
+          : 'I could not answer right now.';
+      setMessages((old) => [...old, { role: 'assistant', content: answer }]);
     } catch { setMessages((old) => [...old, { role: 'assistant', content: 'I could not connect. Please try again or contact support.' }]); }
     finally { setBusy(false); }
   }
