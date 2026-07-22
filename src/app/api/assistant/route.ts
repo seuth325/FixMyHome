@@ -41,7 +41,11 @@ export async function POST(request: Request) {
     });
     const payload = await response.json().catch(() => null);
     const answer = outputText(payload);
-    if (!response.ok || !answer) return NextResponse.json({ error: 'I could not answer right now. Please try again or contact support.' }, { status: 502 });
+    if (!response.ok || !answer) {
+      const apiError = payload && typeof payload === 'object' && 'error' in payload ? (payload as { error?: { code?: string } }).error?.code : undefined;
+      console.error('Assistant API response failed:', response.status, apiError || 'empty_output');
+      return NextResponse.json({ error: 'I could not answer right now. Please try again or contact support.' }, { status: 502 });
+    }
     return NextResponse.json({ answer });
   } catch (error) {
     console.error('Assistant request failed:', error);
