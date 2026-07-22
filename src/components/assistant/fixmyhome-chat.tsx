@@ -66,7 +66,9 @@ export function FixMyHomeChat() {
     }
   }, [messages, open, restored]);
 
-  useEffect(() => end.current?.scrollIntoView({ behavior: 'smooth' }), [messages, busy]);
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, busy]);
   if (!mounted || path.startsWith('/admin')) return null;
 
   async function ask(value: string) {
