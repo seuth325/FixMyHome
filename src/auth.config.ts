@@ -20,6 +20,7 @@ const PUBLIC_ROUTES = [
   /^\/api\/auth(\/.*)?$/, // NextAuth's own handlers + our /api/auth/register
   /^\/api\/health$/,
   /^\/api\/contact$/,
+  /^\/api\/assistant$/,
   /^\/api\/campaign\/events$/,
 ];
 
