@@ -46,7 +46,11 @@ export function FixMyHomeChat() {
         }
       }
     } catch {
-      sessionStorage.removeItem(CHAT_STORAGE_KEY);
+      try {
+        sessionStorage.removeItem(CHAT_STORAGE_KEY);
+      } catch {
+        // Storage can be disabled entirely; continue with in-memory state.
+      }
     } finally {
       setRestored(true);
       setMounted(true);
