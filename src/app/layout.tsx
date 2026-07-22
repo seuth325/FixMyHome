@@ -5,6 +5,7 @@ import { AuthSessionProvider } from "@/lib/session-provider";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ReactQueryProvider } from "@/lib/query-client";
+import { FixMyHomeChat } from "@/components/assistant/fixmyhome-chat";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
           <ThemeProvider>
             <ReactQueryProvider>
               {children}
+              <FixMyHomeChat />
               <Toaster />
             </ReactQueryProvider>
           </ThemeProvider>
