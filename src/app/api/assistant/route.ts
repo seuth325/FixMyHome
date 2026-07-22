@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: process.env.OPENAI_CHAT_MODEL || 'gpt-5-mini', instructions, input: [...parsed.data.conversation, { role: 'user', content: parsed.data.message }], max_output_tokens: 350, store: false }),
+      body: JSON.stringify({ model: process.env.OPENAI_CHAT_MODEL || 'gpt-5-mini', instructions, input: [...parsed.data.conversation, { role: 'user', content: parsed.data.message }], max_output_tokens: 800, store: false }),
     });
     const payload = await response.json().catch(() => null);
     const answer = outputText(payload);
