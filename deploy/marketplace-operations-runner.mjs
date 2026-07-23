@@ -1,0 +1,23 @@
+import fs from "node:fs";
+import { createRequire } from "node:module";
+
+const live = "/home/u853098024/domains/fixmyhome.pro/public_html";
+const envFile = `${live}/.builds/config/.env`;
+
+for (const line of fs.readFileSync(envFile, "utf8").split(/\r?\n/)) {
+  if (!line || line.trim().startsWith("#")) continue;
+  const index = line.indexOf("=");
+  if (index === -1) continue;
+  const key = line.slice(0, index).trim();
+  let value = line.slice(index + 1).trim();
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
+  if (key) process.env[key] = value;
+}
+
+process.chdir(`${live}/.next/standalone`);
+const require = createRequire(`${live}/.next/standalone/server.js`);
+const route = require(`${live}/.next/standalone/.next/server/app/api/cron/marketplace-operations/route.js`);
+const response = await route.routeModule.userland.GET(new Request("http://localhost/api/cron/marketplace-operations", { headers: { authorization: `Bearer ${process.env.CRON_SECRET}` } }));
+const body = await response.text();
+console.log(body);
+process.exit(response.ok ? 0 : 1);
