@@ -520,7 +520,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
           <p className="text-muted-foreground mt-2">Search, moderate, and maintain marketplace activity from one place.</p>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
           {stats.map(({ label, value, detail, icon: Icon }) => (
             <Card key={label}>
               <CardHeader className="pb-2">

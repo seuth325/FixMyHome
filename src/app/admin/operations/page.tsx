@@ -107,7 +107,7 @@ export default async function MarketplaceOperationsPage() {
           <form action={runNow}><Button className="gap-2"><RefreshCw className="size-4" />Run now</Button></form>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
           <Card><CardHeader className="pb-2"><CardDescription>Agent</CardDescription><CardTitle className="flex items-center gap-2 text-xl">{settings.enabled ? <PlayCircle className="size-5 text-green-600" /> : <PauseCircle className="size-5 text-amber-600" />}{settings.enabled ? 'Enabled' : 'Paused'}</CardTitle></CardHeader></Card>
           <Card><CardHeader className="pb-2"><CardDescription>Open signals</CardDescription><CardTitle>{count.OPEN || 0}</CardTitle></CardHeader></Card>
           <Card><CardHeader className="pb-2"><CardDescription>Open jobs</CardDescription><CardTitle>{snapshot.openJobs}</CardTitle></CardHeader></Card>
@@ -116,7 +116,7 @@ export default async function MarketplaceOperationsPage() {
           <Card><CardHeader className="pb-2"><CardDescription>Completed (30d)</CardDescription><CardTitle>{snapshot.completedJobs30d}</CardTitle></CardHeader></Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
           <Card><CardHeader><CardDescription>Bids (30d)</CardDescription><CardTitle>{snapshot.bids30d}</CardTitle></CardHeader></Card>
           <Card><CardHeader><CardDescription>New homeowners (30d)</CardDescription><CardTitle>{snapshot.homeowners30d}</CardTitle></CardHeader></Card>
           <Card><CardHeader><CardDescription>New handymen (30d)</CardDescription><CardTitle>{snapshot.handymen30d}</CardTitle></CardHeader></Card>
