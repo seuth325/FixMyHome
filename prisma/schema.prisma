@@ -10,33 +10,33 @@ datasource db {
 }
 
 model User {
-  id              String            @id @default(cuid())
-  email           String            @unique
+  id              String    @id @default(cuid())
+  email           String    @unique
   passwordHash    String
   name            String
-  role            Role              @default(HOMEOWNER)
+  role            Role      @default(HOMEOWNER)
   location        String?
   phone           String?
   photoUrl        String?
-  isAvailable     Boolean           @default(true)
-  emailOptOut     Boolean           @default(false)
+  isAvailable     Boolean   @default(true)
+  emailOptOut     Boolean   @default(false)
   emailVerifiedAt DateTime?
-  campaignSource String?
-  referralCode   String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  campaignSource  String?
+  referralCode    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  handymanProfile HandymanProfile?
-  jobsPosted      Job[]             @relation("JobsPosted")
-  bidsSubmitted   Bid[]
-  messagesSent    Message[]
-  reviewsGiven    Review[]          @relation("ReviewsGiven")
-  reviewsReceived Review[]          @relation("ReviewsReceived")
-  notifications   Notification[]
-  jobInvitations  JobInvitation[] @relation("HandymanInvitations")
-  passwordResetTokens PasswordResetToken[]
+  handymanProfile         HandymanProfile?
+  jobsPosted              Job[]                    @relation("JobsPosted")
+  bidsSubmitted           Bid[]
+  messagesSent            Message[]
+  reviewsGiven            Review[]                 @relation("ReviewsGiven")
+  reviewsReceived         Review[]                 @relation("ReviewsReceived")
+  notifications           Notification[]
+  jobInvitations          JobInvitation[]          @relation("HandymanInvitations")
+  passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
-  reportsFiled    Report[]
+  reportsFiled            Report[]
 }
 
 enum Role {
@@ -46,69 +46,70 @@ enum Role {
 }
 
 model HandymanProfile {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  businessName  String?
-  website       String?
-  licenseNumber String?
-  isInsured     Boolean  @default(false)
-  verificationStatus String @default("UNVERIFIED")
-  skills        Json     @default("[]")
-  bio           String?  @db.Text
-  serviceRadius Int      // miles
-  hourlyRate    Decimal?
-  ratingAvg     Decimal  @default(0)
-  ratingCount   Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName       String?
+  website            String?
+  licenseNumber      String?
+  isInsured          Boolean  @default(false)
+  verificationStatus String   @default("UNVERIFIED")
+  skills             Json     @default("[]")
+  bio                String?  @db.Text
+  serviceRadius      Int // miles
+  hourlyRate         Decimal?
+  ratingAvg          Decimal  @default(0)
+  ratingCount        Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model HandymanLead {
-  id             String   @id @default(cuid())
-  sourceKey      String   @unique
-  businessName   String
-  address        String?
-  location       String?
-  phone          String?
-  email          String?
-  website        String?
-  services       String?  @db.Text
-  sourceRating   Decimal?
-  outreachSent   Boolean  @default(false)
-  status         String   @default("PROSPECT")
-  source         String
-  notes          String?  @db.Text
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id           String   @id @default(cuid())
+  sourceKey    String   @unique
+  businessName String
+  address      String?
+  location     String?
+  phone        String?
+  email        String?
+  website      String?
+  services     String?  @db.Text
+  sourceRating Decimal?
+  outreachSent Boolean  @default(false)
+  status       String   @default("PROSPECT")
+  source       String
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([status])
   @@index([location])
   @@index([businessName])
 }
+
 model Job {
-  id            String     @id @default(cuid())
-  homeownerId   String
-  homeowner     User       @relation("JobsPosted", fields: [homeownerId], references: [id], onDelete: Cascade)
-  title         String
-  description   String     @db.Text
-  category      String
-  location      String
-  budget        Decimal
-  preferredDate DateTime?
+  id             String    @id @default(cuid())
+  homeownerId    String
+  homeowner      User      @relation("JobsPosted", fields: [homeownerId], references: [id], onDelete: Cascade)
+  title          String
+  description    String    @db.Text
+  category       String
+  location       String
+  budget         Decimal
+  preferredDate  DateTime?
   campaignSource String?
   referralCode   String?
-  status        JobStatus  @default(OPEN)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  awardedAt     DateTime?
-  completedAt   DateTime?
+  status         JobStatus @default(OPEN)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  awardedAt      DateTime?
+  completedAt    DateTime?
 
-  photos        JobPhoto[]
-  bids          Bid[]
-  messages      Message[]
-  reviews       Review[]
-  invitations   JobInvitation[]
+  photos      JobPhoto[]
+  bids        Bid[]
+  messages    Message[]
+  reviews     Review[]
+  invitations JobInvitation[]
 
   @@index([homeownerId])
   @@index([status])
@@ -163,19 +164,20 @@ enum BidStatus {
 }
 
 model JobInvitation {
-  id           String   @id @default(cuid())
-  jobId        String
-  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  handymanId   String
-  handyman     User     @relation("HandymanInvitations", fields: [handymanId], references: [id], onDelete: Cascade)
-  message      String?  @db.Text
-  respondedAt  DateTime?
-  createdAt    DateTime @default(now())
+  id          String    @id @default(cuid())
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  handymanId  String
+  handyman    User      @relation("HandymanInvitations", fields: [handymanId], references: [id], onDelete: Cascade)
+  message     String?   @db.Text
+  respondedAt DateTime?
+  createdAt   DateTime  @default(now())
 
   @@unique([jobId, handymanId])
   @@index([handymanId, createdAt])
   @@index([jobId])
 }
+
 model Message {
   id        String   @id @default(cuid())
   jobId     String
@@ -200,7 +202,7 @@ model Review {
   reviewer   User     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
   handymanId String
   handyman   User     @relation("ReviewsReceived", fields: [handymanId], references: [id], onDelete: Cascade)
-  stars      Int      // 1-5
+  stars      Int // 1-5
   text       String?  @db.Text
   createdAt  DateTime @default(now())
 
@@ -213,7 +215,7 @@ model Notification {
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      NotificationType
   title     String
-  body      String   @db.Text
+  body      String           @db.Text
   linkPath  String
   read      Boolean          @default(false)
   createdAt DateTime         @default(now())
@@ -244,22 +246,24 @@ model PasswordResetToken {
   @@index([userId])
   @@index([expiresAt])
 }
+
 model Report {
-  id          String   @id @default(cuid())
-  reporterId  String
-  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
-  targetType  String
-  targetId    String
-  reason      String
-  details     String?  @db.Text
-  status      String   @default("OPEN")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType String
+  targetId   String
+  reason     String
+  details    String?  @db.Text
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([reporterId])
   @@index([targetType, targetId])
   @@index([status])
 }
+
 model ContactSubmission {
   id        String   @id @default(cuid())
   name      String
@@ -290,20 +294,21 @@ model EmailVerificationToken {
 }
 
 model EmailDelivery {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   category     String
   recipient    String
   subject      String
-  status       String   @default("PENDING")
+  status       String    @default("PENDING")
   providerId   String?
-  errorMessage String?  @db.Text
-  createdAt    DateTime @default(now())
+  errorMessage String?   @db.Text
+  createdAt    DateTime  @default(now())
   sentAt       DateTime?
 
   @@index([recipient])
   @@index([status])
   @@index([createdAt])
 }
+
 model CampaignEvent {
   id           String   @id @default(cuid())
   sessionId    String
@@ -321,4 +326,65 @@ model CampaignEvent {
   @@index([eventName, createdAt])
   @@index([campaign])
   @@index([referralCode])
+}
+
+model SupportCase {
+  id                 String           @id @default(cuid())
+  sourceType         String           @default("CONTACT_SUBMISSION")
+  sourceId           String           @unique
+  senderName         String
+  senderEmail        String
+  audience           String
+  category           String
+  priority           String
+  status             String           @default("NEEDS_REVIEW")
+  subject            String?
+  message            String           @db.Text
+  summary            String           @db.Text
+  desiredOutcome     String?          @db.Text
+  missingInformation String?          @db.Text
+  recommendedAction  String           @db.Text
+  draftSubject       String?
+  draftBody          String           @db.Text
+  internalNote       String           @db.Text
+  confidence         Float?
+  escalated          Boolean          @default(false)
+  processedByRunId   String?
+  processedByRun     SupportAgentRun? @relation(fields: [processedByRunId], references: [id], onDelete: SetNull)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([status, priority])
+  @@index([senderEmail])
+  @@index([createdAt])
+}
+
+model SupportAgentRun {
+  id           String        @id @default(cuid())
+  trigger      String
+  status       String        @default("RUNNING")
+  discovered   Int           @default(0)
+  processed    Int           @default(0)
+  failed       Int           @default(0)
+  inputTokens  Int           @default(0)
+  outputTokens Int           @default(0)
+  errorMessage String?       @db.Text
+  startedAt    DateTime      @default(now())
+  finishedAt   DateTime?
+  cases        SupportCase[]
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model SupportAgentSettings {
+  id            String    @id @default("default")
+  enabled       Boolean   @default(true)
+  timezone      String    @default("America/New_York")
+  firstRunHour  Int       @default(8)
+  secondRunHour Int       @default(16)
+  batchSize     Int       @default(20)
+  model         String    @default("gpt-5-mini")
+  lastRunAt     DateTime?
+  updatedAt     DateTime  @updatedAt
 }
