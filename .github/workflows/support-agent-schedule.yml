@@ -1,4 +1,4 @@
-name: Support Agent Schedule
+name: Operations Agents Schedule
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: support-agent-schedule
+  group: operations-agents-schedule
   cancel-in-progress: false
 
 jobs:
@@ -31,3 +31,12 @@ jobs:
             -o BatchMode=yes \
             u853098024@76.13.72.203 \
             "/opt/alt/alt-nodejs22/root/usr/bin/node /home/u853098024/domains/fixmyhome.pro/public_html/.builds/config/support-agent-cron-runner.mjs"
+
+      - name: Run marketplace operations agent
+        run: |
+          ssh \
+            -i ~/.ssh/fixmyhome_hostinger \
+            -p 65002 \
+            -o BatchMode=yes \
+            u853098024@76.13.72.203 \
+            "/opt/alt/alt-nodejs22/root/usr/bin/node /home/u853098024/domains/fixmyhome.pro/public_html/.builds/config/marketplace-operations-runner.mjs"

@@ -388,3 +388,64 @@ model SupportAgentSettings {
   lastRunAt     DateTime?
   updatedAt     DateTime  @updatedAt
 }
+
+model MarketplaceOpsSignal {
+  id                String             @id @default(cuid())
+  signalKey         String             @unique
+  type              String
+  priority          String
+  status            String             @default("OPEN")
+  subjectType       String
+  subjectId         String?
+  title             String
+  summary           String             @db.Text
+  recommendedAction String             @db.Text
+  evidence          Json
+  metricValue       Float?
+  latestRunId       String?
+  latestRun         MarketplaceOpsRun? @relation(fields: [latestRunId], references: [id], onDelete: SetNull)
+  detectedAt        DateTime           @default(now())
+  lastSeenAt        DateTime           @default(now())
+  resolvedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([status, priority])
+  @@index([type, status])
+  @@index([subjectType, subjectId])
+  @@index([lastSeenAt])
+}
+
+model MarketplaceOpsRun {
+  id           String                 @id @default(cuid())
+  trigger      String
+  status       String                 @default("RUNNING")
+  detected     Int                    @default(0)
+  created      Int                    @default(0)
+  refreshed    Int                    @default(0)
+  autoResolved Int                    @default(0)
+  errorMessage String?                @db.Text
+  snapshot     Json?
+  startedAt    DateTime               @default(now())
+  finishedAt   DateTime?
+  signals      MarketplaceOpsSignal[]
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model MarketplaceOpsSettings {
+  id                   String   @id @default("default")
+  enabled              Boolean  @default(true)
+  timezone             String   @default("America/New_York")
+  runHour              Int      @default(7)
+  noBidHours           Int      @default(24)
+  lowBidHours          Int      @default(48)
+  staleJobHours        Int      @default(168)
+  awardedStaleHours    Int      @default(168)
+  reviewGapHours       Int      @default(72)
+  newHandymanGraceDays Int      @default(14)
+  handymanInactiveDays Int      @default(30)
+  lastRunAt            DateTime?
+  updatedAt            DateTime @updatedAt
+}
