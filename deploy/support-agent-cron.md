@@ -20,11 +20,13 @@ Configure Hostinger Cron Jobs to call the endpoint once per hour. The applicatio
 
 ```bash
 curl --fail --silent --show-error \
-  --header "Authorization: Bearer $CRON_SECRET" \
+  --header "X-Cron-Secret: $CRON_SECRET" \
   https://fixmyhome.pro/api/cron/support-agent
 ```
 
 If the Hostinger cron form cannot expand environment variables, store the secret in Hostinger's protected cron configuration rather than in this repository.
+
+The endpoint also accepts `Authorization: Bearer $CRON_SECRET` on hosts that forward the standard authorization header to Node.js.
 
 ## Admin controls
 
