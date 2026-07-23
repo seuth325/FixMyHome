@@ -1,0 +1,33 @@
+name: Support Agent Schedule
+
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: support-agent-schedule
+  cancel-in-progress: false
+
+jobs:
+  run-support-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Configure deployment key
+        env:
+          HOSTINGER_SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_PRIVATE_KEY" > ~/.ssh/fixmyhome_hostinger
+          chmod 600 ~/.ssh/fixmyhome_hostinger
+          ssh-keyscan -p 65002 76.13.72.203 >> ~/.ssh/known_hosts
+
+      - name: Run scheduled support agent
+        run: |
+          ssh \
+            -i ~/.ssh/fixmyhome_hostinger \
+            -p 65002 \
+            -o BatchMode=yes \
+            u853098024@76.13.72.203 \
+            "/opt/alt/alt-nodejs22/root/usr/bin/node /home/u853098024/domains/fixmyhome.pro/public_html/.builds/config/support-agent-cron-runner.mjs"
