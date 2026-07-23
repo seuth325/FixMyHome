@@ -162,7 +162,7 @@ export default function HomeownerDashboard() {
         </section>
 
         {/* Quick Stats */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
           <Link href="/jobs?status=active">
             <Card className="h-full rounded-lg transition-shadow hover:shadow-md">
               <CardHeader className="pb-3">

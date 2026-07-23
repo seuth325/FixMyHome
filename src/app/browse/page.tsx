@@ -22,6 +22,7 @@ import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { JOB_CATEGORIES } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { MotionCard, StaggerGroup, StaggerItem } from '@/components/ui/motion';
 
 export default function BrowseJobsPage() {
   const { data: allJobs = [], isPending } = useBrowseJobs();
@@ -288,11 +289,11 @@ export default function BrowseJobsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <StaggerGroup className="space-y-4">
                 {filteredJobs.map((job) => {
                   const hasBid = !!job.myBid;
                   return (
-                    <Card key={job.id} className="hover:shadow-md transition-shadow">
+                    <StaggerItem key={job.id}><MotionCard><Card className="h-full transition-shadow duration-300 hover:shadow-md">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
@@ -350,10 +351,10 @@ export default function BrowseJobsPage() {
                           )}
                         </div>
                       </CardContent>
-                    </Card>
+                    </Card></MotionCard></StaggerItem>
                   );
                 })}
-              </div>
+              </StaggerGroup>
             )}
           </div>
         </div>

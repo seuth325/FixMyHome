@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { FadeIn, MotionCard, StaggerGroup, StaggerItem } from '@/components/ui/motion';
 import {
   ArrowRight,
   CheckCircle,
@@ -131,7 +134,7 @@ export default function LandingPageClient() {
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
 
         <div className="flex flex-1 flex-col justify-center py-14 sm:py-20">
-          <div className="mx-auto max-w-3xl text-center">
+          <FadeIn className="mx-auto max-w-3xl text-center">
             <div className="flex justify-center">
               <img src="/fixmyhome-logo-dark.png" alt="FixMyHome.pro" className="h-44 w-44 object-contain drop-shadow-2xl sm:h-56 sm:w-56" />
             </div>
@@ -152,19 +155,19 @@ export default function LandingPageClient() {
                 <Link href="/sign-in">Sign In</Link>
               </Button>
             </div>
-          </div>
+          </FadeIn>
 
-          <div className="mx-auto mt-14 grid w-full max-w-4xl gap-3 sm:grid-cols-3">
+          <StaggerGroup className="mx-auto mt-14 grid w-full max-w-4xl gap-3 sm:grid-cols-3">
             {reviewStats.map((stat) => (
-              <div key={stat.label} className="rounded-lg border border-white/8 bg-white/5 px-5 py-4 text-center">
+              <StaggerItem key={stat.label}><MotionCard><div className="rounded-lg border border-white/8 bg-white/5 px-5 py-4 text-center">
                 <div className="text-2xl font-bold text-white">{stat.value}</div>
                 <div className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-400">{stat.label}</div>
-              </div>
+              </div></MotionCard></StaggerItem>
             ))}
-          </div>
+          </StaggerGroup>
 
-          <div className="mx-auto mt-16 grid w-full max-w-5xl gap-6 md:grid-cols-2">
-            <article className="rounded-lg border border-white/5 bg-slate-900/55 backdrop-blur-md p-7 shadow-xl shadow-black/10">
+          <StaggerGroup className="mx-auto mt-16 grid w-full max-w-5xl gap-6 md:grid-cols-2">
+            <StaggerItem><MotionCard><article className="h-full rounded-lg border border-white/5 bg-slate-900/55 backdrop-blur-md p-7 shadow-xl shadow-black/10">
               <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-blue-600 text-white">
                 <Home className="size-6" />
               </div>
@@ -177,9 +180,9 @@ export default function LandingPageClient() {
                   </li>
                 ))}
               </ul>
-            </article>
+            </article></MotionCard></StaggerItem>
 
-            <article className="rounded-lg border border-white/5 bg-slate-900/55 backdrop-blur-md p-7 shadow-xl shadow-black/10">
+            <StaggerItem><MotionCard><article className="h-full rounded-lg border border-white/5 bg-slate-900/55 backdrop-blur-md p-7 shadow-xl shadow-black/10">
               <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-emerald-600 text-white">
                 <Wrench className="size-6" />
               </div>
@@ -192,8 +195,8 @@ export default function LandingPageClient() {
                   </li>
                 ))}
               </ul>
-            </article>
-          </div>
+            </article></MotionCard></StaggerItem>
+          </StaggerGroup>
 
 
           <section className="mx-auto mt-16 w-full max-w-6xl">
