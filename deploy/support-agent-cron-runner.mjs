@@ -1,7 +1,9 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 
-const envFile =
-  "/home/u853098024/domains/fixmyhome.pro/public_html/.builds/config/.env";
+const live =
+  "/home/u853098024/domains/fixmyhome.pro/public_html";
+const envFile = `${live}/.builds/config/.env`;
 
 for (const line of fs.readFileSync(envFile, "utf8").split(/\r?\n/)) {
   if (!line || line.trim().startsWith("#")) continue;
@@ -18,15 +20,20 @@ for (const line of fs.readFileSync(envFile, "utf8").split(/\r?\n/)) {
   if (key) process.env[key] = value;
 }
 
-const response = await fetch("https://fixmyhome.pro/api/cron/support-agent", {
-  headers: {
-    authorization: `Bearer ${process.env.CRON_SECRET}`,
-  },
-});
+process.chdir(`${live}/.next/standalone`);
+const require = createRequire(`${live}/.next/standalone/server.js`);
+const route = require(
+  `${live}/.next/standalone/.next/server/app/api/cron/support-agent/route.js`,
+);
+
+const response = await route.routeModule.userland.GET(
+  new Request("http://localhost/api/cron/support-agent", {
+    headers: {
+      authorization: `Bearer ${process.env.CRON_SECRET}`,
+    },
+  }),
+);
 
 const body = await response.text();
 console.log(body);
-
-if (!response.ok) {
-  process.exitCode = 1;
-}
+process.exit(response.ok ? 0 : 1);
