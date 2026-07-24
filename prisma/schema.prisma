@@ -709,3 +709,83 @@ model ActivationDailySnapshot {
 
   @@index([createdAt])
 }
+
+model TrustSafetyRun {
+  id             String            @id @default(cuid())
+  trigger        String
+  status         String            @default("RUNNING")
+  recordsScanned Int               @default(0)
+  risksDetected  Int               @default(0)
+  casesCreated   Int               @default(0)
+  casesUpdated   Int               @default(0)
+  errorMessage   String?           @db.Text
+  startedAt      DateTime          @default(now())
+  finishedAt     DateTime?
+  cases          TrustSafetyCase[]
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model TrustSafetyCase {
+  id                String                 @id @default(cuid())
+  caseKey           String                 @unique
+  type              String
+  severity          String
+  confidence        Int
+  status            String                 @default("NEEDS_REVIEW")
+  subjectType       String
+  subjectId         String?
+  title             String
+  summary           String                 @db.Text
+  evidence          Json
+  recommendedAction String                 @db.Text
+  draftWarning      String?                @db.Text
+  latestRunId       String?
+  latestRun         TrustSafetyRun?        @relation(fields: [latestRunId], references: [id], onDelete: SetNull)
+  approvedById      String?
+  approvedAt        DateTime?
+  resolvedById      String?
+  resolvedAt        DateTime?
+  dismissedById     String?
+  dismissedAt       DateTime?
+  firstDetectedAt   DateTime               @default(now())
+  lastDetectedAt    DateTime               @default(now())
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  events            TrustSafetyCaseEvent[]
+
+  @@index([status, severity])
+  @@index([type, status])
+  @@index([subjectType, subjectId])
+  @@index([lastDetectedAt])
+  @@index([latestRunId])
+}
+
+model TrustSafetyCaseEvent {
+  id        String          @id @default(cuid())
+  caseId    String
+  case      TrustSafetyCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  eventType String
+  actorType String          @default("SYSTEM")
+  actorId   String?
+  note      String?         @db.Text
+  metadata  Json?
+  createdAt DateTime        @default(now())
+
+  @@index([caseId, createdAt])
+  @@index([eventType, createdAt])
+}
+
+model TrustSafetySettings {
+  id                    String    @id @default("default")
+  enabled               Boolean   @default(true)
+  scanDays              Int       @default(90)
+  repeatReportThreshold Int       @default(2)
+  cancellationThreshold Int       @default(3)
+  withdrawalThreshold   Int       @default(3)
+  highBidMultiplier     Float     @default(3)
+  lowBidMultiplier      Float     @default(0.2)
+  lastRunAt             DateTime?
+  updatedAt             DateTime  @updatedAt
+}

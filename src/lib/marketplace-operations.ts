@@ -3,6 +3,7 @@ import { calculateMarketplaceKpis, logOperationsActivity, saveDailyKpis, saveExe
 import { runHandymanMatchingAgent } from '@/lib/handyman-matching-agent';
 import { runSupplyRecruitmentAgent } from '@/lib/supply-recruitment-agent';
 import { runActivationAgent } from '@/lib/activation-agent';
+import { runTrustSafetyAgent } from '@/lib/trust-safety-agent';
 
 type OpsSettings = {
   enabled: boolean;
@@ -286,7 +287,8 @@ export async function runMarketplaceOperations({ trigger, force = false }: { tri
     const matching = await runHandymanMatchingAgent({ trigger });
     const recruitment = await runSupplyRecruitmentAgent({ trigger });
     const activation = await runActivationAgent({ trigger });
-    return { skipped: false, runId: run.id, status: 'COMPLETED', detected: detected.length, created, refreshed, autoResolved: resolved.count, snapshot, matching, recruitment, activation } as const;
+    const trustSafety = await runTrustSafetyAgent({ trigger });
+    return { skipped: false, runId: run.id, status: 'COMPLETED', detected: detected.length, created, refreshed, autoResolved: resolved.count, snapshot, matching, recruitment, activation, trustSafety } as const;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown marketplace operations error';
     await db.marketplaceOpsRun.update({ where: { id: run.id }, data: { status: 'FAILED', errorMessage: message.slice(0, 5000), finishedAt: new Date() } });
