@@ -558,3 +558,87 @@ model HandymanJobMatch {
   @@index([handymanId, status])
   @@index([generatedAt])
 }
+model SupplyRecruitmentRun {
+  id                String   @id @default(cuid())
+  trigger           String
+  status            String   @default("RUNNING")
+  gapsDetected      Int      @default(0)
+  leadsEvaluated    Int      @default(0)
+  candidatesCreated Int      @default(0)
+  candidatesUpdated Int      @default(0)
+  errorMessage      String?  @db.Text
+  startedAt         DateTime @default(now())
+  finishedAt        DateTime?
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model HandymanSupplyGap {
+  id             String   @id @default(cuid())
+  gapKey         String   @unique
+  location       String
+  category       String
+  priority       String
+  status         String   @default("OPEN")
+  openJobs       Int
+  noBidJobs      Int
+  qualifiedPros  Int
+  gapScore       Int
+  evidence       Json
+  firstDetectedAt DateTime @default(now())
+  lastSeenAt     DateTime @default(now())
+  resolvedAt     DateTime?
+  updatedAt      DateTime @updatedAt
+
+  @@index([status, priority])
+  @@index([location, category])
+  @@index([lastSeenAt])
+}
+
+model RecruitmentCandidate {
+  id              String   @id @default(cuid())
+  gapId           String
+  leadId          String
+  status          String   @default("PENDING_REVIEW")
+  score           Int
+  locationScore   Int
+  serviceScore    Int
+  qualityScore    Int
+  reasons         Json
+  draftSubject    String
+  draftBody       String   @db.Text
+  recruitmentCode String  @unique
+  approvedById    String?
+  approvedAt      DateTime?
+  dismissedAt     DateTime?
+  convertedUserId String?
+  convertedAt     DateTime?
+  lastEvaluatedAt DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([gapId, leadId])
+  @@index([status, score])
+  @@index([gapId, status])
+  @@index([leadId])
+  @@index([convertedAt])
+}
+
+model SupplyWeeklyReport {
+  id                String   @id @default(cuid())
+  weekStart         DateTime @unique @db.Date
+  headline          String
+  summary           String   @db.Text
+  openGapCount      Int
+  criticalGapCount  Int
+  candidateCount    Int
+  approvedCount     Int
+  convertedCount    Int
+  topGaps           Json
+  recommendedActions Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([weekStart])
+}
