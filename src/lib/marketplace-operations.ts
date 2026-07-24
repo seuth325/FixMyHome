@@ -66,12 +66,8 @@ export async function getMarketplaceOpsSettings() {
 
 export async function getMarketplaceSnapshot(now = new Date()) {
   const kpis = await calculateMarketplaceKpis(now);
-  return {
-    ...kpis,
-    awardedJobs30d: kpis.jobsAwarded30d,
-    completedJobs30d: kpis.jobsCompleted30d,
-    cancelledJobs30d: kpis.jobsCancelled30d,
-  };
+  return kpis;
+
 }
 
 function jobEvidence(job: { id: string; title: string; location: string; category: string; createdAt: Date; status: string; _count: { bids: number; messages: number } }, ageHours: number) {
