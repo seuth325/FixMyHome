@@ -642,3 +642,70 @@ model SupplyWeeklyReport {
 
   @@index([weekStart])
 }
+model ActivationAgentRun {
+  id              String   @id @default(cuid())
+  trigger         String
+  status          String   @default("RUNNING")
+  usersAnalyzed   Int      @default(0)
+  journeysCreated Int      @default(0)
+  journeysUpdated Int      @default(0)
+  stalledCount    Int      @default(0)
+  errorMessage    String?  @db.Text
+  startedAt       DateTime @default(now())
+  finishedAt      DateTime?
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model HandymanActivationJourney {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  stage              String
+  previousStage      String?
+  status             String   @default("MONITORING")
+  profileCompleteness Int
+  stalled            Boolean  @default(false)
+  stalledDays        Int      @default(0)
+  campaignSource     String?
+  referralCode       String?
+  nextAction         String   @db.Text
+  draftSubject       String
+  draftBody          String   @db.Text
+  approvedById       String?
+  approvedAt         DateTime?
+  dismissedAt        DateTime?
+  signedUpAt         DateTime
+  profileStartedAt   DateTime?
+  profileCompletedAt DateTime?
+  firstBidAt         DateTime?
+  firstWinAt         DateTime?
+  lastActivityAt     DateTime?
+  lastAnalyzedAt     DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([stage, stalled])
+  @@index([status])
+  @@index([campaignSource])
+  @@index([lastAnalyzedAt])
+}
+
+model ActivationDailySnapshot {
+  id                    String   @id @default(cuid())
+  snapshotDate          DateTime @unique @db.Date
+  totalHandymen         Int
+  signedUpOnly          Int
+  profileStarted        Int
+  profileComplete       Int
+  firstBid              Int
+  firstWin              Int
+  stalled               Int
+  profileCompletionRate Float
+  firstBidRate          Float
+  firstWinRate          Float
+  campaigns             Json
+  createdAt             DateTime @default(now())
+
+  @@index([createdAt])
+}
