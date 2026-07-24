@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { Activity, AlertTriangle, CheckCircle2, Clock3, MapPin, PauseCircle, PlayCircle, RefreshCw, Users } from 'lucide-react';
+import { Activity, AlertTriangle, BarChart3, CheckCircle2, Clock3, MapPin, PauseCircle, PlayCircle, RefreshCw, Users } from 'lucide-react';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { getMarketplaceOpsSettings, getMarketplaceSnapshot, runMarketplaceOperations } from '@/lib/marketplace-operations';
+import { logOperationsActivity } from '@/lib/operations-intelligence';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,11 +59,12 @@ async function updateSettings(formData: FormData) {
 
 async function updateSignalStatus(formData: FormData) {
   'use server';
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = String(formData.get('id') || '');
   const status = String(formData.get('status') || 'OPEN');
   if (!id || !['OPEN', 'ACKNOWLEDGED', 'RESOLVED', 'DISMISSED'].includes(status)) return;
-  await db.marketplaceOpsSignal.update({ where: { id }, data: { status, resolvedAt: ['RESOLVED', 'DISMISSED'].includes(status) ? new Date() : null } });
+  const signal = await db.marketplaceOpsSignal.update({ where: { id }, data: { status, resolvedAt: ['RESOLVED', 'DISMISSED'].includes(status) ? new Date() : null } });
+  await logOperationsActivity({ eventType: 'ALERT_STATUS_CHANGED', actorType: 'ADMIN', actorId: admin.id, entityType: 'MARKETPLACE_SIGNAL', entityId: signal.id, summary: signal.title + ' changed to ' + status + '.', details: { previousAction: 'ADMIN_REVIEW', status } });
   revalidatePath('/admin/operations');
 }
 
@@ -104,7 +106,7 @@ export default async function MarketplaceOperationsPage() {
             <div className="mt-3 flex items-center gap-3"><Activity className="size-8 text-primary" /><h1 className="text-3xl font-bold">Marketplace Operations</h1></div>
             <p className="mt-2 max-w-3xl text-muted-foreground">Read-only marketplace monitoring with evidence-backed action queues. Phase 1 cannot message users, change jobs, award work, or modify accounts.</p>
           </div>
-          <form action={runNow}><Button className="gap-2"><RefreshCw className="size-4" />Run now</Button></form>
+          <div className="flex gap-2"><Button asChild variant="outline" className="gap-2"><Link href="/admin/operations/intelligence"><BarChart3 className="size-4" />Intelligence</Link></Button><form action={runNow}><Button className="gap-2"><RefreshCw className="size-4" />Run now</Button></form></div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
