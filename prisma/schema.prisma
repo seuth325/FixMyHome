@@ -789,3 +789,83 @@ model TrustSafetySettings {
   lastRunAt             DateTime?
   updatedAt             DateTime  @updatedAt
 }
+
+model RevenueOpsRun {
+  id                   String   @id @default(cuid())
+  trigger              String
+  status               String   @default("RUNNING")
+  recordsScanned       Int      @default(0)
+  opportunitiesDetected Int     @default(0)
+  opportunitiesCreated Int      @default(0)
+  opportunitiesUpdated Int      @default(0)
+  snapshot             Json?
+  errorMessage         String?  @db.Text
+  startedAt            DateTime @default(now())
+  finishedAt           DateTime?
+  opportunities        RevenueOpportunity[]
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model RevenueOpportunity {
+  id                String         @id @default(cuid())
+  opportunityKey    String         @unique
+  type              String
+  priority          String
+  status            String         @default("OPEN")
+  subjectType       String
+  subjectId         String?
+  title             String
+  summary           String         @db.Text
+  estimatedValue    Decimal?       @db.Decimal(12, 2)
+  evidence          Json
+  recommendedAction String         @db.Text
+  draftPlan         String?        @db.Text
+  latestRunId       String?
+  latestRun         RevenueOpsRun? @relation(fields: [latestRunId], references: [id], onDelete: SetNull)
+  approvedById      String?
+  approvedAt        DateTime?
+  resolvedById      String?
+  resolvedAt        DateTime?
+  dismissedById     String?
+  dismissedAt       DateTime?
+  firstDetectedAt   DateTime       @default(now())
+  lastDetectedAt    DateTime       @default(now())
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([status, priority])
+  @@index([type, status])
+  @@index([subjectType, subjectId])
+  @@index([lastDetectedAt])
+  @@index([latestRunId])
+}
+
+model RevenueDailySnapshot {
+  id                         String   @id @default(cuid())
+  snapshotDate               DateTime @unique @db.Date
+  awardedMarketplaceValue30d Decimal  @db.Decimal(14, 2)
+  completedMarketplaceValue30d Decimal @db.Decimal(14, 2)
+  projectedFeeScenario30d    Decimal  @db.Decimal(14, 2)
+  growthPackageLeads30d      Int
+  growthPackagePipelineValue Decimal  @db.Decimal(14, 2)
+  attributionCoverage30d     Float
+  openOpportunityCount       Int
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+model RevenueOpsSettings {
+  id                    String   @id @default("default")
+  enabled               Boolean  @default(true)
+  projectedFeeRate      Float    @default(10)
+  growthPackagePrice    Decimal  @default(499) @db.Decimal(10, 2)
+  highValueJobThreshold Decimal  @default(2500) @db.Decimal(12, 2)
+  staleLeadHours        Int      @default(48)
+  stalledAwardDays      Int      @default(14)
+  lastRunAt             DateTime?
+  updatedAt             DateTime @updatedAt
+}
