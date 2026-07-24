@@ -335,7 +335,7 @@ export default function HandymanDashboard() {
 
         {/* Stats */}
         <div className="mb-8 grid gap-4 md:grid-cols-3 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
-          <Card>
+          <Card className="border-violet-200 bg-violet-50/80 dark:border-violet-900 dark:bg-violet-950/35">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active Bids</CardTitle>
             </CardHeader>
@@ -344,7 +344,7 @@ export default function HandymanDashboard() {
               <p className="text-xs text-muted-foreground mt-1">Waiting for responses</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-emerald-200 bg-emerald-50/80 dark:border-emerald-900 dark:bg-emerald-950/35">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Jobs Won</CardTitle>
             </CardHeader>
@@ -353,7 +353,7 @@ export default function HandymanDashboard() {
               <p className="text-xs text-muted-foreground mt-1">Total jobs awarded</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/35">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Average Rating</CardTitle>
             </CardHeader>
@@ -373,7 +373,7 @@ export default function HandymanDashboard() {
 
         {/* Quick Actions */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
-          <Card className="rounded-lg transition-shadow hover:shadow-md">
+          <Card className="rounded-lg transition-shadow hover:shadow-md border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35">
             <CardHeader>
               <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-2">
                 <Search className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -404,7 +404,7 @@ export default function HandymanDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-lg transition-shadow hover:shadow-md">
+          <Card className="rounded-lg transition-shadow hover:shadow-md border-cyan-200 bg-cyan-50/80 dark:border-cyan-900 dark:bg-cyan-950/35">
             <CardHeader>
               <div className="relative w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-2">
                 <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -417,7 +417,7 @@ export default function HandymanDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-lg transition-shadow hover:shadow-md">
+          <Card className="rounded-lg transition-shadow hover:shadow-md border-teal-200 bg-teal-50/80 dark:border-teal-900 dark:bg-teal-950/35">
             <CardHeader>
               <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center mb-2">
                 <User className="w-6 h-6 text-orange-600 dark:text-orange-400" />
