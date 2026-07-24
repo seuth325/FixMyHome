@@ -515,3 +515,46 @@ model ExecutiveBriefing {
   @@index([briefingDate])
   @@index([runId])
 }
+model HandymanMatchingRun {
+  id             String   @id @default(cuid())
+  trigger        String
+  status         String   @default("RUNNING")
+  jobsAnalyzed   Int      @default(0)
+  candidatesSeen Int      @default(0)
+  matchesCreated Int      @default(0)
+  matchesUpdated Int      @default(0)
+  errorMessage   String?  @db.Text
+  startedAt      DateTime @default(now())
+  finishedAt     DateTime?
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+model HandymanJobMatch {
+  id              String   @id @default(cuid())
+  jobId           String
+  handymanId      String
+  status          String   @default("PENDING_REVIEW")
+  score           Int
+  skillScore      Int
+  locationScore   Int
+  qualityScore    Int
+  activityScore   Int
+  reasons         Json
+  draftMessage    String   @db.Text
+  approvedById    String?
+  approvedAt      DateTime?
+  dismissedAt     DateTime?
+  invitationId    String?
+  bidId           String?
+  generatedAt     DateTime @default(now())
+  lastEvaluatedAt DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([jobId, handymanId])
+  @@index([status, score])
+  @@index([jobId, status])
+  @@index([handymanId, status])
+  @@index([generatedAt])
+}
