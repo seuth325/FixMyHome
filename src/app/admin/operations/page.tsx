@@ -114,15 +114,15 @@ export default async function MarketplaceOperationsPage() {
           <Card><CardHeader className="pb-2"><CardDescription>Open signals</CardDescription><CardTitle>{count.OPEN || 0}</CardTitle></CardHeader></Card>
           <Card><CardHeader className="pb-2"><CardDescription>Open jobs</CardDescription><CardTitle>{snapshot.openJobs}</CardTitle></CardHeader></Card>
           <Card><CardHeader className="pb-2"><CardDescription>Active handymen</CardDescription><CardTitle>{snapshot.activeHandymen}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Awarded (30d)</CardDescription><CardTitle>{snapshot.awardedJobs30d}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Completed (30d)</CardDescription><CardTitle>{snapshot.completedJobs30d}</CardTitle></CardHeader></Card>
+          <Card><CardHeader className="pb-2"><CardDescription>Awarded (30d)</CardDescription><CardTitle>{snapshot.jobsAwarded30d}</CardTitle></CardHeader></Card>
+          <Card><CardHeader className="pb-2"><CardDescription>Completed (30d)</CardDescription><CardTitle>{snapshot.jobsCompleted30d}</CardTitle></CardHeader></Card>
         </div>
 
         <div className="grid gap-4 md:grid-cols-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
           <Card><CardHeader><CardDescription>Bids (30d)</CardDescription><CardTitle>{snapshot.bids30d}</CardTitle></CardHeader></Card>
           <Card><CardHeader><CardDescription>New homeowners (30d)</CardDescription><CardTitle>{snapshot.homeowners30d}</CardTitle></CardHeader></Card>
           <Card><CardHeader><CardDescription>New handymen (30d)</CardDescription><CardTitle>{snapshot.handymen30d}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>Cancelled jobs (30d)</CardDescription><CardTitle>{snapshot.cancelledJobs30d}</CardTitle></CardHeader></Card>
+          <Card><CardHeader><CardDescription>Cancelled jobs (30d)</CardDescription><CardTitle>{snapshot.jobsCancelled30d}</CardTitle></CardHeader></Card>
         </div>
 
         <Card>
