@@ -31,7 +31,7 @@ function stringList(value: unknown) {
 
 function Metric({ label, value, detail }: { label: string; value: string | number; detail: string }) {
   return (
-    <Card className="h-full">
+    <Card className={`h-full ${label.includes('without bids') || label.includes('Cancelled') ? 'border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/35' : label.includes('award') || label.includes('completion') ? 'border-emerald-200 bg-emerald-50/80 dark:border-emerald-900 dark:bg-emerald-950/35' : label.includes('handymen') ? 'border-teal-200 bg-teal-50/80 dark:border-teal-900 dark:bg-teal-950/35' : 'border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35'}`}>
       <CardHeader className="pb-2"><CardDescription>{label}</CardDescription><CardTitle className="text-2xl">{value}</CardTitle></CardHeader>
       <CardContent className="text-xs text-muted-foreground">{detail}</CardContent>
     </Card>

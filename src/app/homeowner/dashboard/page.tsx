@@ -164,7 +164,7 @@ export default function HomeownerDashboard() {
         {/* Quick Stats */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
           <Link href="/jobs?status=active">
-            <Card className="h-full rounded-lg transition-shadow hover:shadow-md">
+            <Card className="h-full rounded-lg transition-shadow hover:shadow-md border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Active Jobs</CardTitle>
               </CardHeader>
@@ -175,7 +175,7 @@ export default function HomeownerDashboard() {
             </Card>
           </Link>
           <Link href="/jobs">
-            <Card className="h-full rounded-lg transition-shadow hover:shadow-md">
+            <Card className="h-full rounded-lg transition-shadow hover:shadow-md border-violet-200 bg-violet-50/80 dark:border-violet-900 dark:bg-violet-950/35">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total Bids</CardTitle>
               </CardHeader>
@@ -186,7 +186,7 @@ export default function HomeownerDashboard() {
             </Card>
           </Link>
           <Link href="/jobs?status=AWARDED">
-            <Card className="h-full rounded-lg transition-shadow hover:shadow-md">
+            <Card className="h-full rounded-lg transition-shadow hover:shadow-md border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/35">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
               </CardHeader>
@@ -197,7 +197,7 @@ export default function HomeownerDashboard() {
             </Card>
           </Link>
           <Link href="/jobs?status=COMPLETED">
-            <Card className="h-full rounded-lg transition-shadow hover:shadow-md">
+            <Card className="h-full rounded-lg transition-shadow hover:shadow-md :">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
               </CardHeader>
@@ -256,7 +256,7 @@ export default function HomeownerDashboard() {
 
         {/* Quick Actions */}
         <div className="mb-8 grid gap-4 lg:grid-cols-3">
-          <Card className="rounded-lg transition-shadow hover:shadow-md">
+          <Card className="rounded-lg transition-shadow hover:shadow-md border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35">
             <CardHeader>
               <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-2">
                 <PlusCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -271,7 +271,7 @@ export default function HomeownerDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-lg transition-shadow hover:shadow-md">
+          <Card className="rounded-lg transition-shadow hover:shadow-md border-violet-200 bg-violet-50/80 dark:border-violet-900 dark:bg-violet-950/35">
             <CardHeader>
               <div className="relative w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-2">
                 <Briefcase className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -286,7 +286,7 @@ export default function HomeownerDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-lg transition-shadow hover:shadow-md">
+          <Card className="rounded-lg transition-shadow hover:shadow-md border-cyan-200 bg-cyan-50/80 dark:border-cyan-900 dark:bg-cyan-950/35">
             <CardHeader>
               <div className="relative w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-2">
                 <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />

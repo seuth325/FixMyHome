@@ -110,19 +110,19 @@ export default async function MarketplaceOperationsPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
-          <Card><CardHeader className="pb-2"><CardDescription>Agent</CardDescription><CardTitle className="flex items-center gap-2 text-xl">{settings.enabled ? <PlayCircle className="size-5 text-green-600" /> : <PauseCircle className="size-5 text-amber-600" />}{settings.enabled ? 'Enabled' : 'Paused'}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Open signals</CardDescription><CardTitle>{count.OPEN || 0}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Open jobs</CardDescription><CardTitle>{snapshot.openJobs}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Active handymen</CardDescription><CardTitle>{snapshot.activeHandymen}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Awarded (30d)</CardDescription><CardTitle>{snapshot.jobsAwarded30d}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Completed (30d)</CardDescription><CardTitle>{snapshot.jobsCompleted30d}</CardTitle></CardHeader></Card>
+          <Card className="border-violet-200 bg-violet-50/80 dark:border-violet-900 dark:bg-violet-950/35"><CardHeader className="pb-2"><CardDescription>Agent</CardDescription><CardTitle className="flex items-center gap-2 text-xl">{settings.enabled ? <PlayCircle className="size-5 text-green-600" /> : <PauseCircle className="size-5 text-amber-600" />}{settings.enabled ? 'Enabled' : 'Paused'}</CardTitle></CardHeader></Card>
+          <Card className="border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/35"><CardHeader className="pb-2"><CardDescription>Open signals</CardDescription><CardTitle>{count.OPEN || 0}</CardTitle></CardHeader></Card>
+          <Card className="border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35"><CardHeader className="pb-2"><CardDescription>Open jobs</CardDescription><CardTitle>{snapshot.openJobs}</CardTitle></CardHeader></Card>
+          <Card className="border-teal-200 bg-teal-50/80 dark:border-teal-900 dark:bg-teal-950/35"><CardHeader className="pb-2"><CardDescription>Active handymen</CardDescription><CardTitle>{snapshot.activeHandymen}</CardTitle></CardHeader></Card>
+          <Card className="border-cyan-200 bg-cyan-50/80 dark:border-cyan-900 dark:bg-cyan-950/35"><CardHeader className="pb-2"><CardDescription>Awarded (30d)</CardDescription><CardTitle>{snapshot.jobsAwarded30d}</CardTitle></CardHeader></Card>
+          <Card className="border-emerald-200 bg-emerald-50/80 dark:border-emerald-900 dark:bg-emerald-950/35"><CardHeader className="pb-2"><CardDescription>Completed (30d)</CardDescription><CardTitle>{snapshot.jobsCompleted30d}</CardTitle></CardHeader></Card>
         </div>
 
         <div className="grid gap-4 md:grid-cols-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
-          <Card><CardHeader><CardDescription>Bids (30d)</CardDescription><CardTitle>{snapshot.bids30d}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>New homeowners (30d)</CardDescription><CardTitle>{snapshot.homeowners30d}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>New handymen (30d)</CardDescription><CardTitle>{snapshot.handymen30d}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>Cancelled jobs (30d)</CardDescription><CardTitle>{snapshot.jobsCancelled30d}</CardTitle></CardHeader></Card>
+          <Card className="border-violet-200 bg-violet-50/80 dark:border-violet-900 dark:bg-violet-950/35"><CardHeader><CardDescription>Bids (30d)</CardDescription><CardTitle>{snapshot.bids30d}</CardTitle></CardHeader></Card>
+          <Card className="border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35"><CardHeader><CardDescription>New homeowners (30d)</CardDescription><CardTitle>{snapshot.homeowners30d}</CardTitle></CardHeader></Card>
+          <Card className="border-teal-200 bg-teal-50/80 dark:border-teal-900 dark:bg-teal-950/35"><CardHeader><CardDescription>New handymen (30d)</CardDescription><CardTitle>{snapshot.handymen30d}</CardTitle></CardHeader></Card>
+          <Card className="border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/35"><CardHeader><CardDescription>Cancelled jobs (30d)</CardDescription><CardTitle>{snapshot.jobsCancelled30d}</CardTitle></CardHeader></Card>
         </div>
 
         <Card>

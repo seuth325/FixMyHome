@@ -119,9 +119,9 @@ export default async function HandymanMatchingPage() {
         </header>
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <Card><CardHeader><CardDescription>Awaiting review</CardDescription><CardTitle>{matches.length}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>Invited recently</CardDescription><CardTitle>{recent.filter((item) => item.status === 'INVITED').length}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>Latest run</CardDescription><CardTitle className="text-lg">{runs[0]?.status ?? 'Not run'}</CardTitle></CardHeader></Card>
+          <Card className="border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/35"><CardHeader><CardDescription>Awaiting review</CardDescription><CardTitle>{matches.length}</CardTitle></CardHeader></Card>
+          <Card className="border-teal-200 bg-teal-50/80 dark:border-teal-900 dark:bg-teal-950/35"><CardHeader><CardDescription>Invited recently</CardDescription><CardTitle>{recent.filter((item) => item.status === 'INVITED').length}</CardTitle></CardHeader></Card>
+          <Card className="border-violet-200 bg-violet-50/80 dark:border-violet-900 dark:bg-violet-950/35"><CardHeader><CardDescription>Latest run</CardDescription><CardTitle className="text-lg">{runs[0]?.status ?? 'Not run'}</CardTitle></CardHeader></Card>
         </section>
 
         <Card>

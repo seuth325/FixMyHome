@@ -90,11 +90,11 @@ export default async function AdminSupportPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          <Card><CardHeader className="pb-2"><CardDescription>Agent</CardDescription><CardTitle className="flex items-center gap-2 text-xl">{settings.enabled ? <PlayCircle className="size-5 text-green-600" /> : <PauseCircle className="size-5 text-amber-600" />}{settings.enabled ? 'Enabled' : 'Paused'}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>New submissions</CardDescription><CardTitle>{unprocessedSubmissions}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Needs review</CardDescription><CardTitle>{count.NEEDS_REVIEW || 0}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Escalated</CardDescription><CardTitle>{count.ESCALATED || 0}</CardTitle></CardHeader></Card>
-          <Card><CardHeader className="pb-2"><CardDescription>Last run</CardDescription><CardTitle className="text-base">{dateTime(settings.lastRunAt)}</CardTitle></CardHeader></Card>
+          <Card className="border-violet-200 bg-violet-50/80 dark:border-violet-900 dark:bg-violet-950/35"><CardHeader className="pb-2"><CardDescription>Agent</CardDescription><CardTitle className="flex items-center gap-2 text-xl">{settings.enabled ? <PlayCircle className="size-5 text-green-600" /> : <PauseCircle className="size-5 text-amber-600" />}{settings.enabled ? 'Enabled' : 'Paused'}</CardTitle></CardHeader></Card>
+          <Card className="border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35"><CardHeader className="pb-2"><CardDescription>New submissions</CardDescription><CardTitle>{unprocessedSubmissions}</CardTitle></CardHeader></Card>
+          <Card className="border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/35"><CardHeader className="pb-2"><CardDescription>Needs review</CardDescription><CardTitle>{count.NEEDS_REVIEW || 0}</CardTitle></CardHeader></Card>
+          <Card className="border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/35"><CardHeader className="pb-2"><CardDescription>Escalated</CardDescription><CardTitle>{count.ESCALATED || 0}</CardTitle></CardHeader></Card>
+          <Card className="border-slate-300 bg-slate-100/80 dark:border-slate-700 dark:bg-slate-800/70"><CardHeader className="pb-2"><CardDescription>Last run</CardDescription><CardTitle className="text-base">{dateTime(settings.lastRunAt)}</CardTitle></CardHeader></Card>
         </div>
 
         <Card>

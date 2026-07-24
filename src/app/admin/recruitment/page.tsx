@@ -85,10 +85,10 @@ export default async function RecruitmentPage() {
         </header>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card><CardHeader><CardDescription>Open supply gaps</CardDescription><CardTitle>{gaps.length}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>Critical gaps</CardDescription><CardTitle>{gaps.filter((gap) => gap.priority === 'P1').length}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>Prospects to review</CardDescription><CardTitle>{candidates.length}</CardTitle></CardHeader></Card>
-          <Card><CardHeader><CardDescription>Conversions tracked</CardDescription><CardTitle>{reviewed.filter((item) => item.status === 'CONVERTED').length}</CardTitle></CardHeader></Card>
+          <Card className="border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/35"><CardHeader><CardDescription>Open supply gaps</CardDescription><CardTitle>{gaps.length}</CardTitle></CardHeader></Card>
+          <Card className="border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/35"><CardHeader><CardDescription>Critical gaps</CardDescription><CardTitle>{gaps.filter((gap) => gap.priority === 'P1').length}</CardTitle></CardHeader></Card>
+          <Card className="border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35"><CardHeader><CardDescription>Prospects to review</CardDescription><CardTitle>{candidates.length}</CardTitle></CardHeader></Card>
+          <Card className="border-emerald-200 bg-emerald-50/80 dark:border-emerald-900 dark:bg-emerald-950/35"><CardHeader><CardDescription>Conversions tracked</CardDescription><CardTitle>{reviewed.filter((item) => item.status === 'CONVERTED').length}</CardTitle></CardHeader></Card>
         </section>
 
         {latest && <Card className="border-primary/20"><CardHeader><CardDescription>Weekly Supply Report</CardDescription><CardTitle>{latest.headline}</CardTitle></CardHeader><CardContent><p>{latest.summary}</p><div className="mt-4 flex flex-wrap gap-2"><Badge variant="outline">{latest.openGapCount} gaps</Badge><Badge variant="outline">{latest.candidateCount} candidates</Badge><Badge variant="outline">{latest.approvedCount} approved</Badge><Badge variant="outline">{latest.convertedCount} converted</Badge></div></CardContent></Card>}
