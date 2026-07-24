@@ -485,15 +485,15 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
   });
   const [userCount, jobCount, bidCount, messageCount, reviewCount, unreadNotifications, activeResets, newContactRequests, budgetTotal] = counts;
   const stats = [
-    { label: 'Users', value: userCount, detail: 'Registered accounts', icon: Users },
-    { label: 'Jobs', value: jobCount, detail: `${money(budgetTotal?._sum?.budget ?? 0)} posted budget`, icon: Briefcase },
-    { label: 'Bids', value: bidCount, detail: 'Submitted proposals', icon: DollarSign },
-    { label: 'Messages', value: messageCount, detail: 'User conversations', icon: MessageSquare },
-    { label: 'Reviews', value: reviewCount, detail: 'Completed feedback', icon: Star },
-    { label: 'Unread Alerts', value: unreadNotifications, detail: 'Open notifications', icon: Activity },
-    { label: 'Reset Links', value: activeResets, detail: 'Active password resets', icon: KeyRound },
-    { label: 'Contact', value: newContactRequests, detail: 'New contact requests', icon: Mail },
-    { label: 'Prospects', value: handymanLeads.length, detail: 'Imported handyman leads', icon: Briefcase },
+    { label: 'Users', value: userCount, detail: 'Registered accounts', icon: Users, card: 'border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/35', iconStyle: 'bg-blue-100 text-blue-700 dark:bg-blue-900/70 dark:text-blue-300', valueStyle: 'text-blue-950 dark:text-blue-100' },
+    { label: 'Jobs', value: jobCount, detail: `${money(budgetTotal?._sum?.budget ?? 0)} posted budget`, icon: Briefcase, card: 'border-emerald-200 bg-emerald-50/80 dark:border-emerald-900 dark:bg-emerald-950/35', iconStyle: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/70 dark:text-emerald-300', valueStyle: 'text-emerald-950 dark:text-emerald-100' },
+    { label: 'Bids', value: bidCount, detail: 'Submitted proposals', icon: DollarSign, card: 'border-violet-200 bg-violet-50/80 dark:border-violet-900 dark:bg-violet-950/35', iconStyle: 'bg-violet-100 text-violet-700 dark:bg-violet-900/70 dark:text-violet-300', valueStyle: 'text-violet-950 dark:text-violet-100' },
+    { label: 'Messages', value: messageCount, detail: 'User conversations', icon: MessageSquare, card: 'border-cyan-200 bg-cyan-50/80 dark:border-cyan-900 dark:bg-cyan-950/35', iconStyle: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/70 dark:text-cyan-300', valueStyle: 'text-cyan-950 dark:text-cyan-100' },
+    { label: 'Reviews', value: reviewCount, detail: 'Completed feedback', icon: Star, card: 'border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/35', iconStyle: 'bg-amber-100 text-amber-700 dark:bg-amber-900/70 dark:text-amber-300', valueStyle: 'text-amber-950 dark:text-amber-100' },
+    { label: 'Unread Alerts', value: unreadNotifications, detail: 'Open notifications', icon: Activity, card: 'border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/35', iconStyle: 'bg-rose-100 text-rose-700 dark:bg-rose-900/70 dark:text-rose-300', valueStyle: 'text-rose-950 dark:text-rose-100' },
+    { label: 'Reset Links', value: activeResets, detail: 'Active password resets', icon: KeyRound, card: 'border-slate-300 bg-slate-100/80 dark:border-slate-700 dark:bg-slate-800/70', iconStyle: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200', valueStyle: 'text-slate-950 dark:text-slate-100' },
+    { label: 'Contact', value: newContactRequests, detail: 'New contact requests', icon: Mail, card: 'border-orange-200 bg-orange-50/80 dark:border-orange-900 dark:bg-orange-950/35', iconStyle: 'bg-orange-100 text-orange-700 dark:bg-orange-900/70 dark:text-orange-300', valueStyle: 'text-orange-950 dark:text-orange-100' },
+    { label: 'Prospects', value: handymanLeads.length, detail: 'Imported handyman leads', icon: Briefcase, card: 'border-teal-200 bg-teal-50/80 dark:border-teal-900 dark:bg-teal-950/35', iconStyle: 'bg-teal-100 text-teal-700 dark:bg-teal-900/70 dark:text-teal-300', valueStyle: 'text-teal-950 dark:text-teal-100' },
   ];
 
   return (
@@ -506,8 +506,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline text-sm text-muted-foreground">{session.user.email}</span>
-            <Button asChild variant="outline" size="sm"><Link href="/admin/support"><Mail className="size-4" />Support Agent</Link></Button>
-            <Button asChild variant="outline" size="sm"><Link href="/admin/operations"><Activity className="size-4" />Marketplace Ops</Link></Button>
+            <Button asChild variant="outline" size="sm" className="border-violet-200 bg-violet-50 text-violet-800 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/50 dark:text-violet-200"><Link href="/admin/support"><Mail className="size-4" />Support Agent</Link></Button>
+            <Button asChild variant="outline" size="sm" className="border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200"><Link href="/admin/operations"><Activity className="size-4" />Marketplace Ops</Link></Button>
             <ThemeToggle />
             <Button asChild variant="outline" size="sm"><Link href="/sign-out">Sign Out</Link></Button>
           </div>
@@ -521,16 +521,16 @@ export default async function AdminPage({ searchParams }: { searchParams?: Admin
         </section>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500">
-          {stats.map(({ label, value, detail, icon: Icon }) => (
-            <Card key={label}>
+          {stats.map(({ label, value, detail, icon: Icon, card, iconStyle, valueStyle }) => (
+            <Card key={label} className={`${card} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md`}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-3">
                   <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-                  <Icon className="size-4 text-muted-foreground" />
+                  <span className={`rounded-md p-2 ${iconStyle}`}><Icon className="size-4" /></span>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{value}</div>
+                <div className={`text-2xl font-bold ${valueStyle}`}>{value}</div>
                 <p className="text-xs text-muted-foreground mt-1">{detail}</p>
               </CardContent>
             </Card>
