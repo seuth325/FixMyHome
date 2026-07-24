@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { calculateMarketplaceKpis, logOperationsActivity, saveDailyKpis, saveExecutiveBriefing } from '@/lib/operations-intelligence';
 
 type OpsSettings = {
   enabled: boolean;
@@ -64,18 +65,13 @@ export async function getMarketplaceOpsSettings() {
 }
 
 export async function getMarketplaceSnapshot(now = new Date()) {
-  const since30Days = new Date(now.getTime() - 30 * DAY);
-  const [openJobs, awardedJobs30d, completedJobs30d, cancelledJobs30d, bids30d, activeHandymen, homeowners30d, handymen30d] = await Promise.all([
-    db.job.count({ where: { status: { in: ['OPEN', 'IN_REVIEW'] } } }),
-    db.job.count({ where: { awardedAt: { gte: since30Days } } }),
-    db.job.count({ where: { completedAt: { gte: since30Days } } }),
-    db.job.count({ where: { status: 'CANCELLED', updatedAt: { gte: since30Days } } }),
-    db.bid.count({ where: { createdAt: { gte: since30Days } } }),
-    db.user.count({ where: { role: 'HANDYMAN', isAvailable: true } }),
-    db.user.count({ where: { role: 'HOMEOWNER', createdAt: { gte: since30Days } } }),
-    db.user.count({ where: { role: 'HANDYMAN', createdAt: { gte: since30Days } } }),
-  ]);
-  return { openJobs, awardedJobs30d, completedJobs30d, cancelledJobs30d, bids30d, activeHandymen, homeowners30d, handymen30d };
+  const kpis = await calculateMarketplaceKpis(now);
+  return {
+    ...kpis,
+    awardedJobs30d: kpis.jobsAwarded30d,
+    completedJobs30d: kpis.jobsCompleted30d,
+    cancelledJobs30d: kpis.jobsCancelled30d,
+  };
 }
 
 function jobEvidence(job: { id: string; title: string; location: string; category: string; createdAt: Date; status: string; _count: { bids: number; messages: number } }, ageHours: number) {
@@ -261,6 +257,33 @@ export async function runMarketplaceOperations({ trigger, force = false }: { tri
       db.marketplaceOpsRun.update({ where: { id: run.id }, data: { status: 'COMPLETED', detected: detected.length, created, refreshed, autoResolved: resolved.count, snapshot, finishedAt: new Date() } }),
       db.marketplaceOpsSettings.update({ where: { id: settings.id }, data: { lastRunAt: new Date() } }),
     ]);
+    await Promise.all([
+      saveDailyKpis(snapshot, run.id, now),
+      saveExecutiveBriefing({ kpis: snapshot, runId: run.id, createdSignals: created, resolvedSignals: resolved.count, now }),
+      logOperationsActivity({
+        eventType: 'MARKETPLACE_SCAN_COMPLETED',
+        summary: `Marketplace scan completed with ${detected.length} detected signals.`,
+        entityType: 'MARKETPLACE',
+        entityId: 'default',
+        details: { detected: detected.length, created, refreshed, autoResolved: resolved.count, trigger, snapshot },
+        runId: run.id,
+      }),
+    ]);
+    const newNoBidSignals = detected.filter((signal) =>
+      signal.type === 'OPEN_JOB_NO_BIDS' && !existingByKey.has(signal.signalKey),
+    );
+    if (newNoBidSignals.length) {
+      await db.operationsActivity.createMany({
+        data: newNoBidSignals.map((signal) => ({
+          eventType: 'NO_BID_ALERT_CREATED',
+          summary: signal.title,
+          entityType: signal.subjectType,
+          entityId: signal.subjectId,
+          details: signal.evidence,
+          runId: run.id,
+        })),
+      });
+    }
     return { skipped: false, runId: run.id, status: 'COMPLETED', detected: detected.length, created, refreshed, autoResolved: resolved.count, snapshot } as const;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown marketplace operations error';

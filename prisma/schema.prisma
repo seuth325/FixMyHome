@@ -429,6 +429,9 @@ model MarketplaceOpsRun {
   startedAt    DateTime               @default(now())
   finishedAt   DateTime?
   signals      MarketplaceOpsSignal[]
+  activities   OperationsActivity[]
+  kpiSnapshots MarketplaceKpiSnapshot[]
+  briefings    ExecutiveBriefing[]
 
   @@index([startedAt])
   @@index([status])
@@ -448,4 +451,67 @@ model MarketplaceOpsSettings {
   handymanInactiveDays Int      @default(30)
   lastRunAt            DateTime?
   updatedAt            DateTime @updatedAt
+}
+model OperationsActivity {
+  id         String             @id @default(cuid())
+  eventType  String
+  actorType  String             @default("SYSTEM")
+  actorId    String?
+  entityType String?
+  entityId   String?
+  summary    String
+  details    Json?
+  runId      String?
+  run        MarketplaceOpsRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  occurredAt DateTime           @default(now())
+
+  @@index([occurredAt])
+  @@index([eventType, occurredAt])
+  @@index([entityType, entityId])
+  @@index([runId])
+}
+
+model MarketplaceKpiSnapshot {
+  id                    String             @id @default(cuid())
+  snapshotDate          DateTime           @unique @db.Date
+  openJobs              Int
+  jobsCreated30d        Int
+  jobsAwarded30d        Int
+  jobsCompleted30d      Int
+  jobsCancelled30d      Int
+  bids30d               Int
+  openJobsWithoutBids   Int
+  noBidRate             Float
+  averageBidsPerOpenJob Float
+  activeHandymen        Int
+  homeowners30d         Int
+  handymen30d           Int
+  awardRate30d          Float
+  completionRate30d     Float
+  runId                 String?
+  run                   MarketplaceOpsRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  createdAt             DateTime           @default(now())
+
+  @@index([createdAt])
+  @@index([runId])
+}
+
+model ExecutiveBriefing {
+  id                 String             @id @default(cuid())
+  briefingDate       DateTime           @unique @db.Date
+  headline           String
+  summary            String             @db.Text
+  wins               Json
+  risks              Json
+  recommendedActions Json
+  kpis                Json
+  openAlertCount     Int                @default(0)
+  criticalCount      Int                @default(0)
+  runId              String?
+  run                MarketplaceOpsRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([briefingDate])
+  @@index([runId])
 }
